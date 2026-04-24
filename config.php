@@ -2,8 +2,7 @@
 require 'vendor/autoload.php';
 
 $client = new MongoDB\Client(
-    "mongodb+srv://smt2007:1561%40SPSslm@smt2007.bwry6zp.mongodb.net/?appName=smt2007&tls=true&tlsAllowInvalidCertificates=false&connectTimeoutMS=30000&serverSelectionTimeoutMS=30000",
-    ['tlsCAFile' => __DIR__ . '/cacert.pem']
+    "mongodb+srv://smt2007:1561%40SPSslm@smt2007.bwry6zp.mongodb.net/?appName=smt2007&tls=true&tlsAllowInvalidCertificates=true&connectTimeoutMS=30000&serverSelectionTimeoutMS=30000"
 );
 $db        = $client->sgi_db;
 $users     = $db->users;
