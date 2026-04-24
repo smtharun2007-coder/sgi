@@ -34,7 +34,9 @@ RUN mkdir -p /var/www/html/uploads && chmod -R 777 /var/www/html/uploads
 
 RUN chown -R www-data:www-data /var/www/html
 
-RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n</Directory>' >> /etc/apache2/apache2.conf
+RUN rm -f /var/www/html/index.html
+
+RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n    DirectoryIndex index.php index.html\n</Directory>' >> /etc/apache2/apache2.conf
 
 RUN echo '#!/bin/bash\nPORT=${PORT:-8080}\nsed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf\nsed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/" /etc/apache2/sites-enabled/000-default.conf\napache2ctl -D FOREGROUND' > /start.sh && chmod +x /start.sh
 
