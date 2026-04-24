@@ -24,6 +24,8 @@ RUN pecl install mongodb-1.21.0 && echo "extension=mongodb.so" > /etc/php/8.1/ap
 
 RUN a2enmod rewrite php8.1
 
+RUN echo "display_errors = On\nerror_reporting = E_ALL" > /etc/php/8.1/apache2/conf.d/99-errors.ini
+
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY . /var/www/html/
@@ -32,15 +34,16 @@ RUN cd /var/www/html && composer install --no-dev --optimize-autoloader --ignore
 
 RUN mkdir -p /var/www/html/uploads && chmod -R 777 /var/www/html/uploads
 
-RUN chown -R www-data:www-data /var/www/html
-
 RUN rm -f /var/www/html/index.html
+
+RUN chown -R www-data:www-data /var/www/html
 
 RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n    DirectoryIndex index.php index.html\n</Directory>' >> /etc/apache2/apache2.conf
 
-RUN echo 'display_errors = On\nerror_reporting = E_ALL' > /etc/php/8.1/apache2/conf.d/99-errors.ini
+RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
-RUN echo '#!/bin/bash\nPORT=${PORT:-8080}\nsed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf\nsed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/" /etc/apache2/sites-enabled/000-default.conf\napache2ctl -D FOREGROUND' > /start.sh && chmod +x /start.sh
+COPY start.sh /start.sh
+RUN chmod +x /start.sh
 
 EXPOSE 8080
 
