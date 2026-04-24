@@ -4,3 +4,4 @@ composer.phar
 *.lock
 .env
 phpinfo_test.php
+vendor/
