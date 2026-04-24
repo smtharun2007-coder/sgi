@@ -1,18 +1,29 @@
-FROM php:8.2-apache
+FROM ubuntu:22.04
 
-RUN apt-get update && apt-get install -y libssl-dev zip unzip && rm -rf /var/lib/apt/lists/*
+ENV DEBIAN_FRONTEND=noninteractive
 
-RUN pecl install mongodb-1.21.0 && docker-php-ext-enable mongodb
+RUN apt-get update && apt-get install -y \
+    apache2 \
+    php8.1 \
+    php8.1-cli \
+    php8.1-common \
+    php8.1-curl \
+    php8.1-mbstring \
+    php8.1-xml \
+    php8.1-zip \
+    php8.1-openssl \
+    libapache2-mod-php8.1 \
+    php-pear \
+    php8.1-dev \
+    libssl-dev \
+    curl \
+    zip \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
+RUN pecl install mongodb-1.21.0 && echo "extension=mongodb.so" > /etc/php/8.1/apache2/conf.d/20-mongodb.ini
 
-RUN rm -f /etc/apache2/mods-enabled/mpm_event.conf \
-          /etc/apache2/mods-enabled/mpm_event.load \
-          /etc/apache2/mods-enabled/mpm_worker.conf \
-          /etc/apache2/mods-enabled/mpm_worker.load && \
-    ln -sf /etc/apache2/mods-available/mpm_prefork.conf /etc/apache2/mods-enabled/mpm_prefork.conf && \
-    ln -sf /etc/apache2/mods-available/mpm_prefork.load /etc/apache2/mods-enabled/mpm_prefork.load && \
-    ln -sf /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/rewrite.load
+RUN a2enmod rewrite php8.1
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
@@ -22,8 +33,14 @@ RUN cd /var/www/html && composer install --no-dev --optimize-autoloader --ignore
 
 RUN mkdir -p /var/www/html/uploads && chmod -R 777 /var/www/html/uploads
 
-RUN sed -i 's/80/${PORT}/g' /etc/apache2/ports.conf /etc/apache2/sites-enabled/000-default.conf
+RUN chown -R www-data:www-data /var/www/html
 
-EXPOSE ${PORT}
+RUN sed -i 's/Listen 80/Listen ${PORT:-80}/' /etc/apache2/ports.conf && \
+    sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT:-80}>/' /etc/apache2/sites-enabled/000-default.conf && \
+    sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html|' /etc/apache2/sites-enabled/000-default.conf
 
-CMD ["apache2-foreground"]
+RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n</Directory>' >> /etc/apache2/apache2.conf
+
+EXPOSE ${PORT:-80}
+
+CMD ["apache2ctl", "-D", "FOREGROUND"]
