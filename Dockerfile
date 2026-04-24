@@ -14,4 +14,11 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 RUN cd /var/www/html && composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-mongodb
 
-EXPOSE 80
+RUN sed -i 's/Listen 80/Listen ${PORT:-80}/' /etc/apache2/ports.conf && \
+    sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT:-80}>/' /etc/apache2/sites-enabled/000-default.conf
+
+ENV APACHE_DOCUMENT_ROOT /var/www/html
+
+EXPOSE ${PORT:-80}
+
+CMD ["apache2-foreground"]
