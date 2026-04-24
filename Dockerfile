@@ -38,6 +38,8 @@ RUN rm -f /var/www/html/index.html
 
 RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n    DirectoryIndex index.php index.html\n</Directory>' >> /etc/apache2/apache2.conf
 
+RUN echo 'display_errors = On\nerror_reporting = E_ALL' > /etc/php/8.1/apache2/conf.d/99-errors.ini
+
 RUN echo '#!/bin/bash\nPORT=${PORT:-8080}\nsed -i "s/Listen 80/Listen $PORT/" /etc/apache2/ports.conf\nsed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/" /etc/apache2/sites-enabled/000-default.conf\napache2ctl -D FOREGROUND' > /start.sh && chmod +x /start.sh
 
 EXPOSE 8080
