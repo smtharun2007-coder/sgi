@@ -11,7 +11,6 @@ RUN apt-get update && apt-get install -y \
     php8.1-mbstring \
     php8.1-xml \
     php8.1-zip \
-    php8.1-openssl \
     libapache2-mod-php8.1 \
     php-pear \
     php8.1-dev \
@@ -36,8 +35,7 @@ RUN mkdir -p /var/www/html/uploads && chmod -R 777 /var/www/html/uploads
 RUN chown -R www-data:www-data /var/www/html
 
 RUN sed -i 's/Listen 80/Listen ${PORT:-80}/' /etc/apache2/ports.conf && \
-    sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT:-80}>/' /etc/apache2/sites-enabled/000-default.conf && \
-    sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html|' /etc/apache2/sites-enabled/000-default.conf
+    sed -i 's/<VirtualHost \*:80>/<VirtualHost *:${PORT:-80}>/' /etc/apache2/sites-enabled/000-default.conf
 
 RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n</Directory>' >> /etc/apache2/apache2.conf
 
