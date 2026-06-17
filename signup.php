@@ -61,7 +61,7 @@ if (isset($_POST['signup'])) {
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/jpeg" href="logo1.jpeg">
 </head>
-<body class="auth-page">
+<body class="auth-page signup">
 <div class="auth-box signup-box">
     <h1>Student Growth Index</h1>
     <div class="portal-badge student-portal">🎓 Student Portal</div>

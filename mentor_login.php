@@ -47,7 +47,7 @@ if (isset($_POST['login'])) {
 <body class="auth-page">
 <div class="auth-box">
     <h1>Student Growth Index</h1>
-    <div class="portal-badge mentor-portal">👨🏫 Mentor Portal</div>
+    <div class="portal-badge mentor-portal">👨 Mentor Portal</div>
     <h2>Login</h2>
     <form method="POST">
         <input type="text"     name="mentor_id" placeholder="Mentor ID" required>

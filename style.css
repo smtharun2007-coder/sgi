@@ -32,15 +32,10 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    /* Option 1: Enhanced gradient with more colors (currently active) */
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #e94560 100%);
-    /* Option 2: With background image (uncomment below and comment above) */
-    /* background: linear-gradient(135deg, rgba(26,26,46,0.85), rgba(233,69,96,0.85)), url('uploads/69ea36da7a12d.jpg'); */
-    /* background-size: cover; */
-    /* background-position: center; */
-    /* background-repeat: no-repeat; */
-    /* background-attachment: fixed; */
+    padding: 30px 20px;
 }
+.auth-page.signup { align-items: flex-start; }
 .auth-box {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
@@ -70,7 +65,7 @@ body {
     font-weight: 400;
     opacity: 0.8;
 }
-.signup-box { max-width: 850px; }
+.signup-box { max-width: 600px; width: 100%; }
 
 /* FORM ELEMENTS */
 input, select {
