@@ -69,7 +69,7 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
     <h2>CAT 2 Marks – Semester <?= $sem['sem'] ?></h2>
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
     <div style="display:flex;gap:12px;margin-bottom:16px;">
-        <span style="background:#f5a623;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">AB = Absent (0 marks)</span>
+        <span style="background:#f5a623;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">AB = Absent for Exam</span>
         <span style="background:#aaa;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">NIL = Exam not conducted</span>
     </div>
     <?php if (empty($subList)): ?>

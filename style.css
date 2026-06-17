@@ -237,6 +237,8 @@ label { display: block; text-align: left; font-size: 13px; color: #555; margin-t
 .cat-grid-code { font-size: 11px; color: #888; margin-bottom: 10px; }
 .cat-grid-item input[type=number] { width: 100%; text-align: center; font-size: 18px; font-weight: 700; color: #e94560; border: 2px solid #eee; border-radius: 8px; padding: 8px; margin: 0; }
 .cat-grid-item input[type=number]:focus { border-color: #e94560; }
+.cat-grid-item input[type=text] { width: 100%; text-align: center; font-size: 18px; font-weight: 700; color: #e94560; border: 2px solid #eee; border-radius: 8px; padding: 8px; margin: 0; }
+.cat-grid-item input[type=text]:focus { border-color: #e94560; }
 .cat-grid-label { font-size: 11px; color: #aaa; margin-top: 6px; }
 
 /* CAT EXAM BLOCK */
