@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include 'config.php';
 requireLogin();
 $success = '';
@@ -12,7 +12,7 @@ if (isset($_POST['send'])) {
     <meta charset="UTF-8">
     <title>SGI – Contact</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
 <nav class="navbar">

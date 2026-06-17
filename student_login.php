@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include 'config.php';
 if (isset($_SESSION['user'])) { header("Location: dashboard.php"); exit; }
 $error = '';
@@ -51,7 +51,7 @@ if (isset($_POST['login'])) {
     <meta charset="UTF-8">
     <title>SGI – Student Login</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body class="auth-page">
 <div class="auth-box">

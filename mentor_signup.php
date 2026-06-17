@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include 'config.php';
 if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit; }
 $error = '';
@@ -48,7 +48,7 @@ if (isset($_POST['signup'])) {
     <meta charset="UTF-8">
     <title>SGI – Mentor Sign Up</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body class="auth-page signup">
 <div class="auth-box signup-box">

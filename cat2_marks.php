@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include 'config.php';
 requireLogin();
 
@@ -37,7 +37,7 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
     <meta charset="UTF-8">
     <title>SGI – CAT 2 Marks</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
 <nav class="navbar">

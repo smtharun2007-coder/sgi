@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 include 'config.php';
 requireLogin();
 
@@ -38,7 +38,7 @@ function grade($sgi) {
 <head>
     <meta charset="UTF-8">
     <title>SGI – Student Report</title>
-    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
+    <link rel="icon" type="image/jpeg" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
