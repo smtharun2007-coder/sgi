@@ -81,10 +81,10 @@ $studentList   = iterator_to_array($studentCursor);
 </head>
 <body>
 <nav class="navbar mentor-navbar">
-    <span class="nav-brand">SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor</span></span>
+    <a href="mentor_dashboard.php" class="nav-brand">SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor</span></a>
     <div class="nav-links">
         <a href="mentor_dashboard.php">Home</a>
-        <a href="mentor_profile.php">Profile</a>
+        <a href="mentor_update_profile.php">Update Profile</a>
         <a href="mentor_logout.php" class="btn-logout">Logout</a>
     </div>
 </nav>
