@@ -44,7 +44,7 @@ if (isset($_POST['calculate'])) {
         // Handle file uploads
         $result_photo = '';
         if (!empty($_FILES['result_photo']['name'])) {
-            $result_photo = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'raw');
+            $result_photo = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'image');
         }
         $ca_photo = '';
         if (!empty($_FILES['ca_photo']['name'])) {
@@ -210,8 +210,8 @@ if (isset($_POST['calculate'])) {
         <div><label>Previous GPA</label><input type="text" value="<?= $prev_gpa ?>" readonly></div>
 
         <h3>Documents</h3>
-        <label>Upload Semester Result (PDF)</label>
-        <input type="file" name="result_photo" accept="application/pdf">
+        <label>Upload Semester Result</label>
+        <input type="file" name="result_photo" accept="image/*">
         <label style="margin-top:10px;">Upload CA Mark Sheet (photo/PDF)</label>
         <input type="file" name="ca_photo" accept="image/*,application/pdf">
 

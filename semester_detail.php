@@ -46,7 +46,7 @@ if ($sgiDone && isset($_POST['upload_docs'])) {
     $updateDocs = [];
     if (!empty($_FILES['result_photo']['name'])) {
         if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) { $docError = "Semester result must be ≤ 5 MB."; }
-        else { $updateDocs['result_photo'] = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'raw'); }
+        else { $updateDocs['result_photo'] = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'image'); }
     }
     if (!$docError && !empty($_FILES['ca_photo']['name'])) {
         if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) { $docError = "CA mark sheet photo must be ≤ 5 MB."; }
@@ -284,27 +284,37 @@ function grade($sgi) {
         <?php if ($sgiDone): ?>
         <h3>Documents</h3>
         <?php if (!empty($docError)): ?><p class="error"><?= $docError ?></p><?php endif; ?>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;">
-            <?php if (!empty($s['result_photo'])): ?>
-            <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View Semester Result (PDF)</a>
-            <?php endif; ?>
-            <?php if (!empty($s['ca_photo'])): ?>
-            <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View CA Mark Sheet</a>
-            <?php endif; ?>
-        </div>
-        <?php if (empty($s['result_photo']) || empty($s['ca_photo'])): ?>
-        <form method="POST" enctype="multipart/form-data" style="margin-top:16px;">
-            <?php if (empty($s['result_photo'])): ?>
-            <label>Upload Semester Result (PDF)</label>
-            <input type="file" name="result_photo" accept="application/pdf">
-            <?php endif; ?>
-            <?php if (empty($s['ca_photo'])): ?>
-            <label style="margin-top:10px;">Upload CA Mark Sheet Photo</label>
-            <input type="file" name="ca_photo" accept="image/*">
-            <?php endif; ?>
-            <button type="submit" name="upload_docs" class="btn-primary" style="margin-top:12px;">Save Documents</button>
+        <form method="POST" enctype="multipart/form-data" style="margin-top:12px;">
+            <div style="display:flex;flex-direction:column;gap:16px;">
+                <!-- Semester Result -->
+                <div>
+                    <?php if (!empty($s['result_photo'])): ?>
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">🖼 View Semester Result</a>
+                        <button type="button" class="btn-secondary" style="font-size:13px;padding:8px 14px;" onclick="document.getElementById('reup_result').style.display='block';this.style.display='none';">↺ Reupload</button>
+                    </div>
+                    <div id="reup_result" style="display:none;">
+                    <?php endif; ?>
+                    <label>Upload Semester Result</label>
+                    <input type="file" name="result_photo" accept="image/*">
+                    <?php if (!empty($s['result_photo'])): ?></div><?php endif; ?>
+                </div>
+                <!-- CA Mark Sheet -->
+                <div>
+                    <?php if (!empty($s['ca_photo'])): ?>
+                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
+                        <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📄 View CA Mark Sheet</a>
+                        <button type="button" class="btn-secondary" style="font-size:13px;padding:8px 14px;" onclick="document.getElementById('reup_ca').style.display='block';this.style.display='none';">↺ Reupload</button>
+                    </div>
+                    <div id="reup_ca" style="display:none;">
+                    <?php endif; ?>
+                    <label>Upload CA Mark Sheet Photo</label>
+                    <input type="file" name="ca_photo" accept="image/*">
+                    <?php if (!empty($s['ca_photo'])): ?></div><?php endif; ?>
+                </div>
+            </div>
+            <button type="submit" name="upload_docs" class="btn-primary" style="margin-top:16px;">Save Documents</button>
         </form>
-        <?php endif; ?>
         <hr style="margin:24px 0;">
         <?php endif; ?>
 
