@@ -11,23 +11,24 @@ $sem  = $semesters->findOne(['_id' => new MongoDB\BSON\ObjectId($id), 'roll' => 
 if (!$sem) { header("Location: dashboard.php"); exit; }
 if (!empty($sem['sgi'])) { header("Location: dashboard.php"); exit; }
 
-// Fetch CAT totals from subjects
-$subCursor    = $subjects->find(['sem_id' => $id, 'roll' => $roll, 'internal' => 'yes']);
-$subList      = iterator_to_array($subCursor);
-$maxTotal     = count(array_filter($subList, fn($s) => (int)($s['credits'] ?? 0) > 0)) * 100;
+// Fetch CAT totals from subjects (exclude NIL per CAT independently)
+$subCursor = $subjects->find(['sem_id' => $id, 'roll' => $roll, 'internal' => 'yes']);
+$subList   = iterator_to_array($subCursor);
 
-$cat1Total = 0; $cat2Total = 0; $cat3Total = 0;
+$cat1Total = 0; $cat1Max = 0;
+$cat2Total = 0; $cat2Max = 0;
+$cat3Total = 0; $cat3Max = 0;
 foreach ($subList as $sub) {
     if ((int)($sub['credits'] ?? 0) === 0) continue;
-    $cat1Total += (float)($sub['cat1'] ?? 0);
-    $cat2Total += (float)($sub['cat2'] ?? 0);
-    $cat3Total += (float)($sub['cat3'] ?? 0);
+    if (($sub['cat1'] ?? null) !== 'nil') { $cat1Max += 100; $cat1Total += (float)($sub['cat1'] ?? 0); }
+    if (($sub['cat2'] ?? null) !== 'nil') { $cat2Max += 100; $cat2Total += (float)($sub['cat2'] ?? 0); }
+    if (($sub['cat3'] ?? null) !== 'nil') { $cat3Max += 100; $cat3Total += (float)($sub['cat3'] ?? 0); }
 }
 
 // Convert CAT % to out of 10
-$cat1_10 = $maxTotal > 0 ? round(($cat1Total / $maxTotal) * 10, 2) : 0;
-$cat2_10 = $maxTotal > 0 ? round(($cat2Total / $maxTotal) * 10, 2) : 0;
-$cat3_10 = $maxTotal > 0 ? round(($cat3Total / $maxTotal) * 10, 2) : 0;
+$cat1_10 = $cat1Max > 0 ? round(($cat1Total / $cat1Max) * 10, 2) : 0;
+$cat2_10 = $cat2Max > 0 ? round(($cat2Total / $cat2Max) * 10, 2) : 0;
+$cat3_10 = $cat3Max > 0 ? round(($cat3Total / $cat3Max) * 10, 2) : 0;
 
 // Auto-fetched from verify
 $gpa        = (float)($sem['gpa'] ?? 0);

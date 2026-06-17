@@ -17,18 +17,31 @@ $success = '';
 if (isset($_POST['save_marks'])) {
     foreach ($subList as $sub) {
         $sub_id = (string)$sub['_id'];
-        $mark   = (float)($_POST['cat'][$sub_id] ?? 0);
-        $subjects->updateOne(
-            ['_id' => new MongoDB\BSON\ObjectId($sub_id), 'roll' => $roll],
-            ['$set' => ['cat1' => $mark]]
-        );
+        $raw    = strtoupper(trim($_POST['cat'][$sub_id] ?? ''));
+        if ($raw === 'NIL') {
+            $subjects->updateOne(
+                ['_id' => new MongoDB\BSON\ObjectId($sub_id), 'roll' => $roll],
+                ['$set' => ['cat1' => 'nil']]
+            );
+        } else {
+            $mark = ($raw === 'AB') ? 0 : (float)$raw;
+            $subjects->updateOne(
+                ['_id' => new MongoDB\BSON\ObjectId($sub_id), 'roll' => $roll],
+                ['$set' => ['cat1' => $mark]]
+            );
+        }
     }
     $success = "CAT 1 marks saved successfully.";
     $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll, 'internal' => 'yes']);
     $subList   = iterator_to_array($subCursor);
 }
-$t = 0;
-foreach ($subList as $sub) { if ((int)($sub['credits'] ?? 0) > 0) $t += ($sub['cat1'] ?? 0); }
+$t = 0; $maxTotal = 0;
+foreach ($subList as $sub) {
+    if ((int)($sub['credits'] ?? 0) === 0) continue;
+    if (($sub['cat1'] ?? null) === 'nil') continue;
+    $maxTotal += 100;
+    $t += (float)($sub['cat1'] ?? 0);
+}
 $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
 ?>
 <!DOCTYPE html>
@@ -55,6 +68,10 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
 <div class="form-box">
     <h2>CAT 1 Marks – Semester <?= $sem['sem'] ?></h2>
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
+    <div style="display:flex;gap:12px;margin-bottom:16px;">
+        <span style="background:#f5a623;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">AB = Absent (0 marks)</span>
+        <span style="background:#aaa;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">NIL = Exam not conducted</span>
+    </div>
     <?php if (empty($subList)): ?>
         <p class="no-data">No internal subjects found for this semester.</p>
     <?php else: ?>
@@ -65,8 +82,8 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
             <div class="cat-grid-item" data-credits="<?= (int)($sub['credits'] ?? 0) ?>">
                 <div class="cat-grid-name"><?= htmlspecialchars($sub['subject_name']) ?></div>
                 <div class="cat-grid-code"><?= htmlspecialchars($sub['subject_code']) ?></div>
-                <input type="number" name="cat[<?= $sid ?>]" min="0" max="100" step="0.01"
-                    value="<?= $sub['cat1'] ?? '' ?>" oninput="calcTotal()" required>
+                <input type="text" name="cat[<?= $sid ?>]" placeholder="0 / AB / NIL"
+                    value="<?= isset($sub['cat1']) ? (($sub['cat1'] === 'nil') ? 'NIL' : $sub['cat1']) : '' ?>" oninput="calcTotal()">
                 <div class="cat-grid-label">out of 100</div>
             </div>
             <?php endforeach; ?>
@@ -82,17 +99,22 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
 </div>
 </div>
 <script>
-const maxTotal = <?= $maxTotal ?>;
 function calcTotal() {
-    const items  = document.querySelectorAll('.cat-grid-item');
+    const items = document.querySelectorAll('.cat-grid-item');
     let total = 0, max = 0;
     items.forEach(item => {
         const credits = parseInt(item.dataset.credits || '0');
-        const val = parseFloat(item.querySelector('input').value) || 0;
-        if (credits > 0) { total += val; max += 100; }
+        if (credits === 0) return;
+        const val = item.querySelector('input').value.trim().toUpperCase();
+        if (val === 'NIL') return;
+        max += 100;
+        total += (val === 'AB') ? 0 : (parseFloat(val) || 0);
     });
     document.getElementById('cat-total').innerText   = total;
     document.getElementById('cat-percent').innerText = max > 0 ? ((total / max) * 100).toFixed(2) + '%' : '0%';
+    document.querySelector('.cat-exam-total span').childNodes[0].textContent = 'CAT 1 Total: ';
+    document.getElementById('cat-total').nextSibling && (document.querySelector('.cat-exam-total span').innerHTML =
+        'CAT 1 Total: <strong id="cat-total">' + total + '</strong> / ' + max);
 }
 </script>
 </body>

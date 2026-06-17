@@ -13,13 +13,14 @@ $subCursor    = $subjects->find(['sem_id' => $id, 'roll' => $roll]);
 $subList      = iterator_to_array($subCursor);
 $internalSubs = array_filter($subList, fn($sub) => $sub['internal'] === 'yes');
 
-$maxTotal  = count(array_filter($internalSubs, fn($s) => (int)($s['credits'] ?? 0) > 0)) * 100;
-$cat1Total = 0; $cat2Total = 0; $cat3Total = 0;
+$cat1Total = 0; $cat1Max = 0;
+$cat2Total = 0; $cat2Max = 0;
+$cat3Total = 0; $cat3Max = 0;
 foreach ($internalSubs as $sub) {
     if ((int)($sub['credits'] ?? 0) === 0) continue;
-    $cat1Total += (float)($sub['cat1'] ?? 0);
-    $cat2Total += (float)($sub['cat2'] ?? 0);
-    $cat3Total += (float)($sub['cat3'] ?? 0);
+    if (($sub['cat1'] ?? null) !== 'nil') { $cat1Max += 100; $cat1Total += (float)($sub['cat1'] ?? 0); }
+    if (($sub['cat2'] ?? null) !== 'nil') { $cat2Max += 100; $cat2Total += (float)($sub['cat2'] ?? 0); }
+    if (($sub['cat3'] ?? null) !== 'nil') { $cat3Max += 100; $cat3Total += (float)($sub['cat3'] ?? 0); }
 }
 
 // Check if all 3 CATs are filled
@@ -116,9 +117,9 @@ function grade($sgi) {
                         <td><?= $sub['credits'] ?></td>
                         <td><?= ucfirst($sub['internal']) ?></td>
                         <?php if ($sub['internal'] === 'yes'): ?>
-                            <td><?= $sub['cat1'] ?? '—' ?></td>
-                            <td><?= $sub['cat2'] ?? '—' ?></td>
-                            <td><?= $sub['cat3'] ?? '—' ?></td>
+                            <td><?= ($sub['cat1'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat1'] ?? '—') ?></td>
+                            <td><?= ($sub['cat2'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat2'] ?? '—') ?></td>
+                            <td><?= ($sub['cat3'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat3'] ?? '—') ?></td>
                             <td><?= $sub['total'] ?? '—' ?></td>
                             <td><?= !empty($sub['percentage']) ? $sub['percentage'].'%' : '—' ?></td>
                         <?php else: ?>
@@ -129,22 +130,22 @@ function grade($sgi) {
                 </tbody>
             </table>
         </div>
-        <?php if ($maxTotal > 0): ?>
+        <?php if ($cat1Max > 0 || $cat2Max > 0 || $cat3Max > 0): ?>
         <div class="cat-summary-row" style="margin-top:16px;">
             <div class="cat-summary-item">
                 <span class="cat-summary-label">CAT 1 Total</span>
-                <span class="cat-summary-value"><?= $cat1Total ?> / <?= $maxTotal ?></span>
-                <span class="cat-summary-percent"><?= round(($cat1Total/$maxTotal)*100,2) ?>%</span>
+                <span class="cat-summary-value"><?= $cat1Total ?> / <?= $cat1Max ?></span>
+                <span class="cat-summary-percent"><?= $cat1Max > 0 ? round(($cat1Total/$cat1Max)*100,2) : 0 ?>%</span>
             </div>
             <div class="cat-summary-item">
                 <span class="cat-summary-label">CAT 2 Total</span>
-                <span class="cat-summary-value"><?= $cat2Total ?> / <?= $maxTotal ?></span>
-                <span class="cat-summary-percent"><?= round(($cat2Total/$maxTotal)*100,2) ?>%</span>
+                <span class="cat-summary-value"><?= $cat2Total ?> / <?= $cat2Max ?></span>
+                <span class="cat-summary-percent"><?= $cat2Max > 0 ? round(($cat2Total/$cat2Max)*100,2) : 0 ?>%</span>
             </div>
             <div class="cat-summary-item">
                 <span class="cat-summary-label">CAT 3 Total</span>
-                <span class="cat-summary-value"><?= $cat3Total ?> / <?= $maxTotal ?></span>
-                <span class="cat-summary-percent"><?= round(($cat3Total/$maxTotal)*100,2) ?>%</span>
+                <span class="cat-summary-value"><?= $cat3Total ?> / <?= $cat3Max ?></span>
+                <span class="cat-summary-percent"><?= $cat3Max > 0 ? round(($cat3Total/$cat3Max)*100,2) : 0 ?>%</span>
             </div>
         </div>
         <hr style="margin:24px 0;">
@@ -327,9 +328,9 @@ function grade($sgi) {
 <?php if (!empty($internalSubs)): ?>
 <script>
 const subLabels = [<?= implode(',', array_map(fn($s) => '"'.addslashes($s['subject_name']).'"', $internalSubs)) ?>];
-const cat1Data  = [<?= implode(',', array_map(fn($s) => $s['cat1'] ?? 0, $internalSubs)) ?>];
-const cat2Data  = [<?= implode(',', array_map(fn($s) => $s['cat2'] ?? 0, $internalSubs)) ?>];
-const cat3Data  = [<?= implode(',', array_map(fn($s) => $s['cat3'] ?? 0, $internalSubs)) ?>];
+const cat1Data  = [<?= implode(',', array_map(fn($s) => ($s['cat1'] ?? null) === 'nil' ? 'null' : ($s['cat1'] ?? 0), $internalSubs)) ?>];
+const cat2Data  = [<?= implode(',', array_map(fn($s) => ($s['cat2'] ?? null) === 'nil' ? 'null' : ($s['cat2'] ?? 0), $internalSubs)) ?>];
+const cat3Data  = [<?= implode(',', array_map(fn($s) => ($s['cat3'] ?? null) === 'nil' ? 'null' : ($s['cat3'] ?? 0), $internalSubs)) ?>];
 
 const colors = ['#e94560','#1a1a2e','#f5a623','#27ae60','#8e44ad','#2980b9','#e67e22','#16a085'];
 
@@ -339,9 +340,9 @@ new Chart(document.getElementById('catLineChart'), {
     data: {
         labels: subLabels,
         datasets: [
-            { label: 'CAT 1', data: cat1Data, borderColor: '#e94560', backgroundColor: 'rgba(233,69,96,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#e94560', pointRadius: 6, pointHoverRadius: 8 },
-            { label: 'CAT 2', data: cat2Data, borderColor: '#1a1a2e', backgroundColor: 'rgba(26,26,46,0.1)',  fill: true, tension: 0.4, pointBackgroundColor: '#1a1a2e', pointRadius: 6, pointHoverRadius: 8 },
-            { label: 'CAT 3', data: cat3Data, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)',fill: true, tension: 0.4, pointBackgroundColor: '#f5a623', pointRadius: 6, pointHoverRadius: 8 }
+            { label: 'CAT 1', data: cat1Data, borderColor: '#e94560', backgroundColor: 'rgba(233,69,96,0.1)', fill: true, tension: 0.4, pointBackgroundColor: '#e94560', pointRadius: 6, pointHoverRadius: 8, spanGaps: true },
+            { label: 'CAT 2', data: cat2Data, borderColor: '#1a1a2e', backgroundColor: 'rgba(26,26,46,0.1)',  fill: true, tension: 0.4, pointBackgroundColor: '#1a1a2e', pointRadius: 6, pointHoverRadius: 8, spanGaps: true },
+            { label: 'CAT 3', data: cat3Data, borderColor: '#f5a623', backgroundColor: 'rgba(245,166,35,0.1)',fill: true, tension: 0.4, pointBackgroundColor: '#f5a623', pointRadius: 6, pointHoverRadius: 8, spanGaps: true }
         ]
     },
     options: {
