@@ -64,6 +64,7 @@ if (isset($_POST['login'])) {
     </form>
     <p>Don't have an account? <a href="signup.php">Sign Up</a></p>
     <p><a href="forgot_password.php">Forgot Password?</a></p>
+    <p><a href="mentor_login.php">Mentor Login →</a></p>
 </div>
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">

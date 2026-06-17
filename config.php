@@ -8,6 +8,7 @@ $db        = $client->sgi_db;
 $users     = $db->users;
 $semesters = $db->semesters;
 $subjects  = $db->subjects;
+$mentors   = $db->mentors;
 
 session_start();
 
