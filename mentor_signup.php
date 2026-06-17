@@ -54,7 +54,6 @@ if (isset($_POST['signup'])) {
 </head>
 <body class="auth-page">
 <div class="auth-box signup-box">
-    <img src="logo1.jpeg" class="auth-logo" alt="SGI">
     <h1>Student Growth Index</h1>
     <div class="portal-badge mentor-portal">👨🏫 Mentor Portal</div>
     <h2>Create Mentor Account</h2>

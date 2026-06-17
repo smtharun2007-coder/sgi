@@ -54,6 +54,7 @@ if (isset($_POST['reset'])) {
     <meta charset="UTF-8">
     <title>SGI – Forgot Password</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
 </head>
 <body class="auth-page">
 <div class="auth-box">

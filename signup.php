@@ -59,10 +59,10 @@ if (isset($_POST['signup'])) {
     <meta charset="UTF-8">
     <title>SGI – Sign Up</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
 </head>
 <body class="auth-page">
 <div class="auth-box signup-box">
-    <img src="logo1.jpeg" class="auth-logo" alt="SGI">
     <h1>Student Growth Index</h1>
     <div class="portal-badge student-portal">🎓 Student Portal</div>
     <h2>Create Student Account</h2>

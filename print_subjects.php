@@ -66,6 +66,7 @@ function grade($sgi) {
 <head>
     <meta charset="UTF-8">
     <title>SGI – Subject Report</title>
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #fff; color: #333; font-size: 13px; }

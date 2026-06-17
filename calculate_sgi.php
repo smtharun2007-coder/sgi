@@ -120,10 +120,11 @@ if (isset($_POST['calculate'])) {
     <meta charset="UTF-8">
     <title>SGI – Calculate</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
 </head>
 <body>
 <nav class="navbar">
-    <span class="nav-brand">SGI</span>
+    <a href="dashboard.php" class="nav-brand"><img src="logo1.jpeg" alt="SGI">SGI</a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Update Profile</a>

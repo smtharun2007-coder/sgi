@@ -46,7 +46,6 @@ if (isset($_POST['login'])) {
 </head>
 <body class="auth-page">
 <div class="auth-box">
-    <img src="logo1.jpeg" class="auth-logo" alt="SGI">
     <h1>Student Growth Index</h1>
     <div class="portal-badge mentor-portal">👨🏫 Mentor Portal</div>
     <h2>Login to your account</h2>

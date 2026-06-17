@@ -38,6 +38,7 @@ function grade($sgi) {
 <head>
     <meta charset="UTF-8">
     <title>SGI – Student Report</title>
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }

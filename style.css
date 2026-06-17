@@ -17,7 +17,8 @@ body {
     top: 0;
     z-index: 100;
 }
-.nav-brand { color: #e94560; font-size: 22px; font-weight: 700; letter-spacing: 2px; }
+.nav-brand { color: #e94560; font-size: 22px; font-weight: 700; letter-spacing: 2px; display:flex; align-items:center; gap:10px; text-decoration:none; }
+.nav-brand img { width:36px; height:36px; object-fit:contain; border-radius:8px; }
 .nav-links a { color: #ccc; text-decoration: none; margin-left: 20px; font-size: 14px; transition: color 0.2s; }
 .nav-links a:hover { color: #fff; }
 .btn-logout { background: #e94560; color: #fff !important; padding: 6px 14px; border-radius: 6px; }

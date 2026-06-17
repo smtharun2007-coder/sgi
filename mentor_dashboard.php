@@ -22,6 +22,7 @@ $studentList   = iterator_to_array($studentCursor);
     <meta charset="UTF-8">
     <title>SGI – Mentor Dashboard</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
     <style>
         .mentor-badge {
             display: inline-block;
