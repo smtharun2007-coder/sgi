@@ -57,7 +57,7 @@ if (isset($_POST['login'])) {
 <div class="auth-box">
     <h1>Student Growth Index</h1>
     <div class="portal-badge student-portal">🎓 Student Portal</div>
-    <h2>Login to your account</h2>
+    <h2>Login</h2>
     <form method="POST">
         <input type="text"     name="roll"     placeholder="Roll Number" required>
         <input type="password" name="password" placeholder="Password"    required>

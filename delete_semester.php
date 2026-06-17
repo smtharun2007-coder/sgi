@@ -36,7 +36,7 @@ if (isset($_POST['confirm_delete'])) {
 </head>
 <body>
 <nav class="navbar">
-    <a href="dashboard.php" class="nav-brand"><img src="logo1.jpeg" alt="SGI">SGI</a>
+    <a href="dashboard.php" class="nav-brand">SGI</a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Update Profile</a>
