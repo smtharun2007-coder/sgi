@@ -289,31 +289,25 @@ function grade($sgi) {
                 <!-- Semester Result -->
                 <div>
                     <?php if (!empty($s['result_photo'])): ?>
-                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
                         <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">🖼 View Semester Result</a>
-                        <button type="button" class="btn-secondary" style="font-size:13px;padding:8px 14px;" onclick="document.getElementById('reup_result').style.display='block';this.style.display='none';">↺ Reupload</button>
-                    </div>
-                    <div id="reup_result" style="display:none;">
+                    <?php else: ?>
+                        <label>Upload Semester Result</label>
+                        <input type="file" name="result_photo" accept="image/*">
                     <?php endif; ?>
-                    <label>Upload Semester Result</label>
-                    <input type="file" name="result_photo" accept="image/*">
-                    <?php if (!empty($s['result_photo'])): ?></div><?php endif; ?>
                 </div>
                 <!-- CA Mark Sheet -->
                 <div>
                     <?php if (!empty($s['ca_photo'])): ?>
-                    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;">
                         <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📄 View CA Mark Sheet</a>
-                        <button type="button" class="btn-secondary" style="font-size:13px;padding:8px 14px;" onclick="document.getElementById('reup_ca').style.display='block';this.style.display='none';">↺ Reupload</button>
-                    </div>
-                    <div id="reup_ca" style="display:none;">
+                    <?php else: ?>
+                        <label>Upload CA Mark Sheet Photo</label>
+                        <input type="file" name="ca_photo" accept="image/*">
                     <?php endif; ?>
-                    <label>Upload CA Mark Sheet Photo</label>
-                    <input type="file" name="ca_photo" accept="image/*">
-                    <?php if (!empty($s['ca_photo'])): ?></div><?php endif; ?>
                 </div>
             </div>
+            <?php if (empty($s['result_photo']) || empty($s['ca_photo'])): ?>
             <button type="submit" name="upload_docs" class="btn-primary" style="margin-top:16px;">Save Documents</button>
+            <?php endif; ?>
         </form>
         <hr style="margin:24px 0;">
         <?php endif; ?>
