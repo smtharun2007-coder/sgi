@@ -40,7 +40,14 @@ if (isset($_SESSION['user'])) {
 
 function imgUrl($path) {
     if (empty($path)) return '';
-    return (strpos($path, 'http') === 0) ? $path : 'uploads/' . $path;
+    if (strpos($path, 'http') === 0) {
+        // Force PDF to open inline in browser
+        if (strpos($path, '/raw/upload/') !== false) {
+            return str_replace('/raw/upload/', '/raw/upload/fl_attachment:false/', $path);
+        }
+        return $path;
+    }
+    return 'uploads/' . $path;
 }
 
 function requireLogin() {
