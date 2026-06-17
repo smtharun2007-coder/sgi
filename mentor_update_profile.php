@@ -69,6 +69,7 @@ if (isset($_POST['change_password'])) {
     <div class="nav-links">
         <a href="mentor_dashboard.php">Home</a>
         <a href="mentor_update_profile.php">Update Profile</a>
+        <a href="mentor_about.php">About</a>
         <a href="mentor_contact.php">Contact</a>
         <a href="mentor_logout.php" class="btn-logout">Logout</a>
     </div>
