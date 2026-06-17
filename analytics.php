@@ -21,7 +21,12 @@ foreach ($semList as $s) {
         $name = $sub['subject_name'];
         $sem  = $s['sem'];
         if (!isset($subjectStats[$name])) $subjectStats[$name] = ['total' => 0, 'count' => 0, 'sem' => $sem, 'ca_scored' => null, 'ca_max' => null];
-        $avg = ((float)($sub['cat1'] ?? 0) + (float)($sub['cat2'] ?? 0) + (float)($sub['cat3'] ?? 0)) / 3;
+        $conducted = 0; $catSum = 0;
+        foreach (['cat1','cat2','cat3'] as $cat) {
+            $v = $sub[$cat] ?? null;
+            if ($v !== null && $v !== 'nil') { $catSum += (float)$v; $conducted++; }
+        }
+        $avg = $conducted > 0 ? $catSum / $conducted : 0;
         $subjectStats[$name]['total'] += $avg;
         $subjectStats[$name]['count']++;
         if (isset($sub['ca_scored']) && isset($sub['ca_max']) && $sub['ca_max'] > 0) {
