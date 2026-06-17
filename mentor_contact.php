@@ -50,7 +50,7 @@ if (isset($_POST['send'])) {
 </head>
 <body>
 <nav class="navbar" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);">
-    <a href="mentor_dashboard.php" class="nav-brand">SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor</span></a>
+    <span class="nav-brand">SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor</span></span>
     <div class="nav-links">
         <a href="mentor_dashboard.php">Home</a>
         <a href="mentor_update_profile.php">Update Profile</a>

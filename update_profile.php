@@ -65,7 +65,7 @@ if (isset($_POST['change_password'])) {
 </head>
 <body>
 <nav class="navbar">
-    <a href="dashboard.php" class="nav-brand">SGI</a>
+    <span class="nav-brand">SGI</span>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Update Profile</a>
