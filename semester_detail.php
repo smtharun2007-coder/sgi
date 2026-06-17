@@ -54,8 +54,8 @@ $docError = '';
 if ($sgiDone && isset($_POST['upload_docs'])) {
     $updateDocs = [];
     if (!empty($_FILES['result_photo']['name'])) {
-        if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) { $docError = "Semester result photo must be ≤ 5 MB."; }
-        else { $updateDocs['result_photo'] = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results'); }
+        if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) { $docError = "Semester result must be ≤ 5 MB."; }
+        else { $updateDocs['result_photo'] = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'raw'); }
     }
     if (!$docError && !empty($_FILES['ca_photo']['name'])) {
         if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) { $docError = "CA mark sheet photo must be ≤ 5 MB."; }
@@ -295,7 +295,7 @@ function grade($sgi) {
         <?php if (!empty($docError)): ?><p class="error"><?= $docError ?></p><?php endif; ?>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;align-items:center;">
             <?php if (!empty($s['result_photo'])): ?>
-            <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View Semester Result</a>
+            <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View Semester Result (PDF)</a>
             <?php endif; ?>
             <?php if (!empty($s['ca_photo'])): ?>
             <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View CA Mark Sheet</a>
@@ -309,8 +309,8 @@ function grade($sgi) {
         <?php if (empty($s['result_photo']) || empty($s['ca_photo'])): ?>
         <form method="POST" enctype="multipart/form-data" style="margin-top:16px;">
             <?php if (empty($s['result_photo'])): ?>
-            <label>Upload Semester Result Photo</label>
-            <input type="file" name="result_photo" accept="image/*">
+            <label>Upload Semester Result (PDF)</label>
+            <input type="file" name="result_photo" accept="application/pdf">
             <?php endif; ?>
             <?php if (empty($s['ca_photo'])): ?>
             <label style="margin-top:10px;">Upload CA Mark Sheet Photo</label>

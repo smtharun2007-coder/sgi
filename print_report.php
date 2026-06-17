@@ -150,7 +150,7 @@ function grade($sgi) {
             </div>
         </div>
         <div class="report-title">
-            <img src="logo.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
+            <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
             <h2>Academic Performance Report</h2>
             <div class="sem-badge" style="margin-top:10px;">Semester <?= $s['sem'] ?></div>

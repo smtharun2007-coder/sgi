@@ -164,7 +164,7 @@ function grade($sgi) {
             </div>
         </div>
         <div class="report-title">
-            <img src="logo.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
+            <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
             <h2>All Subject Report</h2>
             <?php if (!empty($u['mentor_id'])): ?>

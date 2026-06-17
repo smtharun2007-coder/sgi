@@ -11,9 +11,9 @@ require 'vendor/autoload.php';
     'url' => ['secure' => true]
 ]);
 
-function uploadToCloudinary($fileTmpPath, $folder = 'sgi') {
+function uploadToCloudinary($fileTmpPath, $folder = 'sgi', $resourceType = 'image') {
     $uploader = new \Cloudinary\Api\Upload\UploadApi();
-    $result   = $uploader->upload($fileTmpPath, ['folder' => $folder]);
+    $result   = $uploader->upload($fileTmpPath, ['folder' => $folder, 'resource_type' => $resourceType]);
     return $result['secure_url'];
 }
 
