@@ -12,81 +12,97 @@ if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit
     <link rel="icon" type="image/jpeg" href="logo1.jpeg">
     <style>
         .welcome-box {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            padding: 50px 40px 40px;
-            border-radius: 24px;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(12px);
+            padding: 52px 44px 44px;
+            border-radius: 28px;
             width: 90%;
             max-width: 460px;
-            box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+            box-shadow: 0 32px 80px rgba(0,0,0,0.45);
             text-align: center;
             animation: slideUp 0.6s ease-out;
         }
-        .welcome-logo {
-            width: 80px;
-            height: 80px;
-            object-fit: contain;
-            border-radius: 16px;
-            margin-bottom: 16px;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
-        }
         .welcome-box h1 {
             color: #1a1a2e;
-            font-size: 26px;
-            font-weight: 700;
-            letter-spacing: 1px;
+            font-size: 30px;
+            font-weight: 800;
+            letter-spacing: 1.5px;
             margin-bottom: 4px;
         }
         .welcome-box .tagline {
-            color: #aaa;
+            color: #bbb;
             font-size: 13px;
-            margin-bottom: 36px;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
         }
-        .role-cards { display: flex; flex-direction: column; gap: 14px; }
+        .welcome-divider {
+            width: 48px;
+            height: 4px;
+            background: linear-gradient(90deg, #e94560, #8e44ad);
+            border-radius: 4px;
+            margin: 12px auto 32px;
+        }
+        .role-cards { display: flex; flex-direction: column; gap: 16px; }
         .role-card {
             display: flex;
             align-items: center;
-            gap: 16px;
-            padding: 20px 22px;
-            border-radius: 16px;
+            gap: 18px;
+            padding: 22px 24px;
+            border-radius: 18px;
             text-decoration: none;
             transition: transform 0.2s, box-shadow 0.2s;
             text-align: left;
             position: relative;
             overflow: hidden;
         }
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(255,255,255,0.08);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .role-card:hover::before { opacity: 1; }
         .role-card::after {
             content: '→';
             position: absolute;
-            right: 22px;
-            font-size: 20px;
-            color: rgba(255,255,255,0.6);
-            transition: right 0.2s;
+            right: 24px;
+            font-size: 22px;
+            color: rgba(255,255,255,0.5);
+            transition: right 0.2s, color 0.2s;
         }
-        .role-card:hover::after { right: 16px; }
-        .role-card:hover { transform: translateY(-3px); box-shadow: 0 10px 28px rgba(0,0,0,0.2); }
-        .role-card.student { background: linear-gradient(135deg, #1a1a2e 0%, #e94560 100%); }
-        .role-card.mentor  { background: linear-gradient(135deg, #1a1a2e 0%, #8e44ad 100%); }
-        .role-icon { font-size: 38px; line-height: 1; }
-        .role-info .role-title { font-size: 17px; font-weight: 700; color: #fff; }
-        .role-info .role-desc  { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 3px; }
+        .role-card:hover::after { right: 18px; color: rgba(255,255,255,0.9); }
+        .role-card:hover { transform: translateY(-4px); box-shadow: 0 14px 36px rgba(0,0,0,0.25); }
+        .role-card.student { background: linear-gradient(135deg, #1a1a2e 0%, #c0392b 60%, #e94560 100%); }
+        .role-card.mentor  { background: linear-gradient(135deg, #1a1a2e 0%, #6c3483 60%, #8e44ad 100%); }
+        .role-icon-wrap {
+            width: 52px; height: 52px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 26px;
+            flex-shrink: 0;
+        }
+        .role-info .role-title { font-size: 18px; font-weight: 700; color: #fff; letter-spacing: 0.5px; }
+        .role-info .role-desc  { font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 4px; }
     </style>
 </head>
 <body class="auth-page">
 <div class="welcome-box">
-    <img src="logo1.jpeg" class="welcome-logo" alt="SGI Logo">
-    <h1>Student Growth Index</h1>
-    <p class="tagline">Select your role to continue</p>
+    <h1>SGI</h1>
+    <p class="tagline">STUDENT GROWTH INDEX</p>
+    <div class="welcome-divider"></div>
     <div class="role-cards">
         <a href="student_login.php" class="role-card student">
-            <div class="role-icon">🎓</div>
+            <div class="role-icon-wrap">🎓</div>
             <div class="role-info">
                 <div class="role-title">Student</div>
-                <div class="role-desc">Track your academic growth & SGI</div>
+                <div class="role-desc">Track your academic growth & SGI score</div>
             </div>
         </a>
         <a href="mentor_login.php" class="role-card mentor">
-            <div class="role-icon">👨‍🏫</div>
+            <div class="role-icon-wrap">👨🏫</div>
             <div class="role-info">
                 <div class="role-title">Mentor</div>
                 <div class="role-desc">Monitor & guide your students</div>
