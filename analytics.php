@@ -34,6 +34,9 @@ foreach ($semList as $s) {
             $subjectStats[$name]['ca_max']    = $sub['ca_max'];
             $caPercent = round(($sub['ca_scored'] / $sub['ca_max']) * 100, 2);
             $caStats[] = ['name' => $name, 'sem' => $sem, 'percent' => $caPercent];
+        } else {
+            unset($subjectStats[$name]);
+            continue;
         }
     }
 }
