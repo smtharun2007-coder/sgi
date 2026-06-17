@@ -134,7 +134,7 @@ if (isset($_POST['calculate'])) {
 <div class="form-box">
     <h2>Calculate SGI – Semester <?= $sem['sem'] ?></h2>
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
 
         <h3>Verification</h3>
         <label>Integrated Number</label>
@@ -208,6 +208,12 @@ if (isset($_POST['calculate'])) {
         <h3>Discipline</h3>
         <div><label>Attendance</label><input type="text" value="<?= $attendance ?>%" readonly></div>
         <div><label>Previous GPA</label><input type="text" value="<?= $prev_gpa ?>" readonly></div>
+
+        <h3>Documents</h3>
+        <label>Upload Semester Result (photo/PDF)</label>
+        <input type="file" name="result_photo" accept="image/*">
+        <label style="margin-top:10px;">Upload CA Mark Sheet (photo/PDF)</label>
+        <input type="file" name="ca_photo" accept="image/*">
 
         <button type="submit" name="calculate" class="btn-primary">Calculate SGI</button>
         <a href="semester_detail.php?id=<?= $id ?>" class="btn-secondary">Cancel</a>

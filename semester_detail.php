@@ -40,6 +40,15 @@ foreach ($internalSubs as $sub) {
 $verified  = !empty($s['verified']);
 $sgiDone   = !empty($s['sgi']);
 
+// Handle clear docs for re-upload
+if ($sgiDone && isset($_POST['clear_docs'])) {
+    $semesters->updateOne(
+        ['_id' => new MongoDB\BSON\ObjectId($id)],
+        ['$unset' => ['result_photo' => '', 'ca_photo' => '']]
+    );
+    $s = $semesters->findOne(['_id' => new MongoDB\BSON\ObjectId($id), 'roll' => $roll]);
+}
+
 // Handle document upload for completed semesters
 $docError = '';
 if ($sgiDone && isset($_POST['upload_docs'])) {
@@ -284,12 +293,17 @@ function grade($sgi) {
         <?php if ($sgiDone): ?>
         <h3>Documents</h3>
         <?php if (!empty($docError)): ?><p class="error"><?= $docError ?></p><?php endif; ?>
-        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;">
+        <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;align-items:center;">
             <?php if (!empty($s['result_photo'])): ?>
             <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View Semester Result</a>
             <?php endif; ?>
             <?php if (!empty($s['ca_photo'])): ?>
             <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View CA Mark Sheet</a>
+            <?php endif; ?>
+            <?php if (!empty($s['result_photo']) || !empty($s['ca_photo'])): ?>
+            <form method="POST" style="margin:0;">
+                <button type="submit" name="clear_docs" class="btn-secondary" style="margin:0;padding:10px 18px;color:#e94560;font-size:13px;" onclick="return confirm('This will clear existing documents so you can re-upload. Continue?')">🔄 Re-upload Documents</button>
+            </form>
             <?php endif; ?>
         </div>
         <?php if (empty($s['result_photo']) || empty($s['ca_photo'])): ?>
