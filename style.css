@@ -17,7 +17,7 @@ body {
     top: 0;
     z-index: 100;
 }
-.nav-brand { color: #e94560; font-size: 22px; font-weight: 700; letter-spacing: 2px; display:flex; align-items:center; gap:8px; text-decoration:none; }
+.nav-brand { color: #e94560; font-size: 22px; font-weight: 700; letter-spacing: 2px; display:flex; align-items:center; gap:8px; text-decoration:none !important; }
 .nav-brand img { width:28px; height:28px; object-fit:contain; border-radius:6px; }
 .nav-links a { color: #ccc; text-decoration: none; margin-left: 20px; font-size: 14px; transition: color 0.2s; }
 .nav-links a:hover { color: #fff; }
