@@ -5,3 +5,4 @@ composer.phar
 .env
 phpinfo_test.php
 vendor/
+config.php
