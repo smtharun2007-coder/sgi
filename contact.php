@@ -1,9 +1,39 @@
-﻿<?php
+<?php
 include 'config.php';
 requireLogin();
-$success = '';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+$success = ''; $error = '';
+
 if (isset($_POST['send'])) {
-    $success = "Your message has been sent. We will get back to you soon.";
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'support.tgsgi@gmail.com';   // replace with your Gmail
+        $mail->Password   = 'ymforedigedxlvmq';           // replace with App Password
+        $mail->SMTPSecure = 'tls';
+        $mail->Port       = 587;
+
+        $mail->setFrom('support.tgsgi@gmail.com', 'SGI Support');
+        $mail->addAddress('support.tgsgi@gmail.com', 'SGI Admin'); // replace with your inbox
+        $mail->addReplyTo($_POST['email'], $_POST['name']);
+
+        $mail->Subject = '[SGI] ' . htmlspecialchars($_POST['subject']);
+        $mail->Body    =
+            "Name:    " . htmlspecialchars($_POST['name'])    . "\n" .
+            "Email:   " . htmlspecialchars($_POST['email'])   . "\n" .
+            "Roll No: " . htmlspecialchars($_SESSION['user']['roll']) . "\n\n" .
+            "Message:\n" . htmlspecialchars($_POST['message']);
+
+        $mail->send();
+        $success = "Your message has been sent. We will get back to you soon.";
+    } catch (Exception $e) {
+        $error = "Message could not be sent. Please try again later.";
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -34,6 +64,7 @@ if (isset($_POST['send'])) {
     <div class="form-box" style="margin-top:24px;">
         <h2>Send a Message</h2>
         <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
+        <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
         <form method="POST">
             <input type="text"  name="name"    placeholder="Your Name"    value="<?= htmlspecialchars($_SESSION['user']['name']) ?>" required>
             <input type="email" name="email"   placeholder="Your Email"   value="<?= htmlspecialchars($_SESSION['user']['email']) ?>" required>
