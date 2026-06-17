@@ -137,7 +137,7 @@ function grade($sgi) {
         <div class="report-profile">
             <div class="report-photo">
                 <?php if (!empty($u['photo'])): ?>
-                    <img src="uploads/<?= htmlspecialchars($u['photo']) ?>" alt="Photo">
+                    <img src="<?= htmlspecialchars(imgUrl($u['photo'])) ?>" alt="Photo">
                 <?php endif; ?>
             </div>
             <div class="report-info">
@@ -268,7 +268,7 @@ function grade($sgi) {
         <div class="sign-row">
             <div class="sign-box" style="flex:0.7;">
                 <?php if (!empty($u['signature'])): ?>
-                <div class="sign-img"><img src="uploads/<?= htmlspecialchars($u['signature']) ?>" alt="Signature"></div>
+                <div class="sign-img"><img src="<?= htmlspecialchars(imgUrl($u['signature'])) ?>" alt="Signature"></div>
                 <?php else: ?>
                 <div style="height:50px;"></div>
                 <?php endif; ?>

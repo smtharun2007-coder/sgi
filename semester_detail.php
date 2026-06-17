@@ -45,22 +45,12 @@ $docError = '';
 if ($sgiDone && isset($_POST['upload_docs'])) {
     $updateDocs = [];
     if (!empty($_FILES['result_photo']['name'])) {
-        if ($_FILES['result_photo']['size'] > 500 * 1024) { $docError = "Semester result photo must be ≤ 500 KB."; }
-        else {
-            $ext = pathinfo($_FILES['result_photo']['name'], PATHINFO_EXTENSION);
-            $fname = 'result_' . $id . '_' . uniqid() . '.' . $ext;
-            move_uploaded_file($_FILES['result_photo']['tmp_name'], 'uploads/' . $fname);
-            $updateDocs['result_photo'] = $fname;
-        }
+        if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) { $docError = "Semester result photo must be ≤ 5 MB."; }
+        else { $updateDocs['result_photo'] = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results'); }
     }
     if (!$docError && !empty($_FILES['ca_photo']['name'])) {
-        if ($_FILES['ca_photo']['size'] > 500 * 1024) { $docError = "CA mark sheet photo must be ≤ 500 KB."; }
-        else {
-            $ext = pathinfo($_FILES['ca_photo']['name'], PATHINFO_EXTENSION);
-            $fname = 'ca_' . $id . '_' . uniqid() . '.' . $ext;
-            move_uploaded_file($_FILES['ca_photo']['tmp_name'], 'uploads/' . $fname);
-            $updateDocs['ca_photo'] = $fname;
-        }
+        if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) { $docError = "CA mark sheet photo must be ≤ 5 MB."; }
+        else { $updateDocs['ca_photo'] = uploadToCloudinary($_FILES['ca_photo']['tmp_name'], 'sgi/ca_marks'); }
     }
     if (!$docError && !empty($updateDocs)) {
         $semesters->updateOne(['_id' => new MongoDB\BSON\ObjectId($id)], ['$set' => $updateDocs]);
@@ -296,10 +286,10 @@ function grade($sgi) {
         <?php if (!empty($docError)): ?><p class="error"><?= $docError ?></p><?php endif; ?>
         <div style="display:flex;gap:16px;flex-wrap:wrap;margin-top:12px;">
             <?php if (!empty($s['result_photo'])): ?>
-            <a href="uploads/<?= htmlspecialchars($s['result_photo']) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View Semester Result</a>
+            <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View Semester Result</a>
             <?php endif; ?>
             <?php if (!empty($s['ca_photo'])): ?>
-            <a href="uploads/<?= htmlspecialchars($s['ca_photo']) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View CA Mark Sheet</a>
+            <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 20px;font-size:14px;">📄 View CA Mark Sheet</a>
             <?php endif; ?>
         </div>
         <?php if (empty($s['result_photo']) || empty($s['ca_photo'])): ?>

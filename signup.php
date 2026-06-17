@@ -12,21 +12,13 @@ if (isset($_POST['signup'])) {
         } else {
             $photo = '';
             if (!empty($_FILES['photo']['name'])) {
-                if ($_FILES['photo']['size'] > 200 * 1024) { $error = "Profile photo must be ≤ 200 KB."; }
-                else {
-                    $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-                    $photo = uniqid() . '.' . $ext;
-                    move_uploaded_file($_FILES['photo']['tmp_name'], "uploads/" . $photo);
-                }
+                if ($_FILES['photo']['size'] > 2 * 1024 * 1024) { $error = "Profile photo must be ≤ 2 MB."; }
+                else { $photo = uploadToCloudinary($_FILES['photo']['tmp_name'], 'sgi/students'); }
             }
             $signature = '';
             if (!$error && !empty($_FILES['signature']['name'])) {
-                if ($_FILES['signature']['size'] > 100 * 1024) { $error = "Signature must be ≤ 100 KB."; }
-                else {
-                    $ext = pathinfo($_FILES['signature']['name'], PATHINFO_EXTENSION);
-                    $signature = 'sig_' . uniqid() . '.' . $ext;
-                    move_uploaded_file($_FILES['signature']['tmp_name'], "uploads/" . $signature);
-                }
+                if ($_FILES['signature']['size'] > 1 * 1024 * 1024) { $error = "Signature must be ≤ 1 MB."; }
+                else { $signature = uploadToCloudinary($_FILES['signature']['tmp_name'], 'sgi/signatures'); }
             }
             if (!$error) {
             $users->insertOne([

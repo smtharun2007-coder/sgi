@@ -44,15 +44,11 @@ if (isset($_POST['calculate'])) {
         // Handle file uploads
         $result_photo = '';
         if (!empty($_FILES['result_photo']['name'])) {
-            $ext = pathinfo($_FILES['result_photo']['name'], PATHINFO_EXTENSION);
-            $result_photo = 'result_' . $id . '_' . uniqid() . '.' . $ext;
-            move_uploaded_file($_FILES['result_photo']['tmp_name'], 'uploads/' . $result_photo);
+            $result_photo = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results');
         }
         $ca_photo = '';
         if (!empty($_FILES['ca_photo']['name'])) {
-            $ext = pathinfo($_FILES['ca_photo']['name'], PATHINFO_EXTENSION);
-            $ca_photo = 'ca_' . $id . '_' . uniqid() . '.' . $ext;
-            move_uploaded_file($_FILES['ca_photo']['tmp_name'], 'uploads/' . $ca_photo);
+            $ca_photo = uploadToCloudinary($_FILES['ca_photo']['tmp_name'], 'sgi/ca_marks');
         }
         // ACADEMIC from auto-fetched values
         $academic = 0.15*$cat1_10 + 0.15*$cat2_10 + 0.2*$cat3_10

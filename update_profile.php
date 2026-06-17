@@ -8,21 +8,13 @@ if (isset($_POST['update'])) {
     $error_up = '';
     $photo = $u['photo'];
     if (!empty($_FILES['photo']['name'])) {
-        if ($_FILES['photo']['size'] > 200 * 1024) { $error_up = "Profile photo must be ≤ 200 KB."; }
-        else {
-            $ext = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-            $photo = uniqid() . '.' . $ext;
-            move_uploaded_file($_FILES['photo']['tmp_name'], "uploads/" . $photo);
-        }
+        if ($_FILES['photo']['size'] > 2 * 1024 * 1024) { $error_up = "Profile photo must be ≤ 2 MB."; }
+        else { $photo = uploadToCloudinary($_FILES['photo']['tmp_name'], 'sgi/students'); }
     }
     $signature = $u['signature'];
     if (!$error_up && !empty($_FILES['signature']['name'])) {
-        if ($_FILES['signature']['size'] > 100 * 1024) { $error_up = "Signature must be ≤ 100 KB."; }
-        else {
-            $ext = pathinfo($_FILES['signature']['name'], PATHINFO_EXTENSION);
-            $signature = 'sig_' . uniqid() . '.' . $ext;
-            move_uploaded_file($_FILES['signature']['tmp_name'], "uploads/" . $signature);
-        }
+        if ($_FILES['signature']['size'] > 1 * 1024 * 1024) { $error_up = "Signature must be ≤ 1 MB."; }
+        else { $signature = uploadToCloudinary($_FILES['signature']['tmp_name'], 'sgi/signatures'); }
     }
     if (!$error_up) {
     $update = [
@@ -107,13 +99,13 @@ if (isset($_POST['change_password'])) {
         <input type="text"   name="mentor_id"  placeholder="Mentor ID"     value="<?= htmlspecialchars($u['mentor_id'] ?? '') ?>" readonly class="locked">
         <?php if (!empty($u['photo'])): ?>
             <label>Current Photo</label>
-            <img src="uploads/<?= htmlspecialchars($u['photo']) ?>" style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;border-radius:6px;padding:4px;display:block;margin:6px 0;">
+            <img src="<?= htmlspecialchars(imgUrl($u['photo'])) ?>" style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;border-radius:6px;padding:4px;display:block;margin:6px 0;">
         <?php endif; ?>
         <label>Update Photo (optional)</label>
         <input type="file" name="photo" accept="image/*">
         <?php if (!empty($u['signature'])): ?>
             <label>Current Signature</label>
-            <img src="uploads/<?= htmlspecialchars($u['signature']) ?>" style="width:160px;height:60px;object-fit:contain;border:1px solid #ddd;border-radius:6px;padding:4px;display:block;margin:6px 0;">
+            <img src="<?= htmlspecialchars(imgUrl($u['signature'])) ?>" style="width:160px;height:60px;object-fit:contain;border:1px solid #ddd;border-radius:6px;padding:4px;display:block;margin:6px 0;">
         <?php endif; ?>
         <label>Update Signature (optional)</label>
         <input type="file" name="signature" accept="image/*">

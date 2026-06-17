@@ -71,13 +71,13 @@ function grade($sgi) {
         </div>
         <div class="profile-photo">
             <?php if (!empty($u['photo'])): ?>
-                <img src="uploads/<?= htmlspecialchars($u['photo']) ?>" alt="Photo">
+                <img src="<?= htmlspecialchars(imgUrl($u['photo'])) ?>" alt="Photo">
             <?php else: ?>
                 <div class="no-photo">No Photo</div>
             <?php endif; ?>
             <?php if (!empty($u['signature'])): ?>
                 <div class="signature-box" style="margin-top:30px;">
-                    <img src="uploads/<?= htmlspecialchars($u['signature']) ?>" alt="Signature">
+                    <img src="<?= htmlspecialchars(imgUrl($u['signature'])) ?>" alt="Signature">
                     <label>Student Signature</label>
                 </div>
             <?php endif; ?>

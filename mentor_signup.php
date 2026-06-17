@@ -18,12 +18,10 @@ if (isset($_POST['signup'])) {
             } else {
                 $photo = '';
                 if (!empty($_FILES['photo']['name'])) {
-                    if ($_FILES['photo']['size'] > 200 * 1024) {
-                        $error = "Profile photo must be ≤ 200 KB.";
+                    if ($_FILES['photo']['size'] > 2 * 1024 * 1024) {
+                        $error = "Profile photo must be ≤ 2 MB.";
                     } else {
-                        $ext   = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-                        $photo = 'mentor_' . uniqid() . '.' . $ext;
-                        move_uploaded_file($_FILES['photo']['tmp_name'], "uploads/" . $photo);
+                        $photo = uploadToCloudinary($_FILES['photo']['tmp_name'], 'sgi/mentors');
                     }
                 }
                 if (!$error) {

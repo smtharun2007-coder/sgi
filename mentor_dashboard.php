@@ -102,7 +102,7 @@ $studentList   = iterator_to_array($studentCursor);
         </div>
         <div class="profile-photo">
             <?php if (!empty($m['photo'])): ?>
-                <img src="uploads/<?= htmlspecialchars($m['photo']) ?>" alt="Photo">
+                <img src="<?= htmlspecialchars(imgUrl($m['photo'])) ?>" alt="Photo">
             <?php else: ?>
                 <div class="no-photo">No Photo</div>
             <?php endif; ?>
@@ -127,7 +127,7 @@ $studentList   = iterator_to_array($studentCursor);
             <div class="student-row">
                 <div style="display:flex;align-items:center;">
                     <?php if (!empty($st['photo'])): ?>
-                        <img src="uploads/<?= htmlspecialchars($st['photo']) ?>" class="student-avatar" alt="">
+                        <img src="<?= htmlspecialchars(imgUrl($st['photo'])) ?>" class="student-avatar" alt="">
                     <?php else: ?>
                         <div class="student-avatar-placeholder"><?= strtoupper(substr($st['name'], 0, 1)) ?></div>
                     <?php endif; ?>

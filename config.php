@@ -1,6 +1,22 @@
 <?php
 require 'vendor/autoload.php';
 
+// Cloudinary config
+\Cloudinary\Configuration\Configuration::instance([
+    'cloud' => [
+        'cloud_name' => 'dsqwvarrs',
+        'api_key'    => '866835938264269',
+        'api_secret' => 'T_cArk8I_fbU1QIi6sOFTRUL21s',
+    ],
+    'url' => ['secure' => true]
+]);
+
+function uploadToCloudinary($fileTmpPath, $folder = 'sgi') {
+    $uploader = new \Cloudinary\Api\Upload\UploadApi();
+    $result   = $uploader->upload($fileTmpPath, ['folder' => $folder]);
+    return $result['secure_url'];
+}
+
 $client = new MongoDB\Client(
     "mongodb+srv://smt2007:1561%40SPSslm@smt2007.bwry6zp.mongodb.net/?appName=smt2007&tls=true&tlsAllowInvalidCertificates=true&connectTimeoutMS=30000&serverSelectionTimeoutMS=30000"
 );
@@ -20,6 +36,11 @@ if (isset($_SESSION['user'])) {
         exit;
     }
     $_SESSION['last_activity'] = time();
+}
+
+function imgUrl($path) {
+    if (empty($path)) return '';
+    return (strpos($path, 'http') === 0) ? $path : 'uploads/' . $path;
 }
 
 function requireLogin() {

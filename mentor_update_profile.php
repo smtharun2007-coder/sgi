@@ -15,12 +15,10 @@ $error_up = '';
 if (isset($_POST['update'])) {
     $photo = $m['photo'];
     if (!empty($_FILES['photo']['name'])) {
-        if ($_FILES['photo']['size'] > 200 * 1024) {
-            $error_up = "Profile photo must be ≤ 200 KB.";
+        if ($_FILES['photo']['size'] > 2 * 1024 * 1024) {
+            $error_up = "Profile photo must be ≤ 2 MB.";
         } else {
-            $ext   = pathinfo($_FILES['photo']['name'], PATHINFO_EXTENSION);
-            $photo = 'mentor_' . uniqid() . '.' . $ext;
-            move_uploaded_file($_FILES['photo']['tmp_name'], "uploads/" . $photo);
+            $photo = uploadToCloudinary($_FILES['photo']['tmp_name'], 'sgi/mentors');
         }
     }
     if (!$error_up) {
@@ -88,7 +86,7 @@ if (isset($_POST['change_password'])) {
         <input type="tel"   name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($m['phone']) ?>">
         <?php if (!empty($m['photo'])): ?>
             <label>Current Photo</label>
-            <img src="uploads/<?= htmlspecialchars($m['photo']) ?>" style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;border-radius:6px;padding:4px;display:block;margin:6px 0;">
+            <img src="<?= htmlspecialchars(imgUrl($m['photo'])) ?>" style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;border-radius:6px;padding:4px;display:block;margin:6px 0;">
         <?php endif; ?>
         <label>Update Photo (optional, ≤ 200 KB)</label>
         <input type="file" name="photo" accept="image/*">
