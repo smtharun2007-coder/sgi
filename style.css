@@ -424,6 +424,20 @@ textarea:focus { border-color: #e94560; }
 .btn-verify:hover { background: #1e8449; }
 .btn-disabled { opacity: 0.4; cursor: not-allowed; pointer-events: none; }
 
+/* ROLE BADGES */
+.role-badge {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    color: #fff;
+}
+.student-badge { background: linear-gradient(135deg, #1a1a2e, #e94560); }
+.mentor-badge  { background: linear-gradient(135deg, #1a1a2e, #8e44ad); }
+
 /* AUTH LINKS */
 .auth-box p { margin-top: 16px; font-size: 13px; color: #777; }
 .auth-box a { color: #e94560; text-decoration: none; }

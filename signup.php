@@ -88,7 +88,8 @@ if (isset($_POST['signup'])) {
         <input type="password" name="confirm_password" placeholder="Confirm Password" required>
         <button type="submit" name="signup" class="btn-login">Sign Up</button>
     </form>
-    <p>Already have an account? <a href="index.php">Login</a></p>
+    <p>Already have an account? <a href="student_login.php">Login</a></p>
+    <p><a href="index.php">← Back to Home</a></p>
 </div>
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">

@@ -42,25 +42,11 @@ if (isset($_POST['login'])) {
     <meta charset="UTF-8">
     <title>SGI – Mentor Login</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .mentor-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #1a1a2e, #8e44ad);
-            color: #fff;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-        .auth-page { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #8e44ad 100%); }
-    </style>
 </head>
 <body class="auth-page">
 <div class="auth-box">
     <h1>Student Growth Index</h1>
-    <span class="mentor-badge">MENTOR PORTAL</span>
+    <span class="role-badge mentor-badge">👨🏫 MENTOR PORTAL</span>
     <h2>Mentor Login</h2>
     <form method="POST">
         <input type="text"     name="mentor_id" placeholder="Mentor ID" required>
@@ -68,9 +54,8 @@ if (isset($_POST['login'])) {
         <button type="submit" name="login" class="btn-login">Login</button>
     </form>
     <p>Don't have an account? <a href="mentor_signup.php">Sign Up</a></p>
-    <p><a href="index.php">← Student Login</a></p>
+    <p><a href="index.php">← Back to Home</a></p>
 </div>
-
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">
         <p id="popup-msg"></p>

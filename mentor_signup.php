@@ -28,14 +28,14 @@ if (isset($_POST['signup'])) {
                 }
                 if (!$error) {
                     $mentors->insertOne([
-                        'name'      => $_POST['name'],
-                        'mentor_id' => $_POST['mentor_id'],
-                        'email'     => $_POST['email'],
-                        'dept'      => $_POST['dept'],
-                        'phone'     => $_POST['phone'],
-                        'photo'     => $photo,
-                        'password'  => password_hash($_POST['password'], PASSWORD_DEFAULT),
-                        'created_at'=> new MongoDB\BSON\UTCDateTime(),
+                        'name'       => $_POST['name'],
+                        'mentor_id'  => $_POST['mentor_id'],
+                        'email'      => $_POST['email'],
+                        'dept'       => $_POST['dept'],
+                        'phone'      => $_POST['phone'],
+                        'photo'      => $photo,
+                        'password'   => password_hash($_POST['password'], PASSWORD_DEFAULT),
+                        'created_at' => new MongoDB\BSON\UTCDateTime(),
                     ]);
                     $success = "Registration successful! You can now login.";
                 }
@@ -50,24 +50,11 @@ if (isset($_POST['signup'])) {
     <meta charset="UTF-8">
     <title>SGI – Mentor Sign Up</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        .mentor-badge {
-            display: inline-block;
-            background: linear-gradient(135deg, #1a1a2e, #8e44ad);
-            color: #fff;
-            padding: 4px 14px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
-        }
-    </style>
 </head>
 <body class="auth-page">
 <div class="auth-box signup-box">
     <h1>Student Growth Index</h1>
-    <span class="mentor-badge">MENTOR PORTAL</span>
+    <span class="role-badge mentor-badge">👨🏫 MENTOR PORTAL</span>
     <h2>Create Mentor Account</h2>
     <form method="POST" enctype="multipart/form-data">
         <input type="text"   name="name"      placeholder="Full Name" required>
@@ -82,9 +69,8 @@ if (isset($_POST['signup'])) {
         <button type="submit" name="signup" class="btn-login">Create Account</button>
     </form>
     <p>Already have an account? <a href="mentor_login.php">Login</a></p>
-    <p><a href="index.php">← Student Login</a></p>
+    <p><a href="index.php">← Back to Home</a></p>
 </div>
-
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">
         <p id="popup-msg"></p>

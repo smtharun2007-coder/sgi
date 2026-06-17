@@ -58,6 +58,7 @@ if (isset($_POST['reset'])) {
 <body class="auth-page">
 <div class="auth-box">
     <h1>Student Growth Index</h1>
+    <span class="role-badge student-badge">🎓 STUDENT PORTAL</span>
     <h2>Forgot Password</h2>
 
     <!-- PROGRESS STEPS -->
@@ -93,10 +94,10 @@ if (isset($_POST['reset'])) {
 
     <?php elseif ($step === 3): ?>
     <!-- STEP 3: Done -->
-    <a href="index.php" class="btn-login" style="display:block;text-align:center;text-decoration:none;margin-top:10px;">Go to Login</a>
+    <a href="student_login.php" class="btn-login" style="display:block;text-align:center;text-decoration:none;margin-top:10px;">Go to Login</a>
     <?php endif; ?>
 
-    <p><a href="index.php">← Back to Login</a></p>
+    <p><a href="student_login.php">← Back to Login</a></p>
 </div>
 </body>
 </html>
