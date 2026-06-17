@@ -62,8 +62,10 @@ if (isset($_POST['signup'])) {
 </head>
 <body class="auth-page">
 <div class="auth-box signup-box">
+    <img src="logo1.jpeg" class="auth-logo" alt="SGI">
     <h1>Student Growth Index</h1>
-    <h2>Sign Up</h2>
+    <div class="portal-badge student-portal">🎓 Student Portal</div>
+    <h2>Create Student Account</h2>
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
     <form method="POST" enctype="multipart/form-data">
         <input type="text"   name="name"      placeholder="Full Name" required>
@@ -89,7 +91,7 @@ if (isset($_POST['signup'])) {
         <button type="submit" name="signup" class="btn-login">Sign Up</button>
     </form>
     <p>Already have an account? <a href="student_login.php">Login</a></p>
-    <p><a href="index.php">← Back to Home</a></p>
+    <p style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;"><a href="index.php" style="color:#aaa;font-size:12px;">← Switch Role</a></p>
 </div>
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">
@@ -101,7 +103,7 @@ if (isset($_POST['signup'])) {
 function showPopup(msg, redirect) {
     document.getElementById('popup-msg').innerText = msg;
     document.getElementById('popup').style.display = 'flex';
-    if (redirect) setTimeout(function() { window.location.href = 'index.php'; }, 2000);
+    if (redirect) setTimeout(function() { window.location.href = 'student_login.php'; }, 2000);
 }
 function closePopup() { document.getElementById('popup').style.display = 'none'; }
 document.querySelector('form').addEventListener('submit', function(e) {

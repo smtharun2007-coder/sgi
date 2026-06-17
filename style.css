@@ -438,6 +438,31 @@ textarea:focus { border-color: #e94560; }
 .student-badge { background: linear-gradient(135deg, #1a1a2e, #e94560); }
 .mentor-badge  { background: linear-gradient(135deg, #1a1a2e, #8e44ad); }
 
+/* PORTAL BADGE */
+.portal-badge {
+    display: inline-block;
+    padding: 6px 20px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 16px;
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+}
+.student-portal { background: linear-gradient(135deg, #e94560, #c0392b); }
+.mentor-portal  { background: linear-gradient(135deg, #8e44ad, #6c3483); }
+
+/* AUTH LOGO */
+.auth-logo {
+    width: 70px;
+    height: 70px;
+    object-fit: contain;
+    border-radius: 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+}
+
 /* AUTH LINKS */
 .auth-box p { margin-top: 16px; font-size: 13px; color: #777; }
 .auth-box a { color: #e94560; text-decoration: none; }

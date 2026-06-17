@@ -51,12 +51,14 @@ if (isset($_POST['login'])) {
     <meta charset="UTF-8">
     <title>SGI – Student Login</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
 </head>
 <body class="auth-page">
 <div class="auth-box">
+    <img src="logo1.jpeg" class="auth-logo" alt="SGI">
     <h1>Student Growth Index</h1>
-    <span class="role-badge student-badge">🎓 STUDENT PORTAL</span>
-    <h2>Student Login</h2>
+    <div class="portal-badge student-portal">🎓 Student Portal</div>
+    <h2>Login to your account</h2>
     <form method="POST">
         <input type="text"     name="roll"     placeholder="Roll Number" required>
         <input type="password" name="password" placeholder="Password"    required>
@@ -64,7 +66,7 @@ if (isset($_POST['login'])) {
     </form>
     <p>Don't have an account? <a href="signup.php">Sign Up</a></p>
     <p><a href="forgot_password.php">Forgot Password?</a></p>
-    <p><a href="index.php">← Back to Home</a></p>
+    <p style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;"><a href="index.php" style="color:#aaa;font-size:12px;">← Switch Role</a></p>
 </div>
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">

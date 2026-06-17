@@ -42,19 +42,21 @@ if (isset($_POST['login'])) {
     <meta charset="UTF-8">
     <title>SGI – Mentor Login</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="logo1.jpeg">
 </head>
 <body class="auth-page">
 <div class="auth-box">
+    <img src="logo1.jpeg" class="auth-logo" alt="SGI">
     <h1>Student Growth Index</h1>
-    <span class="role-badge mentor-badge">👨🏫 MENTOR PORTAL</span>
-    <h2>Mentor Login</h2>
+    <div class="portal-badge mentor-portal">👨🏫 Mentor Portal</div>
+    <h2>Login to your account</h2>
     <form method="POST">
         <input type="text"     name="mentor_id" placeholder="Mentor ID" required>
         <input type="password" name="password"  placeholder="Password"  required>
         <button type="submit" name="login" class="btn-login">Login</button>
     </form>
     <p>Don't have an account? <a href="mentor_signup.php">Sign Up</a></p>
-    <p><a href="index.php">← Back to Home</a></p>
+    <p style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;"><a href="index.php" style="color:#aaa;font-size:12px;">← Switch Role</a></p>
 </div>
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">
