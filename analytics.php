@@ -38,12 +38,21 @@ foreach ($semList as $s) {
     }
 }
 $subjectAvgs = [];
+$subjectScores = [];
 foreach ($subjectStats as $name => $data) {
-    $subjectAvgs[$name] = round($data['total'] / $data['count'], 2);
+    $catAvg = round($data['total'] / $data['count'], 2);
+    $subjectAvgs[$name] = $catAvg;
+    $caS = $data['ca_scored']; $caM = $data['ca_max'];
+    if ($caS !== null && $caM > 0) {
+        $ca100 = round(($caS / $caM) * 100, 2);
+        $subjectScores[$name] = round(0.4 * $catAvg + 0.6 * $ca100, 2);
+    } else {
+        $subjectScores[$name] = $catAvg;
+    }
 }
-arsort($subjectAvgs);
-$bestSubject  = array_key_first($subjectAvgs);
-$worstSubject = array_key_last($subjectAvgs);
+arsort($subjectScores);
+$bestSubject  = array_key_first($subjectScores);
+$worstSubject = array_key_last($subjectScores);
 
 $lowAttendance = [];
 foreach ($semList as $s) {
@@ -114,13 +123,13 @@ function grade($sgi) {
             <span class="analytics-card-icon">⭐</span>
             <span class="analytics-card-label">Best Subject</span>
             <span class="analytics-card-sem"><?= htmlspecialchars($bestSubject) ?></span>
-            <span class="analytics-card-value"><?= $subjectAvgs[$bestSubject] ?> / 100</span>
+            <span class="analytics-card-value"><?= $subjectScores[$bestSubject] ?> / 100</span>
         </div>
         <div class="analytics-card worst">
             <span class="analytics-card-icon">📚</span>
             <span class="analytics-card-label">Needs Focus</span>
             <span class="analytics-card-sem"><?= htmlspecialchars($worstSubject) ?></span>
-            <span class="analytics-card-value"><?= $subjectAvgs[$worstSubject] ?> / 100</span>
+            <span class="analytics-card-value"><?= $subjectScores[$worstSubject] ?> / 100</span>
         </div>
         <?php endif; ?>
     </div>
@@ -166,21 +175,23 @@ function grade($sgi) {
                     </tr>
                 </thead>
                 <tbody>
-                    <?php $rank = 1; foreach ($subjectAvgs as $name => $avg): ?>
+                    <?php $rank = 1; foreach ($subjectScores as $name => $score): ?>
+                    <?php
+                        $avg  = $subjectAvgs[$name];
+                        $caS  = $subjectStats[$name]['ca_scored'];
+                        $caM  = $subjectStats[$name]['ca_max'];
+                        $ca100 = ($caS !== null && $caM > 0) ? round(($caS / $caM) * 100, 2) : null;
+                        $color = $score >= 75 ? '#27ae60' : ($score >= 50 ? '#f5a623' : '#e94560');
+                    ?>
                     <tr>
                         <td style="text-align:center;"><?= $rank++ ?></td>
                         <td><?= htmlspecialchars($name) ?></td>
                         <td style="text-align:center;">Sem <?= $subjectStats[$name]['sem'] ?></td>
                         <td style="text-align:center;"><span style="font-weight:700;color:<?= $avg >= 75 ? '#27ae60' : ($avg >= 50 ? '#f5a623' : '#e94560') ?>;"><?= $avg ?></span></td>
-                        <td style="text-align:center;"><?php
-                            $caS = $subjectStats[$name]['ca_scored'];
-                            $caM = $subjectStats[$name]['ca_max'];
-                            if ($caS !== null && $caM > 0):
-                                $ca100 = round(($caS / $caM) * 100, 2);
-                        ?><span style="font-weight:700;color:<?= $ca100 >= 75 ? '#27ae60' : ($ca100 >= 50 ? '#f5a623' : '#e94560') ?>;"><?= $ca100 ?></span><?php else: ?><span style="color:#aaa;">—</span><?php endif; ?></td>
+                        <td style="text-align:center;"><?php if ($ca100 !== null): ?><span style="font-weight:700;color:<?= $ca100 >= 75 ? '#27ae60' : ($ca100 >= 50 ? '#f5a623' : '#e94560') ?>;"><?= $ca100 ?></span><?php else: ?><span style="color:#aaa;">—</span><?php endif; ?></td>
                         <td>
-                            <div style="background:#eee;border-radius:10px;height:10px;width:100%;">
-                                <div style="background:<?= $avg >= 75 ? '#27ae60' : ($avg >= 50 ? '#f5a623' : '#e94560') ?>;width:<?= $avg ?>%;height:10px;border-radius:10px;"></div>
+                            <div style="background:#eee;border-radius:10px;height:10px;width:100%;cursor:pointer;position:relative;" title="Score: <?= $score ?> / 100">
+                                <div style="background:<?= $color ?>;width:<?= $score ?>%;height:10px;border-radius:10px;"></div>
                             </div>
                         </td>
                     </tr>
