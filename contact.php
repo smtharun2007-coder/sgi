@@ -15,8 +15,15 @@ if (isset($_POST['send'])) {
         $mail->SMTPAuth   = true;
         $mail->Username   = getenv('MAIL_USERNAME');
         $mail->Password   = getenv('MAIL_PASSWORD');
-        $mail->SMTPSecure = 'tls';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
+        $mail->SMTPOptions = [
+            'ssl' => [
+                'verify_peer'       => false,
+                'verify_peer_name'  => false,
+                'allow_self_signed' => true,
+            ]
+        ];
 
         $mail->setFrom(getenv('MAIL_USERNAME'), 'SGI Support');
         $mail->addAddress(getenv('MAIL_USERNAME'), 'SGI Admin');
@@ -32,7 +39,7 @@ if (isset($_POST['send'])) {
         $mail->send();
         $success = "Your message has been sent. We will get back to you soon.";
     } catch (Exception $e) {
-        $error = "Message could not be sent. Please try again later.";
+        $error = "Message could not be sent: " . $mail->ErrorInfo;
     }
 }
 ?>
