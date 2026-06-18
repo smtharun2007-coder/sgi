@@ -18,11 +18,22 @@ if (isset($_POST['login'])) {
             $_SESSION['login_attempts'] = 0;
             $_SESSION['last_activity']  = time();
             $_SESSION['user'] = [
-                'id'    => (string)$user['_id'],
-                'name'  => $user['name'],
-                'roll'  => $user['roll'],
-                'email' => $user['email'] ?? '',
-                'photo' => $user['photo'] ?? '',
+                'id'        => (string)$user['_id'],
+                'name'      => $user['name'],
+                'roll'      => $user['roll'],
+                'email'     => $user['email'] ?? '',
+                'photo'     => $user['photo'] ?? '',
+                'reg'       => $user['reg'] ?? '',
+                'dob'       => $user['dob'] ?? '',
+                'father'    => $user['father'] ?? '',
+                'mother'    => $user['mother'] ?? '',
+                'dept'      => $user['dept'] ?? '',
+                'class'     => $user['class'] ?? '',
+                'year_from' => $user['year_from'] ?? '',
+                'year_to'   => $user['year_to'] ?? '',
+                'phone'     => $user['phone'] ?? '',
+                'mentor_id' => $user['mentor_id'] ?? '',
+                'signature' => $user['signature'] ?? '',
             ];
             header("Location: dashboard.php");
             exit;
