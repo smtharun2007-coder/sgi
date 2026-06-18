@@ -45,6 +45,9 @@ if (isset($_POST['login'])) {
 </head>
 <body class="auth-page">
 <div class="auth-box">
+    <div class="auth-logo-container">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="auth-logo">
+    </div>
     <h1>Student Growth Index</h1>
     <div class="portal-badge mentor-portal">👨 Mentor Portal</div>
     <h2>Login</h2>
@@ -54,7 +57,7 @@ if (isset($_POST['login'])) {
         <button type="submit" name="login" class="btn-login">Login</button>
     </form>
     <p>Don't have an account? <a href="mentor_signup.php">Sign Up</a></p>
-    <p><a href="forgot_password.php">Forgot Password?</a></p>
+    <p><a href="forgot_password.php?portal=mentor">Forgot Password?</a></p>
     <div class="switch-role-container">
         <a href="index.php" class="switch-role-btn">
             <span class="switch-role-icon">🔄</span>

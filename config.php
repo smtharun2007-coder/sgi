@@ -1,9 +1,14 @@
 <?php
+// Start output buffering to prevent header issues
+ob_start();
+
+// Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-require 'vendor/autoload.php';
+// Load Composer dependencies
+require __DIR__ . '/vendor/autoload.php';
 
 // Cloudinary config
 \Cloudinary\Configuration\Configuration::instance([

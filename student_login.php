@@ -2326,7 +2326,10 @@ if (isset($_POST['login'])) {
 </head>
 <body class="auth-page">
 <div class="auth-box">
-    <h1>Student Growth Index
+    <div class="auth-logo-container">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="auth-logo">
+    </div>
+    <h1>Student Growth Index</h1>
     <h2>Login</h2>
     <form method="POST">
         <input type="text"     name="roll"     placeholder="Roll Number" required>
