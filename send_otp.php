@@ -4,6 +4,17 @@ use PHPMailer\PHPMailer\Exception;
 
 require 'vendor/autoload.php';
 
+// Load environment variables from .env file
+$envFile = __DIR__ . '/.env';
+if (file_exists($envFile)) {
+    $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($lines as $line) {
+        if (strpos($line, '=') === false || strpos($line, '#') === 0) continue;
+        list($key, $value) = explode('=', $line, 2);
+        putenv("$key=$value");
+    }
+}
+
 // Email OTP sending utility
 function generateOTP($length = 6) {
     return str_pad(random_int(0, pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
@@ -68,19 +79,34 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
     try {
         $mail = new PHPMailer(true);
         
+        // Get configuration from environment
+        $smtpHost = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
+        $mailUsername = getenv('MAIL_USERNAME');
+        $mailPassword = getenv('MAIL_PASSWORD');
+        
+        // Check if credentials are configured
+        if (empty($mailUsername) || empty($mailPassword)) {
+            error_log("SGI Email Error: MAIL_USERNAME or MAIL_PASSWORD not configured in .env file");
+            return false;
+        }
+        
         // Server settings
         $mail->isSMTP();
-        $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
+        $mail->Host       = $smtpHost;
         $mail->SMTPAuth   = true;
-        $mail->Username   = getenv('MAIL_USERNAME');
-        $mail->Password   = getenv('MAIL_PASSWORD');
+        $mail->Username   = $mailUsername;
+        $mail->Password   = $mailPassword;
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port       = 587;
         
+        // Enable debug output for troubleshooting (set to 0 in production)
+        $mail->SMTPDebug = 0;
+        $mail->Debugoutput = 'error_log';
+        
         // Recipients
-        $mail->setFrom(getenv('MAIL_USERNAME') ?: 'noreply@sgi.edu', 'SGI Password Reset');
+        $mail->setFrom($mailUsername, 'SGI Password Reset');
         $mail->addAddress($to, $name);
-        $mail->addReplyTo(getenv('MAIL_USERNAME') ?: 'support@sgi.edu', 'SGI Support');
+        $mail->addReplyTo($mailUsername, 'SGI Support');
         
         // Content
         $mail->isHTML(true);
@@ -91,7 +117,8 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
         return $mail->send();
     } catch (Exception $e) {
         // Log error for debugging
-        error_log("PHPMailer Error: " . $mail->ErrorInfo);
+        error_log("SGI PHPMailer Error: " . $mail->ErrorInfo);
+        error_log("SGI PHPMailer Exception: " . $e->getMessage());
         return false;
     }
 }
