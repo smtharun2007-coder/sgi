@@ -43,8 +43,8 @@ if (isset($_POST['login'])) {
 </head>
 <body class="auth-page">
 <div class="auth-box">
-    <div class="auth-logo-container">
-        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="auth-logo">
+    <div class="logo-container">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
     </div>
     <h1>Student Growth Index</h1>
     <div class="portal-badge student-portal">🎓 Student Portal</div>

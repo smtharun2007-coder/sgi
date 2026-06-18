@@ -10,6 +10,25 @@ if (session_status() === PHP_SESSION_NONE) {
 // Load Composer dependencies
 require __DIR__ . '/vendor/autoload.php';
 
+// Load .env file manually (fallback if Dotenv is not available)
+if (file_exists(__DIR__ . '/.env')) {
+    $envLines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($envLines as $line) {
+        $line = trim($line);
+        if (strpos($line, '#') === 0) continue; // Skip comments
+        if (strpos($line, '=') !== false) {
+            list($key, $value) = explode('=', $line, 2);
+            $key = trim($key);
+            $value = trim($value, " \t\n\r\0\x0B\"'");
+            if (!getenv($key)) {
+                putenv("$key=$value");
+                $_ENV[$key] = $value;
+                $_SERVER[$key] = $value;
+            }
+        }
+    }
+}
+
 // Cloudinary config
 \Cloudinary\Configuration\Configuration::instance([
     'cloud' => [
