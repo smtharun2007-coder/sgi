@@ -55,7 +55,6 @@ if (isset($_POST['signup'])) {
 </head>
 <body class="auth-page signup">
 <div class="auth-box signup-box">
-    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
     <h1>Student Growth Index</h1>
     <div class="portal-badge student-portal">🎓 Student Portal</div>
     <h2>Create Student Account</h2>
