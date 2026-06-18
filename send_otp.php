@@ -1,11 +1,6 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require 'vendor/autoload.php';
-
 // Load environment variables from .env file only if not already loaded
-if (!getenv('MAIL_USERNAME')) {
+if (!getenv('RESEND_API_KEY')) {
     $envFile = __DIR__ . '/.env';
     if (file_exists($envFile)) {
         $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -80,49 +75,48 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
     </html>
     ";
     
-    try {
-        $mail = new PHPMailer(true);
-        
-        // Get configuration from environment
-        $smtpHost = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
-        $mailUsername = getenv('MAIL_USERNAME');
-        $mailPassword = getenv('MAIL_PASSWORD');
-        
-        // Check if credentials are configured
-        if (empty($mailUsername) || empty($mailPassword)) {
-            error_log("SGI Email Error: MAIL_USERNAME or MAIL_PASSWORD not configured in .env file");
-            return false;
-        }
-        
-        // Server settings
-        $mail->isSMTP();
-        $mail->Host       = $smtpHost;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $mailUsername;
-        $mail->Password   = $mailPassword;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-        
-        // Enable debug output for troubleshooting (set to 0 in production)
-        $mail->SMTPDebug = 0;
-        $mail->Debugoutput = 'error_log';
-        
-        // Recipients
-        $mail->setFrom($mailUsername, 'SGI Password Reset');
-        $mail->addAddress($to, $name);
-        $mail->addReplyTo($mailUsername, 'SGI Support');
-        
-        // Content
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $message;
-        $mail->AltBody = "Your SGI OTP is: $otp. Valid for 10 minutes. Do not share with anyone.";
-        
-        return $mail->send();
-    } catch (Exception $e) {
-        // Log error for debugging
-        error_log("SGI PHPMailer Error: " . $mail->ErrorInfo);
-        error_log("SGI PHPMailer Exception: " . $e->getMessage());
+    // Use Resend API
+    $apiKey = getenv('RESEND_API_KEY');
+    
+    // Check if API key is configured
+    if (empty($apiKey)) {
+        error_log("SGI Email Error: RESEND_API_KEY not configured in .env file");
+        return false;
+    }
+    
+    $from = 'SGI <onboarding@resend.dev>'; // Default Resend domain
+    
+    // Check if custom domain is configured
+    $fromEmail = getenv('RESEND_FROM_EMAIL');
+    if (!empty($fromEmail)) {
+        $from = "SGI <$fromEmail>";
+    }
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, 'https://api.resend.com/emails');
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/json',
+        'Authorization: Bearer ' . $apiKey
+    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
+        'from' => $from,
+        'to' => $to,
+        'subject' => $subject,
+        'html' => $message,
+        'text' => "Your SGI OTP is: $otp. Valid for 10 minutes. Do not share with anyone."
+    ]));
+    
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $error = curl_error($ch);
+    curl_close($ch);
+    
+    if ($httpCode == 200) {
+        return true;
+    } else {
+        error_log("SGI Resend API Error: HTTP $httpCode - $error - Response: $response");
         return false;
     }
 }
