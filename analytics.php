@@ -74,7 +74,7 @@ function grade($sgi) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI � Analytics</title>
+    <title>SGI – Analytics</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -96,7 +96,7 @@ function grade($sgi) {
     <!-- ATTENDANCE WARNING -->
     <?php if (!empty($lowAttendance)): ?>
     <div class="alert-warning">
-        ? Low Attendance Warning: Semester <?= implode(', ', array_map(fn($s) => $s['sem'], $lowAttendance)) ?> � attendance below 80%
+        ⚠️ Low Attendance Warning: Semester <?= implode(', ', array_map(fn($s) => $s['sem'], $lowAttendance)) ?> — attendance below 80%
     </div>
     <?php endif; ?>
 
@@ -105,7 +105,7 @@ function grade($sgi) {
     <div class="analytics-grid">
         <?php if ($bestSem): ?>
         <div class="analytics-card best">
-            <span class="analytics-card-icon">??</span>
+            <span class="analytics-card-icon">🏆</span>
             <span class="analytics-card-label">Best Semester</span>
             <span class="analytics-card-sem">Semester <?= $bestSem['sem'] ?></span>
             <span class="analytics-card-value">SGI <?= round($bestSem['sgi'], 2) ?></span>
@@ -114,7 +114,7 @@ function grade($sgi) {
         <?php endif; ?>
         <?php if ($worstSem): ?>
         <div class="analytics-card worst">
-            <span class="analytics-card-icon">??</span>
+            <span class="analytics-card-icon">📉</span>
             <span class="analytics-card-label">Worst Semester</span>
             <span class="analytics-card-sem">Semester <?= $worstSem['sem'] ?></span>
             <span class="analytics-card-value">SGI <?= round($worstSem['sgi'], 2) ?></span>
@@ -123,13 +123,13 @@ function grade($sgi) {
         <?php endif; ?>
         <?php if (!empty($subjectAvgs)): ?>
         <div class="analytics-card best">
-            <span class="analytics-card-icon">?</span>
+            <span class="analytics-card-icon">⭐</span>
             <span class="analytics-card-label">Best Subject</span>
             <span class="analytics-card-sem"><?= htmlspecialchars($bestSubject) ?></span>
             <span class="analytics-card-value"><?= $subjectScores[$bestSubject] ?> / 100</span>
         </div>
         <div class="analytics-card worst">
-            <span class="analytics-card-icon">??</span>
+            <span class="analytics-card-icon">🎯</span>
             <span class="analytics-card-label">Needs Focus</span>
             <span class="analytics-card-sem"><?= htmlspecialchars($worstSubject) ?></span>
             <span class="analytics-card-value"><?= $subjectScores[$worstSubject] ?> / 100</span>
@@ -191,7 +191,7 @@ function grade($sgi) {
                         <td><?= htmlspecialchars($name) ?></td>
                         <td style="text-align:center;">Sem <?= $subjectStats[$name]['sem'] ?></td>
                         <td style="text-align:center;"><span style="font-weight:700;color:<?= $avg >= 75 ? '#27ae60' : ($avg >= 50 ? '#f5a623' : '#e94560') ?>;"><?= $avg ?></span></td>
-                        <td style="text-align:center;"><?php if ($ca100 !== null): ?><span style="font-weight:700;color:<?= $ca100 >= 75 ? '#27ae60' : ($ca100 >= 50 ? '#f5a623' : '#e94560') ?>;"><?= $ca100 ?></span><?php else: ?><span style="color:#aaa;">�</span><?php endif; ?></td>
+                        <td style="text-align:center;"><?php if ($ca100 !== null): ?><span style="font-weight:700;color:<?= $ca100 >= 75 ? '#27ae60' : ($ca100 >= 50 ? '#f5a623' : '#e94560') ?>;"><?= $ca100 ?></span><?php else: ?><span style="color:#aaa;">—</span><?php endif; ?></td>
                         <td>
                             <div style="background:#eee;border-radius:10px;height:10px;width:100%;cursor:pointer;position:relative;" title="Score: <?= $score ?> / 100">
                                 <div style="background:<?= $color ?>;width:<?= $score ?>%;height:10px;border-radius:10px;"></div>
@@ -206,7 +206,7 @@ function grade($sgi) {
     <?php endif; ?>
 
     <div style="text-align:center;margin-top:30px;">
-        <a href="dashboard.php" class="btn-home">?? Home</a>
+        <a href="dashboard.php" class="btn-home">🏠 Home</a>
     </div>
 
 </div>

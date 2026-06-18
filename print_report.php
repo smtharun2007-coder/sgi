@@ -35,7 +35,7 @@ function grade($sgi) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI Report ñ Semester <?= $s['sem'] ?></title>
+    <title>SGI Report ‚Äì Semester <?= $s['sem'] ?></title>
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -127,8 +127,8 @@ function grade($sgi) {
 <body>
 
 <div class="print-btn-row">
-    <a href="semester_detail.php?id=<?= $id ?>" class="back-btn">? Back</a>
-    <button class="print-btn" onclick="window.print()">?? Print Report</button>
+    <a href="semester_detail.php?id=<?= $id ?>" class="back-btn">‚Üê Back</a>
+    <button class="print-btn" onclick="window.print()">üñ®Ô∏è Print Report</button>
 </div>
 
 <div class="page">
@@ -146,7 +146,7 @@ function grade($sgi) {
                 <p><?= htmlspecialchars($u['class']) ?></p>
                 <p><?= htmlspecialchars($u['reg']) ?></p>
                 <p><?= htmlspecialchars($u['dept']) ?></p>
-                <p><?= $u['year_from'] ?> ñ <?= $u['year_to'] ?></p>
+                <p><?= $u['year_from'] ?> ‚Äì <?= $u['year_to'] ?></p>
             </div>
         </div>
         <div class="report-title">
@@ -185,17 +185,17 @@ function grade($sgi) {
                 <td><?= htmlspecialchars($sub['subject_code']) ?></td>
                 <td><?= $sub['credits'] ?></td>
                 <?php if ($sub['internal'] === 'yes'): ?>
-                    <td><?= $sub['cat1'] ?? 'ó' ?></td>
-                    <td><?= $sub['cat2'] ?? 'ó' ?></td>
-                    <td><?= $sub['cat3'] ?? 'ó' ?></td>
-                    <td><?= $sub['total'] ?? 'ó' ?></td>
-                    <td><?= !empty($sub['percentage']) ? $sub['percentage'].'%' : 'ó' ?></td>
+                    <td><?= $sub['cat1'] ?? '‚Äî' ?></td>
+                    <td><?= $sub['cat2'] ?? '‚Äî' ?></td>
+                    <td><?= $sub['cat3'] ?? '‚Äî' ?></td>
+                    <td><?= $sub['total'] ?? '‚Äî' ?></td>
+                    <td><?= !empty($sub['percentage']) ? $sub['percentage'].'%' : '‚Äî' ?></td>
                 <?php else: ?>
                     <td colspan="5" style="text-align:center;color:#aaa;">No Internal</td>
                 <?php endif; ?>
-                <td><?= $sub['ca_scored'] ?? 'ó' ?></td>
-                <td><?= $sub['ca_max'] ?? 'ó' ?></td>
-                <td><?= !empty($sub['ca_percent']) ? $sub['ca_percent'].'%' : 'ó' ?></td>
+                <td><?= $sub['ca_scored'] ?? '‚Äî' ?></td>
+                <td><?= $sub['ca_max'] ?? '‚Äî' ?></td>
+                <td><?= !empty($sub['ca_percent']) ? $sub['ca_percent'].'%' : '‚Äî' ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
@@ -234,10 +234,10 @@ function grade($sgi) {
     <!-- ACADEMIC SUMMARY -->
     <div class="section-title">Academic Summary</div>
     <div class="summary-row">
-        <div class="summary-card"><label>GPA</label><span><?= $s['gpa'] ?? 'ó' ?></span></div>
-        <div class="summary-card"><label>CGPA</label><span><?= $s['cgpa'] ?? 'ó' ?></span></div>
-        <div class="summary-card"><label>Attendance</label><span><?= !empty($s['attendance']) ? $s['attendance'].'%' : 'ó' ?></span></div>
-        <div class="summary-card"><label>Previous GPA</label><span><?= $s['prev_gpa'] ?? 'ó' ?></span></div>
+        <div class="summary-card"><label>GPA</label><span><?= $s['gpa'] ?? '‚Äî' ?></span></div>
+        <div class="summary-card"><label>CGPA</label><span><?= $s['cgpa'] ?? '‚Äî' ?></span></div>
+        <div class="summary-card"><label>Attendance</label><span><?= !empty($s['attendance']) ? $s['attendance'].'%' : '‚Äî' ?></span></div>
+        <div class="summary-card"><label>Previous GPA</label><span><?= $s['prev_gpa'] ?? '‚Äî' ?></span></div>
     </div>
 
     <!-- SGI SCORES -->

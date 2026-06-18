@@ -20,7 +20,7 @@ $studentList   = iterator_to_array($studentCursor);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Mentor Dashboard</title>
+    <title>SGI â€“ Mentor Dashboard</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
@@ -121,7 +121,7 @@ $studentList   = iterator_to_array($studentCursor);
 
     <!-- STUDENTS LIST -->
     <div class="student-list-card">
-        <div class="student-list-header">?? Assigned Students</div>
+        <div class="student-list-header">ðŸ‘¥ Assigned Students</div>
         <?php if (empty($studentList)): ?>
             <p class="no-data" style="padding:24px;">No students linked to your Mentor ID yet.</p>
         <?php else: ?>
@@ -135,8 +135,8 @@ $studentList   = iterator_to_array($studentCursor);
                     <?php endif; ?>
                     <div class="student-info">
                         <div class="s-name"><?= htmlspecialchars($st['name']) ?></div>
-                        <div class="s-roll"><?= htmlspecialchars($st['roll']) ?> &nbsp;·&nbsp; <?= htmlspecialchars($st['reg']) ?></div>
-                        <div class="s-dept"><?= htmlspecialchars($st['dept']) ?> &nbsp;·&nbsp; <?= htmlspecialchars($st['class']) ?></div>
+                        <div class="s-roll"><?= htmlspecialchars($st['roll']) ?> &nbsp;Â·&nbsp; <?= htmlspecialchars($st['reg']) ?></div>
+                        <div class="s-dept"><?= htmlspecialchars($st['dept']) ?> &nbsp;Â·&nbsp; <?= htmlspecialchars($st['class']) ?></div>
                     </div>
                 </div>
             </div>
