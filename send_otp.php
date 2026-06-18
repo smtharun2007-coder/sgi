@@ -1,6 +1,6 @@
-tudent with <?php
+<?php
 // Load environment variables from .env file only if not already loaded
-if (!getenv('RESEND_API_KEY')) {
+if (!getenv('SENDGRID_API_KEY')) {
     $envFile = __DIR__ . '/.env';
     if (file_exists($envFile)) {
         $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
@@ -75,54 +75,77 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
     </html>
     ";
     
-    // Use Resend API (same as contact form)
-    $apiKey = getenv('RESEND_API_KEY');
+    // Use SendGrid API
+    $apiKey = getenv('SENDGRID_API_KEY');
     
     // Check if API key is configured
     if (empty($apiKey)) {
-        error_log("SGI Email Error: RESEND_API_KEY not configured in .env file");
+        error_log("SGI Email Error: SENDGRID_API_KEY not configured in .env file");
         return false;
     }
     
-    // Debug logging
-    error_log("SGI Email: Sending OTP to $to for $name");
-    
-    $from = 'SGI <onboarding@resend.dev>'; // Default Resend domain
-    
-    // Check if custom domain is configured
-    $fromEmail = getenv('RESEND_FROM_EMAIL');
-    if (!empty($fromEmail)) {
-        $from = "SGI <$fromEmail>";
+    // Get from email
+    $fromEmail = getenv('SENDGRID_FROM_EMAIL');
+    if (empty($fromEmail)) {
+        $fromEmail = 'noreply@sgi.com'; // Default fallback
     }
     
+    // Debug logging
+    error_log("SGI Email: Sending OTP via SendGrid to $to for $name");
+    
+    // SendGrid API endpoint
+    $url = 'https://api.sendgrid.com/v3/mail/send';
+    
+    // Prepare the email data
+    $data = [
+        'personalizations' => [
+            [
+                'to' => [
+                    [
+                        'email' => $to,
+                        'name' => $name
+                    ]
+                ],
+                'subject' => $subject
+            ]
+        ],
+        'from' => [
+            'email' => $fromEmail,
+            'name' => 'SGI - Student Growth Index'
+        ],
+        'content' => [
+            [
+                'type' => 'text/html',
+                'value' => $message
+            ]
+        ]
+    ];
+    
+    // Initialize cURL
     $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, 'https://api.resend.com/emails');
+    curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Authorization: Bearer ' . $apiKey
+        'Authorization: Bearer ' . $apiKey,
+        'Content-Type: application/json'
     ]);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode([
-        'from' => $from,
-        'to' => $to,
-        'subject' => $subject,
-        'html' => $message,
-        'text' => "Your SGI OTP is: $otp. Valid for 10 minutes. Do not share with anyone."
-    ]));
     
+    // Execute request
     $response = curl_exec($ch);
     $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
     $error = curl_error($ch);
     curl_close($ch);
     
     // Log for debugging
-    error_log("SGI Resend API: HTTP $httpCode - Response: $response");
+    error_log("SGI SendGrid API: HTTP $httpCode - Response: $response");
     
-    if ($httpCode == 200) {
+    // Check if successful (202 is success for SendGrid)
+    if ($httpCode == 202) {
         return true;
     } else {
-        error_log("SGI Resend API Error: HTTP $httpCode - curl error: $error - Response: $response");
+        error_log("SGI SendGrid API Error: HTTP $httpCode - curl error: $error - Response: $response");
         return false;
     }
 }
