@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require 'vendor/autoload.php';
 
 // Cloudinary config
@@ -13,7 +17,10 @@ require 'vendor/autoload.php';
 
 function uploadToCloudinary($fileTmpPath, $folder = 'sgi', $resourceType = 'image') {
     $uploader = new \Cloudinary\Api\Upload\UploadApi();
-    $result   = $uploader->upload($fileTmpPath, ['folder' => $folder, 'resource_type' => $resourceType]);
+    $result = $uploader->upload($fileTmpPath, [
+        'folder' => $folder,
+        'resource_type' => $resourceType
+    ]);
     return $result['secure_url'];
 }
 
@@ -23,8 +30,6 @@ $users     = $db->users;
 $semesters = $db->semesters;
 $subjects  = $db->subjects;
 $mentors   = $db->mentors;
-
-session_start();
 
 // Session timeout - 30 minutes
 if (isset($_SESSION['user'])) {
@@ -38,12 +43,14 @@ if (isset($_SESSION['user'])) {
 
 function imgUrl($path) {
     if (empty($path)) return '';
+
     if (strpos($path, 'http') === 0) {
         if (strpos($path, '/raw/upload/') !== false) {
             return str_replace('/raw/upload/', '/raw/upload/fl_attachment:false/', $path);
         }
         return $path;
     }
+
     return 'uploads/' . $path;
 }
 
@@ -53,4 +60,3 @@ function requireLogin() {
         exit;
     }
 }
-?>
