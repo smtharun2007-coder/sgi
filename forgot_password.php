@@ -233,12 +233,11 @@ $portal_type = isset($_GET['portal']) ? $_GET['portal'] : 'student';
 </head>
 <body class="auth-page">
 <div class="auth-box">
-    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
+           <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
     <h1>Student Growth Index</h1>
     <?php if ($portal_type === 'mentor'): ?>
         <div class="portal-badge mentor-portal">👨 Mentor Portal</div>
-    <?php else: ?>
-        <div class="portal-badge student-portal">🎓 Student Portal</div>
+    <?php
     <?php endif; ?>
     <h2>Forgot Password</h2>
 
