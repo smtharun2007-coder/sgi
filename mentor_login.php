@@ -40,13 +40,13 @@ if (isset($_POST['login'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI � Mentor Login</title>
+    <title>SGI – Mentor Login</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body class="auth-page">
 <div class="auth-box">
     <h1>Student Growth Index</h1>
-    <div class="portal-badge mentor-portal">?? Mentor Portal</div>
+    <div class="portal-badge mentor-portal">🧑‍🏫 Mentor Portal</div>
     <h2>Login</h2>
     <form method="POST">
         <input type="text"     name="mentor_id" placeholder="Mentor ID" required>
@@ -57,7 +57,7 @@ if (isset($_POST['login'])) {
     <p><a href="forgot_password_mentor.php">Forgot Password?</a></p>
     <div class="switch-role-container">
         <a href="index.php" class="switch-role-btn">
-            <span class="switch-role-icon">??</span>
+            <span class="switch-role-icon">🔄</span>
             <span>Switch to Student Portal</span>
         </a>
     </div>

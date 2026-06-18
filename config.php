@@ -1,4 +1,7 @@
 <?php
+// Set UTF-8 encoding for proper emoji and character support
+header('Content-Type: text/html; charset=utf-8');
+
 // Start output buffering to prevent header issues
 ob_start();
 

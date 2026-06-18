@@ -49,13 +49,13 @@ if (isset($_POST['signup'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI � Sign Up</title>
+    <title>SGI – Sign Up</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body class="auth-page signup">
 <div class="auth-box signup-box">
     <h1>Student Growth Index</h1>
-    <div class="portal-badge student-portal">?? Student Portal</div>
+    <div class="portal-badge student-portal">🎓 Student Portal</div>
     <h2>Create Student Account</h2>
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
     <form method="POST" enctype="multipart/form-data">
@@ -84,7 +84,7 @@ if (isset($_POST['signup'])) {
     <p>Already have an account? <a href="student_login.php">Login</a></p>
     <div class="switch-role-container">
         <a href="index.php" class="switch-role-btn">
-            <span class="switch-role-icon">??</span>
+            <span class="switch-role-icon">🔄</span>
             <span>Switch to Mentor Portal</span>
         </a>
     </div>

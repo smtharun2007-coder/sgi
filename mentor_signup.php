@@ -46,13 +46,13 @@ if (isset($_POST['signup'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI � Mentor Sign Up</title>
+    <title>SGI – Mentor Sign Up</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body class="auth-page signup">
 <div class="auth-box signup-box">
     <h1>Student Growth Index</h1>
-    <div class="portal-badge mentor-portal">???? Mentor Portal</div>
+    <div class="portal-badge mentor-portal">🧑‍🏫 Mentor Portal</div>
     <h2>Create Mentor Account</h2>
     <form method="POST" enctype="multipart/form-data">
         <input type="text"   name="name"      placeholder="Full Name" required>
@@ -69,7 +69,7 @@ if (isset($_POST['signup'])) {
     <p>Already have an account? <a href="mentor_login.php">Login</a></p>
     <div class="switch-role-container">
         <a href="index.php" class="switch-role-btn">
-            <span class="switch-role-icon">??</span>
+            <span class="switch-role-icon">🔄</span>
             <span>Switch to Student Portal</span>
         </a>
     </div>
