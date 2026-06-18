@@ -122,5 +122,8 @@ if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit
         </a>
     </div>
 </div>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>

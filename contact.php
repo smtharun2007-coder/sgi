@@ -77,6 +77,9 @@ if (isset($_POST['send'])) {
         </form>
     </div>
 </div>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>
 

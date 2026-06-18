@@ -29,5 +29,8 @@ if (!isset($_SESSION['mentor'])) { header("Location: mentor_login.php"); exit; }
         <a href="SGI.pdf" target="_blank" class="btn-primary" style="width:auto;display:inline-block;padding:10px 24px;">📄 View SGI Documentation (PDF)</a>
     </div>
 </div>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>

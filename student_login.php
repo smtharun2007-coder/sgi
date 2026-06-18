@@ -86,5 +86,8 @@ window.onload = function() {
 };
 <?php endif; ?>
 </script>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>

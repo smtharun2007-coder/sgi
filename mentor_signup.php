@@ -99,5 +99,8 @@ window.onload = function() { showPopup('<?= addslashes($error) ?>'); };
 window.onload = function() { showPopup('<?= addslashes($success) ?>', true); };
 <?php endif; ?>
 </script>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>

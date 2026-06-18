@@ -35,7 +35,7 @@ function grade($sgi) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI Report – Semester <?= $s['sem'] ?></title>
+    <title>SGI Report - Semester <?= $s['sem'] ?></title>
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -146,7 +146,7 @@ function grade($sgi) {
                 <p><?= htmlspecialchars($u['class']) ?></p>
                 <p><?= htmlspecialchars($u['reg']) ?></p>
                 <p><?= htmlspecialchars($u['dept']) ?></p>
-                <p><?= $u['year_from'] ?> – <?= $u['year_to'] ?></p>
+                <p><?= $u['year_from'] ?> - <?= $u['year_to'] ?></p>
             </div>
         </div>
         <div class="report-title">

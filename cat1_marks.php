@@ -118,7 +118,7 @@ function calcTotal() {
 }
 </script>
 <div class="copyright-footer">
-    &copy; <?= date('Y') ?> Student Growth Index (SGI). All rights reserved.
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
 </div>
 </body>
 </html>
