@@ -11,43 +11,84 @@ $success = '';
 $email_sent = false;
 $step = isset($_POST['step']) ? (int)$_POST['step'] : (isset($_SESSION['reset_step']) ? $_SESSION['reset_step'] : 1);
 
-// STEP 1: Enter email to receive OTP
+// STEP 1: Enter ID (roll/mentor_id) and email to receive OTP
 if (isset($_POST['send_otp'])) {
-    $email = trim($_POST['email']);
     $portal_type = $_POST['portal_type'] ?? 'student';
     
-    if (empty($email)) {
-        $error = "Please enter your registered email address.";
-    } else {
-        // Check for student or mentor
-        $collection = ($portal_type === 'mentor') ? $mentors : $users;
-        $user = $collection->findOne(['email' => $email]);
+    if ($portal_type === 'mentor') {
+        $mentor_id = trim($_POST['mentor_id']);
+        $email = trim($_POST['email']);
         
-        if ($user) {
-            // Generate OTP
-            $otp = generateOTP(6);
-            $otp_expiry = time() + 600; // 10 minutes
-            
-            // Store OTP in session (in production, store in database with expiry)
-            $_SESSION['reset_email'] = $email;
-            $_SESSION['reset_otp'] = password_hash($otp, PASSWORD_DEFAULT);
-            $_SESSION['reset_otp_time'] = $otp_expiry;
-            $_SESSION['reset_portal_type'] = $portal_type;
-            $_SESSION['reset_user_id'] = (string)$user['_id'];
-            $_SESSION['reset_step'] = 2;
-            
-            // Send OTP via email
-            $name = $user['name'] ?? 'User';
-            $email_sent = sendOTPEmail($email, $name, $otp, $portal_type);
-            
-            if ($email_sent) {
-                $success = "OTP sent successfully to your email address!";
-                $step = 2;
-            } else {
-                $error = "Failed to send OTP. Please try again or contact support.";
-            }
+        if (empty($mentor_id) || empty($email)) {
+            $error = "Please enter both Mentor ID and Email.";
         } else {
-            $error = "Email address not found in our records.";
+            $mentor = $mentors->findOne(['mentor_id' => $mentor_id, 'email' => $email]);
+            
+            if ($mentor) {
+                // Generate OTP
+                $otp = generateOTP(6);
+                $otp_expiry = time() + 600; // 10 minutes
+                
+                // Store OTP in session
+                $_SESSION['reset_email'] = $email;
+                $_SESSION['reset_otp'] = password_hash($otp, PASSWORD_DEFAULT);
+                $_SESSION['reset_otp_time'] = $otp_expiry;
+                $_SESSION['reset_portal_type'] = 'mentor';
+                $_SESSION['reset_mentor_id'] = $mentor_id;
+                $_SESSION['reset_user_id'] = (string)$mentor['_id'];
+                $_SESSION['reset_step'] = 2;
+                
+                // Send OTP via email
+                $name = $mentor['name'] ?? 'Mentor';
+                $email_sent = sendOTPEmail($email, $name, $otp, 'mentor');
+                
+                if ($email_sent) {
+                    $success = "OTP sent successfully to your email address!";
+                    $step = 2;
+                } else {
+                    $error = "Failed to send OTP. Please try again or contact support.";
+                }
+            } else {
+                $error = "Mentor ID and Email do not match our records.";
+            }
+        }
+    } else {
+        // Student portal
+        $roll = trim($_POST['roll']);
+        $email = trim($_POST['email']);
+        
+        if (empty($roll) || empty($email)) {
+            $error = "Please enter both Roll Number and Email.";
+        } else {
+            $user = $users->findOne(['roll' => $roll, 'email' => $email]);
+            
+            if ($user) {
+                // Generate OTP
+                $otp = generateOTP(6);
+                $otp_expiry = time() + 600; // 10 minutes
+                
+                // Store OTP in session
+                $_SESSION['reset_email'] = $email;
+                $_SESSION['reset_otp'] = password_hash($otp, PASSWORD_DEFAULT);
+                $_SESSION['reset_otp_time'] = $otp_expiry;
+                $_SESSION['reset_portal_type'] = 'student';
+                $_SESSION['reset_roll'] = $roll;
+                $_SESSION['reset_user_id'] = (string)$user['_id'];
+                $_SESSION['reset_step'] = 2;
+                
+                // Send OTP via email
+                $name = $user['name'] ?? 'Student';
+                $email_sent = sendOTPEmail($email, $name, $otp, 'student');
+                
+                if ($email_sent) {
+                    $success = "OTP sent successfully to your email address!";
+                    $step = 2;
+                } else {
+                    $error = "Failed to send OTP. Please try again or contact support.";
+                }
+            } else {
+                $error = "Roll Number and Email do not match our records.";
+            }
         }
     }
 }
@@ -65,7 +106,6 @@ if (isset($_POST['verify_otp'])) {
         // Check if OTP has expired
         if (time() > $otp_time) {
             $error = "OTP has expired. Please request a new one.";
-            // Clear OTP
             unset($_SESSION['reset_otp']);
             unset($_SESSION['reset_otp_time']);
             $step = 1;
@@ -76,7 +116,6 @@ if (isset($_POST['verify_otp'])) {
             $step = 3;
             $success = "OTP verified successfully! You can now reset your password.";
             
-            // Clear OTP from session
             unset($_SESSION['reset_otp']);
             unset($_SESSION['reset_otp_time']);
         } else {
@@ -107,9 +146,16 @@ if (isset($_POST['reset_password'])) {
         $step = 3;
     } else {
         // Update password
-        $collection = ($portal_type === 'mentor') ? $mentors : $users;
+        if ($portal_type === 'mentor') {
+            $collection = $mentors;
+            $identifier = ['mentor_id' => $_SESSION['reset_mentor_id']];
+        } else {
+            $collection = $users;
+            $identifier = ['roll' => $_SESSION['reset_roll']];
+        }
+        
         $result = $collection->updateOne(
-            ['email' => $email],
+            $identifier,
             ['$set' => ['password' => password_hash($new_password, PASSWORD_DEFAULT)]]
         );
         
@@ -119,6 +165,9 @@ if (isset($_POST['reset_password'])) {
             unset($_SESSION['reset_verified']);
             unset($_SESSION['reset_portal_type']);
             unset($_SESSION['reset_step']);
+            unset($_SESSION['reset_roll']);
+            unset($_SESSION['reset_mentor_id']);
+            unset($_SESSION['reset_user_id']);
             
             $success = "Password reset successfully! You can now login with your new password.";
             $step = 4;
@@ -133,21 +182,38 @@ if (isset($_POST['reset_password'])) {
 if (isset($_POST['resend_otp'])) {
     if (!empty($_SESSION['reset_email'])) {
         $portal_type = $_SESSION['reset_portal_type'] ?? 'student';
-        $collection = ($portal_type === 'mentor') ? $mentors : $users;
-        $user = $collection->findOne(['email' => $_SESSION['reset_email']]);
         
-        if ($user) {
-            $otp = generateOTP(6);
-            $otp_expiry = time() + 600;
-            
-            $_SESSION['reset_otp'] = password_hash($otp, PASSWORD_DEFAULT);
-            $_SESSION['reset_otp_time'] = $otp_expiry;
-            
-            $name = $user['name'] ?? 'User';
-            if (sendOTPEmail($_SESSION['reset_email'], $name, $otp, $portal_type)) {
-                $success = "New OTP sent to your email!";
-            } else {
-                $error = "Failed to resend OTP.";
+        if ($portal_type === 'mentor') {
+            $mentor = $mentors->findOne(['mentor_id' => $_SESSION['reset_mentor_id']]);
+            if ($mentor) {
+                $otp = generateOTP(6);
+                $otp_expiry = time() + 600;
+                
+                $_SESSION['reset_otp'] = password_hash($otp, PASSWORD_DEFAULT);
+                $_SESSION['reset_otp_time'] = $otp_expiry;
+                
+                $name = $mentor['name'] ?? 'Mentor';
+                if (sendOTPEmail($_SESSION['reset_email'], $name, $otp, 'mentor')) {
+                    $success = "New OTP sent to your email!";
+                } else {
+                    $error = "Failed to resend OTP.";
+                }
+            }
+        } else {
+            $user = $users->findOne(['roll' => $_SESSION['reset_roll']]);
+            if ($user) {
+                $otp = generateOTP(6);
+                $otp_expiry = time() + 600;
+                
+                $_SESSION['reset_otp'] = password_hash($otp, PASSWORD_DEFAULT);
+                $_SESSION['reset_otp_time'] = $otp_expiry;
+                
+                $name = $user['name'] ?? 'Student';
+                if (sendOTPEmail($_SESSION['reset_email'], $name, $otp, 'student')) {
+                    $success = "New OTP sent to your email!";
+                } else {
+                    $error = "Failed to resend OTP.";
+                }
             }
         }
     }
@@ -167,6 +233,7 @@ $portal_type = isset($_GET['portal']) ? $_GET['portal'] : 'student';
 </head>
 <body class="auth-page">
 <div class="auth-box">
+    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="auth-logo">
     <h1>Student Growth Index</h1>
     <?php if ($portal_type === 'mentor'): ?>
         <div class="portal-badge mentor-portal">👨 Mentor Portal</div>
@@ -190,15 +257,22 @@ $portal_type = isset($_GET['portal']) ? $_GET['portal'] : 'student';
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
 
     <?php if ($step === 1): ?>
-    <!-- STEP 1: Enter email to receive OTP -->
+    <!-- STEP 1: Enter ID and email to receive OTP -->
     <form method="POST">
         <input type="hidden" name="step" value="1">
         <input type="hidden" name="portal_type" value="<?= htmlspecialchars($portal_type) ?>">
-        <input type="email" name="email" placeholder="Enter your registered email address" required>
+        
+        <?php if ($portal_type === 'mentor'): ?>
+            <input type="text" name="mentor_id" placeholder="Mentor ID" required>
+        <?php else: ?>
+            <input type="text" name="roll" placeholder="Roll Number" required>
+        <?php endif; ?>
+        
+        <input type="email" name="email" placeholder="Registered Email Address" required>
         <button type="submit" name="send_otp" class="btn-login">Send OTP</button>
     </form>
     <p style="font-size: 13px; color: #888; margin-top: 16px;">
-        We'll send a 6-digit OTP to your email address for verification.
+        We'll send a 6-digit OTP to your registered email address for verification.
     </p>
 
     <?php elseif ($step === 2): ?>

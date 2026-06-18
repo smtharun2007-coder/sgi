@@ -436,29 +436,46 @@ textarea:focus { border-color: #e94560; }
 .student-badge { background: linear-gradient(135deg, #1a1a2e, #e94560); }
 .mentor-badge  { background: linear-gradient(135deg, #1a1a2e, #8e44ad); }
 
-/* PORTAL BADGE */
+/* PORTAL BADGE - NEW TOGGLE STYLE */
 .portal-badge {
-    display: inline-block;
-    padding: 12px 32px;
-    border-radius: 30px;
-    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 36px;
+    border-radius: 50px;
+    font-size: 17px;
     font-weight: 800;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     margin-bottom: 24px;
-    margin-top: 8px;
+    margin-top: 12px;
     color: #ffffff !important;
-    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.1);
     position: relative;
     z-index: 1;
+    overflow: hidden;
+}
+.portal-badge::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50px;
+    background: linear-gradient(45deg, #fff, rgba(255,255,255,0.3), #fff);
+    z-index: -1;
+    animation: borderGlow 2s ease-in-out infinite;
+}
+@keyframes borderGlow {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
 }
 .student-portal { 
-    background: linear-gradient(135deg, #e94560 0%, #c0392b 50%, #e74c3c 100%) !important;
-    border: 2px solid rgba(255,255,255,0.15);
+    background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
+    box-shadow: 0 8px 25px rgba(238, 90, 36, 0.4), 0 0 0 4px rgba(255, 107, 107, 0.2);
 }
 .mentor-portal { 
-    background: linear-gradient(135deg, #8e44ad 0%, #6c3483 50%, #9b59b6 100%) !important;
-    border: 2px solid rgba(255,255,255,0.15);
+    background: linear-gradient(135deg, #a29bfe, #6c5ce7) !important;
+    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4), 0 0 0 4px rgba(162, 155, 254, 0.2);
 }
 
 /* AUTH LOGO */
@@ -475,63 +492,71 @@ textarea:focus { border-color: #e94560; }
 .auth-box p { margin-top: 16px; font-size: 13px; color: #777; }
 .auth-box a { color: #e94560; text-decoration: none; }
 
-/* SWITCH ROLE BUTTON */
+/* SWITCH ROLE BUTTON - NEW TOGGLE STYLE */
 .switch-role-container {
-    margin-top: 28px;
-    padding-top: 24px;
-    border-top: 3px solid #e94560;
+    margin-top: 32px;
+    padding-top: 28px;
+    border-top: 3px solid transparent;
+    border-image: linear-gradient(90deg, #ff6b6b, #a29bfe, #ff6b6b) 1;
     position: relative;
 }
 .switch-role-btn {
     display: inline-flex;
     align-items: center;
-    gap: 12px;
-    padding: 14px 28px;
-    background: linear-gradient(135deg, #1a1a2e 0%, #2c3e50 50%, #34495e 100%);
+    justify-content: center;
+    gap: 14px;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
     color: #ffffff !important;
-    border-radius: 35px;
+    border-radius: 50px;
     text-decoration: none;
     font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 0.8px;
-    transition: all 0.3s ease;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
-    border: 2px solid rgba(255,255,255,0.2);
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    transition: all 0.4s ease;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3), inset 0 2px 0 rgba(255,255,255,0.1);
+    border: 3px solid transparent;
     position: relative;
-    z-index: 1;
+    overflow: hidden;
 }
 .switch-role-btn::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 35px;
-    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
-    pointer-events: none;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+.switch-role-btn:hover::before {
+    left: 100%;
 }
 .switch-role-btn:hover {
-    background: linear-gradient(135deg, #e94560 0%, #c0392b 50%, #e74c3c 100%);
-    transform: translateY(-3px) scale(1.02);
-    box-shadow: 0 10px 30px rgba(233,69,96,0.5);
+    background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+    transform: translateY(-4px);
+    box-shadow: 0 12px 30px rgba(232, 67, 147, 0.4);
     border-color: rgba(255,255,255,0.3);
 }
 .switch-role-btn:active {
-    transform: translateY(-1px) scale(1);
+    transform: translateY(-2px);
 }
 .switch-role-btn span:last-child {
-    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-    position: relative;
-    z-index: 2;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 .switch-role-icon {
-    font-size: 20px;
+    font-size: 22px;
     display: inline-flex;
     align-items: center;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
-    position: relative;
-    z-index: 2;
+    animation: rotate 3s linear infinite;
+}
+@keyframes rotate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+.switch-role-btn:hover .switch-role-icon {
+    animation: none;
+    transform: scale(1.2);
 }
 
 @media (max-width: 768px) {
