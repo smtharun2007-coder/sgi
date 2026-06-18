@@ -63,13 +63,18 @@ if (isset($_POST['send_otp'])) {
             $email_sent = sendOTPEmail($email, $name, $otp, 'student');
             
             // Always move to step 2 - user can verify OTP even if email fails
-            // (OTP might be available through other means or admin can help)
             $step = 2;
+            
             if ($email_sent) {
                 $success = "OTP sent successfully to your email address! Please check your inbox and spam folder.";
             } else {
                 // Show warning but still allow user to proceed to step 2
-                $error = "Warning: Could not send OTP via email. Please contact support or try again later. You may still enter the OTP if you received it through other means.";
+                // For debugging, show more details in development mode
+                if (getenv('APP_DEBUG') === 'true') {
+                    $error = "Warning: Could not send OTP via email. Check server logs for details. You may still enter the OTP if you received it through other means.";
+                } else {
+                    $error = "Warning: Could not send OTP via email. Please contact support or try again later. You may still enter the OTP if you received it through other means.";
+                }
             }
         } else {
             $error = "Roll Number and Email do not match our records.";
