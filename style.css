@@ -480,12 +480,12 @@ textarea:focus { border-color: #e94560; }
 
 /* AUTH LOGO */
 .auth-logo {
-    width: 70px;
-    height: 70px;
+    width: 80px;
+    height: 80px;
     object-fit: contain;
-    border-radius: 14px;
+    border-radius: 16px;
     margin-bottom: 12px;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
 }
 
 /* AUTH LINKS */
