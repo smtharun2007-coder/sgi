@@ -107,7 +107,7 @@ if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit
 <body class="auth-page">
 <div class="welcome-box">
     <div class="logo-container">
-        <img src="logo1.jpeg" alt="SGI Logo" class="logo-img">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
     </div>
     <div class="sgi-title">SGI</div>
     <div class="sgi-full">Student Growth Index</div>

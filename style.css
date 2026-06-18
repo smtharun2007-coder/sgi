@@ -439,15 +439,15 @@ textarea:focus { border-color: #e94560; }
 /* PORTAL BADGE */
 .portal-badge {
     display: inline-block;
-    padding: 8px 24px;
+    padding: 10px 28px;
     border-radius: 25px;
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 1.5px;
     margin-bottom: 20px;
     color: #fff !important;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
-    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 .student-portal { 
     background: linear-gradient(135deg, #e94560, #c0392b) !important; 
@@ -472,33 +472,40 @@ textarea:focus { border-color: #e94560; }
 
 /* SWITCH ROLE BUTTON */
 .switch-role-container {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid #eee;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 2px solid #e94560;
 }
 .switch-role-btn {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 10px 20px;
+    gap: 10px;
+    padding: 12px 24px;
     background: linear-gradient(135deg, #1a1a2e, #2c3e50);
-    color: #fff;
-    border-radius: 25px;
+    color: #fff !important;
+    border-radius: 30px;
     text-decoration: none;
-    font-size: 13px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    border: 2px solid rgba(255,255,255,0.1);
 }
 .switch-role-btn:hover {
     background: linear-gradient(135deg, #e94560, #c0392b);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(233,69,96,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(233,69,96,0.4);
+    border-color: transparent;
+}
+.switch-role-btn span:last-child {
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
 }
 .switch-role-icon {
-    font-size: 16px;
+    font-size: 18px;
     display: inline-flex;
     align-items: center;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
 }
 
 @media (max-width: 768px) {
