@@ -73,6 +73,9 @@ $semList   = iterator_to_array($semCursor);
     <?php endif; ?>
 </div>
 </div>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>
 

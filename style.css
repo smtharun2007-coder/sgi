@@ -642,8 +642,20 @@ textarea:focus { border-color: #e94560; }
     right: 0;
     margin-top: 0;
     padding: 16px;
-    background: rgba(26, 26, 46, 0.9);
+    background: rgba(26, 26, 46, 0.95);
     border-top: none;
-    color: rgba(255, 255, 255, 0.6);
-    font-size: 11px;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 12px;
+    z-index: 1000;
+    text-align: center;
+}
+
+/* Add padding to auth-box to prevent footer overlap */
+.auth-page .auth-box {
+    margin-bottom: 60px;
+}
+
+/* Add padding to welcome-box to prevent footer overlap */
+.auth-page .welcome-box {
+    margin-bottom: 60px;
 }
