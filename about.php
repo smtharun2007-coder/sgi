@@ -32,6 +32,25 @@
             <li><strong>Discipline (10%)</strong> – Attendance record and GPA improvement trend.</li>
         </ul>
         <br>
+        <h3 style="color:#1a1a2e;margin-bottom:10px;">How Subject Performance is Measured</h3>
+        <p style="margin-bottom:10px;">Each subject with internal assessment is evaluated through <strong>3 CAT (Continuous Assessment Tests)</strong>, each scored out of <strong>100 marks</strong>.</p>
+        <ul class="about-list">
+            <li><strong>CAT 1, CAT 2, CAT 3</strong> – Each test is out of 100. The total is 300 marks per subject.</li>
+            <li><strong>Subject Total</strong> – Sum of CAT 1 + CAT 2 + CAT 3 (max 300).</li>
+            <li><strong>Subject Percentage</strong> – (Total / 300) × 100.</li>
+            <li><strong>CAT Score for SGI</strong> – All subjects' CAT totals are combined and converted to a score out of 10 for each CAT exam.</li>
+            <li><strong>Final CA Marks</strong> – The final Continuous Assessment mark sheet is also recorded per subject (scored vs max).</li>
+        </ul>
+        <br>
+        <h3 style="color:#1a1a2e;margin-bottom:10px;">Academic Score Formula</h3>
+        <ul class="about-list">
+            <li><strong>CAT 1 (15%)</strong> – (Total CAT 1 marks / Max) × 10 × 0.15</li>
+            <li><strong>CAT 2 (15%)</strong> – (Total CAT 2 marks / Max) × 10 × 0.15</li>
+            <li><strong>CAT 3 (20%)</strong> – (Total CAT 3 marks / Max) × 10 × 0.20</li>
+            <li><strong>GPA (25%)</strong> – Current semester GPA × 0.25</li>
+            <li><strong>CGPA (25%)</strong> – Cumulative GPA × 0.25</li>
+        </ul>
+        <br>
         <a href="SGI.pdf" target="_blank" class="btn-primary" style="width:auto;display:inline-block;padding:10px 24px;">📄 View SGI Documentation (PDF)</a>
     </div>
     <div class="section">
