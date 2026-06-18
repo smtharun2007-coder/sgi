@@ -521,11 +521,11 @@ textarea:focus { border-color: #e94560; }
 }
 .student-portal { 
     background: linear-gradient(135deg, #ff6b6b, #ee5a24) !important;
-    box-shadow: 0 8px 25px rgba(238, 90, 36, 0.4), 0 0 0 4px rgba(255, 107, 107, 0.2);
+    box-shadow: 0 4px 12px rgba(238, 90, 36, 0.2), 0 0 0 2px rgba(255, 107, 107, 0.1);
 }
 .mentor-portal { 
     background: linear-gradient(135deg, #a29bfe, #6c5ce7) !important;
-    box-shadow: 0 8px 25px rgba(108, 92, 231, 0.4), 0 0 0 4px rgba(162, 155, 254, 0.2);
+    box-shadow: 0 4px 12px rgba(108, 92, 231, 0.2), 0 0 0 2px rgba(162, 155, 254, 0.1);
 }
 
 /* LOGO CONTAINER (matching index.php style) */
