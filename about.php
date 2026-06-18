@@ -43,12 +43,10 @@
         <p>The All Semester Analysis evaluates your overall performance across semesters using the following criteria:</p>
         <br>
         <ul class="about-list">
-            <li><strong>Best &amp; Worst Semester</strong> – Determined by your <strong>SGI Score</strong>. The semester with the highest SGI is your best and the lowest is your worst.</li>
-            <li><strong>Best &amp; Worst Subject</strong> – Determined by a combined score: <strong>40% Avg CAT Marks + 60% CA Marks</strong>. Both must be available for a subject to be ranked.</li>
+            <li><strong>Best & Worst Semester</strong> – Determined by your <strong>SGI Score</strong>. The semester with the highest SGI is your best and the lowest is your worst.</li>
+            <li><strong>Best & Worst Subject</strong> – Determined by a combined score based on CAT and CA performance. Both must be available for a subject to be ranked.</li>
             <li><strong>Avg CAT Marks</strong> – Average of CAT 1, CAT 2, and CAT 3 scores (each out of 100) for that subject.</li>
             <li><strong>CA Marks</strong> – Final Continuous Assessment mark converted to a percentage out of 100.</li>
-            <li><strong>Subject Score Formula</strong> – (0.4 × Avg CAT) + (0.6 × CA%) = Combined Score out of 100.</li>
-            <li><strong>Low Attendance Warning</strong> – Any semester with attendance below 80% is flagged as a warning.</li>
         </ul>
         <br>
     </div>

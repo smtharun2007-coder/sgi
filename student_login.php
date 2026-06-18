@@ -65,7 +65,12 @@ if (isset($_POST['login'])) {
     </form>
     <p>Don't have an account? <a href="signup.php">Sign Up</a></p>
     <p><a href="forgot_password.php">Forgot Password?</a></p>
-    <p style="margin-top:20px;padding-top:16px;border-top:1px solid #eee;"><a href="index.php" style="color:#aaa;font-size:12px;">← Switch Role</a></p>
+    <div class="switch-role-container">
+        <a href="index.php" class="switch-role-btn">
+            <span class="switch-role-icon">🔄</span>
+            <span>Switch to Mentor Portal</span>
+        </a>
+    </div>
 </div>
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">

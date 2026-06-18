@@ -439,17 +439,22 @@ textarea:focus { border-color: #e94560; }
 /* PORTAL BADGE */
 .portal-badge {
     display: inline-block;
-    padding: 6px 20px;
-    border-radius: 30px;
-    font-size: 13px;
+    padding: 8px 24px;
+    border-radius: 25px;
+    font-size: 14px;
     font-weight: 700;
-    letter-spacing: 0.5px;
-    margin-bottom: 16px;
-    color: #fff;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.2);
+    letter-spacing: 1px;
+    margin-bottom: 20px;
+    color: #fff !important;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.25);
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
-.student-portal { background: linear-gradient(135deg, #e94560, #c0392b); }
-.mentor-portal  { background: linear-gradient(135deg, #8e44ad, #6c3483); }
+.student-portal { 
+    background: linear-gradient(135deg, #e94560, #c0392b) !important; 
+}
+.mentor-portal { 
+    background: linear-gradient(135deg, #8e44ad, #6c3483) !important; 
+}
 
 /* AUTH LOGO */
 .auth-logo {
@@ -464,6 +469,37 @@ textarea:focus { border-color: #e94560; }
 /* AUTH LINKS */
 .auth-box p { margin-top: 16px; font-size: 13px; color: #777; }
 .auth-box a { color: #e94560; text-decoration: none; }
+
+/* SWITCH ROLE BUTTON */
+.switch-role-container {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+}
+.switch-role-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #1a1a2e, #2c3e50);
+    color: #fff;
+    border-radius: 25px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.switch-role-btn:hover {
+    background: linear-gradient(135deg, #e94560, #c0392b);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(233,69,96,0.3);
+}
+.switch-role-icon {
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+}
 
 @media (max-width: 768px) {
     .sem-card { width: 100%; }
