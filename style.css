@@ -51,7 +51,12 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
-.auth-page.signup { align-items: flex-start; }
+.auth-page.signup { 
+    align-items: flex-start; 
+    padding-top: 60px;
+    padding-bottom: 80px;
+    overflow-y: auto;
+}
 .auth-box {
     background: #ffffff;
     padding: 48px 40px 52px;
