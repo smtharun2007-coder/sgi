@@ -115,7 +115,7 @@ if (isset($_POST['calculate'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Calculate</title>
+    <title>SGI â€“ Calculate</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
@@ -133,7 +133,7 @@ if (isset($_POST['calculate'])) {
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>Calculate SGI – Semester <?= $sem['sem'] ?></h2>
+    <h2>Calculate SGI â€“ Semester <?= $sem['sem'] ?></h2>
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
     <form method="POST" enctype="multipart/form-data">
 
@@ -243,6 +243,9 @@ function removeOtherRow(btn) {
     if (list.children.length > 1) btn.closest('tr').remove();
 }
 </script>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>
 

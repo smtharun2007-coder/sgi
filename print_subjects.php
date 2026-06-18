@@ -282,5 +282,8 @@ function grade($sgi) {
     </div>
 
 </div>
+<div class="copyright-footer" style="text-align:center;padding:20px;margin-top:40px;color:#888;font-size:12px;border-top:1px solid #ddd;">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>

@@ -59,7 +59,7 @@ if (isset($_POST['change_password'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Update Profile</title>
+    <title>SGI â€“ Update Profile</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
@@ -127,6 +127,9 @@ if (isset($_POST['change_password'])) {
         <button type="submit" name="change_password" class="btn-primary">Change Password</button>
     </form>
 </div>
+</div>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
 </div>
 </body>
 </html>

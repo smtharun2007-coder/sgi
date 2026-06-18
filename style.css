@@ -633,3 +633,17 @@ textarea:focus { border-color: #e94560; }
     color: #e94560;
     text-decoration: none;
 }
+
+/* COPYRIGHT FOOTER - AUTH PAGES */
+.auth-page .copyright-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-top: 0;
+    padding: 16px;
+    background: rgba(26, 26, 46, 0.9);
+    border-top: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 11px;
+}

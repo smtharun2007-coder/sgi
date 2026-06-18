@@ -10,7 +10,7 @@ $semList   = iterator_to_array($semCursor);
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Print</title>
+    <title>SGI - Print</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
