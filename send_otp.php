@@ -1,4 +1,4 @@
-<?php
+tudent with <?php
 // Load environment variables from .env file only if not already loaded
 if (!getenv('RESEND_API_KEY')) {
     $envFile = __DIR__ . '/.env';
@@ -83,6 +83,9 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
         error_log("SGI Email Error: RESEND_API_KEY not configured in .env file");
         return false;
     }
+    
+    // Debug logging
+    error_log("SGI Email: Sending OTP to $to for $name");
     
     $from = 'SGI <onboarding@resend.dev>'; // Default Resend domain
     
