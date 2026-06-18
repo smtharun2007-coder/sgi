@@ -53,13 +53,13 @@ body {
 }
 .auth-page.signup { align-items: flex-start; }
 .auth-box {
-    background: #ffffff;
-    backdrop-filter: blur(20px);
-    padding: 50px;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.2), inset 0 0 30px rgba(233,69,96,0.05);
+    background: rgba(255,255,255,0.97);
+    backdrop-filter: blur(12px);
+    padding: 48px 40px 52px;
+    border-radius: 28px;
+    width: 92%;
+    max-width: 520px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.45);
     text-align: center;
     animation: slideUp 0.6s ease-out;
     position: relative;
@@ -599,10 +599,10 @@ textarea:focus { border-color: #e94560; }
     left: 100%;
 }
 .switch-role-btn:hover {
-    background: linear-gradient(135deg, #fd79a8 0%, #e84393 100%);
+    background: linear-gradient(135deg, #1a1a2e 0%, #2d3436 100%);
     transform: translateY(-4px);
-    box-shadow: 0 12px 30px rgba(232, 67, 147, 0.4);
-    border-color: rgba(255,255,255,0.3);
+    box-shadow: 0 12px 30px rgba(0,0,0,0.4);
+    border-color: rgba(255,255,255,0.2);
 }
 .switch-role-btn:active {
     transform: translateY(-2px);
