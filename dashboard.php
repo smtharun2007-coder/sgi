@@ -187,5 +187,8 @@ function grade($sgi) {
     });
 </script>
 <?php endif; ?>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI). All rights reserved.
+</div>
 </body>
 </html>

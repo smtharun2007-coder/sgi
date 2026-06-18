@@ -619,3 +619,17 @@ textarea:focus { border-color: #e94560; }
     .cat-grid { grid-template-columns: repeat(2, 1fr); }
     .cat-pie-row { grid-template-columns: 1fr; }
 }
+
+/* COPYRIGHT FOOTER */
+.copyright-footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 40px;
+    color: #888;
+    font-size: 12px;
+    border-top: 1px solid #f0f2f5;
+}
+.copyright-footer a {
+    color: #e94560;
+    text-decoration: none;
+}

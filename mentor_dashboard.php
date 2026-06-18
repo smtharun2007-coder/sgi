@@ -145,5 +145,8 @@ $studentList   = iterator_to_array($studentCursor);
     </div>
 
 </div>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI). All rights reserved.
+</div>
 </body>
 </html>
