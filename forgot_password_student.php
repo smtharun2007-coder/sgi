@@ -9,10 +9,17 @@ if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit
 $error = '';
 $success = '';
 $email_sent = false;
-$step = isset($_POST['step']) ? (int)$_POST['step'] : (isset($_SESSION['reset_step']) ? $_SESSION['reset_step'] : 1);
 
 // Force portal type to student
 $portal_type = 'student';
+
+// Determine step - check session first, then POST
+$step = 1;
+if (isset($_SESSION['reset_step'])) {
+    $step = (int)$_SESSION['reset_step'];
+} elseif (isset($_POST['step'])) {
+    $step = (int)$_POST['step'];
+}
 
 // STEP 1: Enter roll number and email to receive OTP
 if (isset($_POST['send_otp'])) {
@@ -42,11 +49,14 @@ if (isset($_POST['send_otp'])) {
             $name = $user['name'] ?? 'Student';
             $email_sent = sendOTPEmail($email, $name, $otp, 'student');
             
+            // Always move to step 2 - user can verify OTP even if email fails
+            // (OTP might be available through other means or admin can help)
+            $step = 2;
             if ($email_sent) {
-                $success = "OTP sent successfully to your email address!";
-                $step = 2;
+                $success = "OTP sent successfully to your email address! Please check your inbox and spam folder.";
             } else {
-                $error = "Failed to send OTP. Please check your email configuration or contact support.";
+                // Show warning but still allow user to proceed to step 2
+                $error = "Warning: Could not send OTP via email. Please contact support or try again later. You may still enter the OTP if you received it through other means.";
             }
         } else {
             $error = "Roll Number and Email do not match our records.";
