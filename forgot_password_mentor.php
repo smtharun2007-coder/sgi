@@ -13,6 +13,19 @@ $email_sent = false;
 // Force portal type to mentor
 $portal_type = 'mentor';
 
+// Clear any existing password reset session data when starting fresh (not during resend)
+if (!isset($_POST['resend_otp']) && !isset($_POST['verify_otp']) && !isset($_POST['reset_password'])) {
+    unset($_SESSION['reset_email']);
+    unset($_SESSION['reset_otp']);
+    unset($_SESSION['reset_otp_time']);
+    unset($_SESSION['reset_portal_type']);
+    unset($_SESSION['reset_step']);
+    unset($_SESSION['reset_roll']);
+    unset($_SESSION['reset_mentor_id']);
+    unset($_SESSION['reset_user_id']);
+    unset($_SESSION['reset_verified']);
+}
+
 // Determine step - check session first, then POST
 $step = 1;
 if (isset($_SESSION['reset_step'])) {

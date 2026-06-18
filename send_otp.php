@@ -113,10 +113,13 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
     $error = curl_error($ch);
     curl_close($ch);
     
+    // Log for debugging
+    error_log("SGI Resend API: HTTP $httpCode - Response: $response");
+    
     if ($httpCode == 200) {
         return true;
     } else {
-        error_log("SGI Resend API Error: HTTP $httpCode - $error - Response: $response");
+        error_log("SGI Resend API Error: HTTP $httpCode - curl error: $error - Response: $response");
         return false;
     }
 }
