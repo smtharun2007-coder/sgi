@@ -53,9 +53,10 @@ body {
 }
 .auth-page.signup { 
     align-items: flex-start; 
-    padding-top: 60px;
-    padding-bottom: 80px;
+    padding-top: 40px;
+    padding-bottom: 100px;
     overflow-y: auto;
+    justify-content: flex-start;
 }
 .auth-box {
     background: #ffffff;
