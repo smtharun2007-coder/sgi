@@ -184,6 +184,27 @@ if (isset($_POST['resend_otp'])) {
     <meta charset="UTF-8">
     <title>SGI – Mentor Forgot Password</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
+    <style>
+        body.auth-page {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .auth-box {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(12px);
+            padding: 48px 40px;
+            border-radius: 28px;
+            width: 92%;
+            max-width: 480px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45);
+        }
+    </style>
 </head>
 <body class="auth-page">
 <div class="auth-box">
