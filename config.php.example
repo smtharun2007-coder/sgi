@@ -1,0 +1,113 @@
+<?php
+// SGI Configuration Template
+// Copy this file to config.php and update with your actual values
+
+session_start();
+
+// Error Reporting (disable in production)
+if (getenv('APP_ENV') === 'production') {
+    error_reporting(0);
+    ini_set('display_errors', 0);
+} else {
+    error_reporting(E_ALL);
+    ini_set('display_errors', 1);
+}
+
+// Database Configuration
+$mongoHost = getenv('MONGODB_HOST') ?: 'localhost';
+$mongoPort = getenv('MONGODB_PORT') ?: 27017;
+$mongoDB   = getenv('MONGODB_DB') ?: 'sgi';
+
+try {
+    $mongoClient = new MongoDB\Driver\Manager("mongodb://$mongoHost:$mongoPort");
+    $mongoDb = new MongoDB\Client("mongodb://$mongoHost:$mongoPort");
+    $database = $mongoDb->$mongoDB;
+    
+    $users      = $database->users;
+    $mentors    = $database->mentors;
+    $semesters  = $database->semesters;
+    $subjects   = $database->subjects;
+    $otp_store  = $database->otp_store;
+} catch (Exception $e) {
+    die("Database connection failed. Please check your configuration.");
+}
+
+// Authentication Functions
+function requireLogin() {
+    if (!isset($_SESSION['user'])) {
+        header("Location: student_login.php");
+        exit;
+    }
+    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
+        session_unset();
+        session_destroy();
+        header("Location: student_login.php?timeout=1");
+        exit;
+    }
+    $_SESSION['last_activity'] = time();
+}
+
+function requireMentor() {
+    if (!isset($_SESSION['mentor'])) {
+        header("Location: mentor_login.php");
+        exit;
+    }
+    if (isset($_SESSION['last_mentor_activity']) && (time() - $_SESSION['last_mentor_activity'] > 1800)) {
+        session_unset();
+        session_destroy();
+        header("Location: mentor_login.php?timeout=1");
+        exit;
+    }
+    $_SESSION['last_mentor_activity'] = time();
+}
+
+// Cloudinary Configuration
+$cloudinaryCloudName = getenv('CLOUDINARY_CLOUD_NAME');
+$cloudinaryApiKey    = getenv('CLOUDINARY_API_KEY');
+$cloudinaryApiSecret = getenv('CLOUDINARY_API_SECRET');
+
+function uploadToCloudinary($filePath, $folder = 'sgi') {
+    global $cloudinaryCloudName, $cloudinaryApiKey, $cloudinaryApiSecret;
+    
+    if (empty($cloudinaryCloudName) || empty($cloudinaryApiKey) || empty($cloudinaryApiSecret)) {
+        // Return a local path if Cloudinary is not configured
+        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
+        $filename = uniqid() . '.' . $ext;
+        $localPath = 'uploads/' . $filename;
+        if (copy($filePath, $localPath)) {
+            return $localPath;
+        }
+        return null;
+    }
+    
+    $timestamp = time();
+    $signature = sha1("timestamp={$timestamp}{cloudinaryApiSecret}");
+    
+    $ch = curl_init();
+    curl_setopt_array($ch, [
+        CURLOPT_URL => "https://api.cloudinary.com/v1_1/$cloudinaryCloudName/upload",
+        CURLOPT_POST => true,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POSTFIELDS => [
+            'file' => new CURLFile($filePath),
+            'upload_preset' => 'sgi_preset',
+            'folder' => $folder,
+            'api_key' => $cloudinaryApiKey,
+            'timestamp' => $timestamp,
+            'signature' => $signature
+        ]
+    ]);
+    
+    $response = curl_exec($ch);
+    curl_close($ch);
+    
+    $result = json_decode($response, true);
+    return $result['secure_url'] ?? null;
+}
+
+function imgUrl($url) {
+    if (empty($url)) return 'https://via.placeholder.com/150';
+    if (filter_var($url, FILTER_VALIDATE_URL)) return $url;
+    return $url;
+}
+?>

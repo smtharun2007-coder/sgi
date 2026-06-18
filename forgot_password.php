@@ -46,7 +46,7 @@ if (isset($_POST['send_otp'])) {
                     $success = "OTP sent successfully to your email address!";
                     $step = 2;
                 } else {
-                    $error = "Failed to send OTP. Please try again or contact support.";
+                    $error = "Failed to send OTP. Please check your email configuration or contact support. Error: Email server connection failed.";
                 }
             } else {
                 $error = "Mentor ID and Email do not match our records.";
@@ -84,7 +84,7 @@ if (isset($_POST['send_otp'])) {
                     $success = "OTP sent successfully to your email address!";
                     $step = 2;
                 } else {
-                    $error = "Failed to send OTP. Please try again or contact support.";
+                    $error = "Failed to send OTP. Please check your email configuration or contact support. Error: Email server connection failed.";
                 }
             } else {
                 $error = "Roll Number and Email do not match our records.";
@@ -196,7 +196,7 @@ if (isset($_POST['resend_otp'])) {
                 if (sendOTPEmail($_SESSION['reset_email'], $name, $otp, 'mentor')) {
                     $success = "New OTP sent to your email!";
                 } else {
-                    $error = "Failed to resend OTP.";
+                    $error = "Failed to resend OTP. Please check email configuration.";
                 }
             }
         } else {
@@ -212,7 +212,7 @@ if (isset($_POST['resend_otp'])) {
                 if (sendOTPEmail($_SESSION['reset_email'], $name, $otp, 'student')) {
                     $success = "New OTP sent to your email!";
                 } else {
-                    $error = "Failed to resend OTP.";
+                    $error = "Failed to resend OTP. Please check email configuration.";
                 }
             }
         }
@@ -317,7 +317,7 @@ $portal_type = isset($_GET['portal']) ? $_GET['portal'] : 'student';
     
     <?php if ($step < 4): ?>
     <div class="switch-role-container">
-        <a href="forgot_password.php?portal=<?= ($portal_type === 'mentor') ? 'student' : 'mentor' ?>" class="switch-role-btn">
+        <a href="index.php" class="switch-role-btn">
             <span class="switch-role-icon">🔄</span>
             <span>Switch to <?= ($portal_type === 'mentor') ? 'Student' : 'Mentor' ?> Portal</span>
         </a>

@@ -1,4 +1,9 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php';
+
 // Email OTP sending utility
 function generateOTP($length = 6) {
     return str_pad(random_int(0, pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
@@ -60,16 +65,35 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
     </html>
     ";
     
-    // Headers for HTML email
-    $headers = "MIME-Version: 1.0" . "\r\n";
-    $headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
-    $headers .= "From: SGI Password Reset <noreply@sgi.edu>" . "\r\n";
-    $headers .= "Reply-To: support@sgi.edu" . "\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion();
-    
-    // Send email using PHP mail() function
-    // Note: For production, consider using PHPMailer or SwiftMailer with SMTP
-    return mail($to, $subject, $message, $headers);
+    try {
+        $mail = new PHPMailer(true);
+        
+        // Server settings
+        $mail->isSMTP();
+        $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = getenv('MAIL_USERNAME');
+        $mail->Password   = getenv('MAIL_PASSWORD');
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+        
+        // Recipients
+        $mail->setFrom(getenv('MAIL_USERNAME') ?: 'noreply@sgi.edu', 'SGI Password Reset');
+        $mail->addAddress($to, $name);
+        $mail->addReplyTo(getenv('MAIL_USERNAME') ?: 'support@sgi.edu', 'SGI Support');
+        
+        // Content
+        $mail->isHTML(true);
+        $mail->Subject = $subject;
+        $mail->Body    = $message;
+        $mail->AltBody = "Your SGI OTP is: $otp. Valid for 10 minutes. Do not share with anyone.";
+        
+        return $mail->send();
+    } catch (Exception $e) {
+        // Log error for debugging
+        error_log("PHPMailer Error: " . $mail->ErrorInfo);
+        return false;
+    }
 }
 
 function sendOTPViaSMS($phone, $otp) {
