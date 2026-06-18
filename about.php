@@ -1,68 +1,4 @@
-<?php
-include 'config.php';
-requireLogin();
-$u = $_SESSION['user'];
-
-// Fetch semesters
-$semCursor = $semesters->find(['roll' => $u['roll']], ['sort' => ['sem' => 1]]);
-$semList   = iterator_to_array($semCursor);
-
-// Best / Worst semester by SGI
-$bestSem = null; $worstSem = null;
-foreach ($semList as $s) {
-    if (empty($s['sgi'])) continue;
-    if (!$bestSem  || $s['sgi'] > $bestSem['sgi'])  $bestSem  = $s;
-    if (!$worstSem || $s['sgi'] < $worstSem['sgi']) $worstSem = $s;
-}
-
-// Subject stats — best/worst by 40% avgCAT + 60% CA%
-$subjectStats  = [];
-foreach ($semList as $s) {
-    $subCursor = $subjects->find(['sem_id' => (string)$s['_id'], 'roll' => $u['roll'], 'internal' => 'yes']);
-    foreach (iterator_to_array($subCursor) as $sub) {
-        $name = $sub['subject_name'];
-        if (!isset($subjectStats[$name])) {
-            $subjectStats[$name] = ['sem' => $s['sem'], 'cat_sum' => 0, 'cat_count' => 0, 'ca_scored' => null, 'ca_max' => null];
-        }
-        foreach (['cat1','cat2','cat3'] as $cat) {
-            if (isset($sub[$cat]) && $sub[$cat] !== 'nil') {
-                $subjectStats[$name]['cat_sum']   += (float)$sub[$cat];
-                $subjectStats[$name]['cat_count'] ++;
-            }
-        }
-        if (!empty($sub['ca_max']) && $sub['ca_max'] > 0) {
-            $subjectStats[$name]['ca_scored'] = $sub['ca_scored'];
-            $subjectStats[$name]['ca_max']    = $sub['ca_max'];
-        }
-    }
-}
-
-// Calculate combined score
-$subjectScores = [];
-foreach ($subjectStats as $name => $d) {
-    $avgCat = $d['cat_count'] > 0 ? round($d['cat_sum'] / $d['cat_count'], 2) : 0;
-    $subjectStats[$name]['avg_cat'] = $avgCat;
-    if ($d['ca_scored'] !== null && $d['ca_max'] > 0) {
-        $ca100 = round(($d['ca_scored'] / $d['ca_max']) * 100, 2);
-        $subjectStats[$name]['ca_pct'] = $ca100;
-        $subjectScores[$name] = round(0.4 * $avgCat + 0.6 * $ca100, 2);
-    } else {
-        $subjectStats[$name]['ca_pct'] = null;
-        // Only include in scoring if CA exists
-    }
-}
-arsort($subjectScores);
-$bestSubject  = !empty($subjectScores) ? array_key_first($subjectScores) : null;
-$worstSubject = !empty($subjectScores) ? array_key_last($subjectScores)  : null;
-
-function grade($sgi) {
-    if ($sgi >= 9) return 'O (Excellent)';
-    if ($sgi >= 8) return 'A (Very Good)';
-    if ($sgi >= 7) return 'B (Good)';
-    if ($sgi >= 6) return 'C (Average)';
-    return 'D (Needs Improvement)';
-}
-?>
+<?php include 'config.php'; requireLogin(); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -101,65 +37,19 @@ function grade($sgi) {
         <a href="SGI.pdf" target="_blank" class="btn-primary" style="width:auto;display:inline-block;padding:10px 24px;">📄 View SGI Documentation (PDF)</a>
     </div>
 
-    <!-- ALL SEMESTER ANALYSIS -->
-    <?php if ($bestSem || $worstSem || $bestSubject): ?>
+    <!-- ALL SEMESTER ANALYSIS GUIDELINES -->
     <div class="section" style="margin-top:24px;">
         <h2>All Semester Analysis</h2>
-        <p style="color:#888;font-size:13px;margin-top:4px;margin-bottom:20px;">
-            Best &amp; Worst Semester based on <strong>SGI Score</strong> &nbsp;|&nbsp;
-            Best &amp; Worst Subject based on <strong>40% Avg CAT + 60% CA Marks</strong>
-        </p>
-        <div class="analytics-grid">
-
-            <?php if ($bestSem): ?>
-            <div class="analytics-card best">
-                <span class="analytics-card-icon">🏆</span>
-                <span class="analytics-card-label">Best Semester</span>
-                <span class="analytics-card-sem">Semester <?= $bestSem['sem'] ?></span>
-                <span class="analytics-card-value">SGI <?= round($bestSem['sgi'], 2) ?></span>
-                <span class="analytics-card-grade"><?= grade($bestSem['sgi']) ?></span>
-            </div>
-            <?php endif; ?>
-
-            <?php if ($worstSem): ?>
-            <div class="analytics-card worst">
-                <span class="analytics-card-icon">📉</span>
-                <span class="analytics-card-label">Worst Semester</span>
-                <span class="analytics-card-sem">Semester <?= $worstSem['sem'] ?></span>
-                <span class="analytics-card-value">SGI <?= round($worstSem['sgi'], 2) ?></span>
-                <span class="analytics-card-grade"><?= grade($worstSem['sgi']) ?></span>
-            </div>
-            <?php endif; ?>
-
-            <?php if ($bestSubject): ?>
-            <div class="analytics-card best">
-                <span class="analytics-card-icon">⭐</span>
-                <span class="analytics-card-label">Best Subject</span>
-                <span class="analytics-card-sem"><?= htmlspecialchars($bestSubject) ?></span>
-                <span class="analytics-card-value">Score: <?= $subjectScores[$bestSubject] ?> / 100</span>
-                <span class="analytics-card-grade">
-                    Avg CAT: <?= $subjectStats[$bestSubject]['avg_cat'] ?> &nbsp;|&nbsp;
-                    CA: <?= $subjectStats[$bestSubject]['ca_pct'] !== null ? $subjectStats[$bestSubject]['ca_pct'].'%' : '—' ?>
-                </span>
-            </div>
-            <?php endif; ?>
-
-            <?php if ($worstSubject && $worstSubject !== $bestSubject): ?>
-            <div class="analytics-card worst">
-                <span class="analytics-card-icon">📚</span>
-                <span class="analytics-card-label">Needs Focus</span>
-                <span class="analytics-card-sem"><?= htmlspecialchars($worstSubject) ?></span>
-                <span class="analytics-card-value">Score: <?= $subjectScores[$worstSubject] ?> / 100</span>
-                <span class="analytics-card-grade">
-                    Avg CAT: <?= $subjectStats[$worstSubject]['avg_cat'] ?> &nbsp;|&nbsp;
-                    CA: <?= $subjectStats[$worstSubject]['ca_pct'] !== null ? $subjectStats[$worstSubject]['ca_pct'].'%' : '—' ?>
-                </span>
-            </div>
-            <?php endif; ?>
-
-        </div>
+        <p style="margin-bottom:16px;">The All Semester Analysis evaluates your overall performance across semesters using the following criteria:</p>
+        <ul class="about-list">
+            <li><strong>Best & Worst Semester</strong> – Determined by your <strong>SGI Score</strong>. The semester with the highest SGI is your best and the lowest is your worst.</li>
+            <li><strong>Best & Worst Subject</strong> – Determined by a combined score: <strong>40% Avg CAT Marks + 60% CA Marks</strong>. Both must be available for a subject to be ranked.</li>
+            <li><strong>Avg CAT Marks</strong> – Average of CAT 1, CAT 2, and CAT 3 scores (each out of 100) for that subject.</li>
+            <li><strong>CA Marks</strong> – Final Continuous Assessment mark converted to a percentage out of 100.</li>
+            <li><strong>Subject Score Formula</strong> – (0.4 × Avg CAT) + (0.6 × CA%) = Combined Score out of 100.</li>
+            <li><strong>Low Attendance Warning</strong> – Any semester with attendance below 80% is flagged as a warning.</li>
+        </ul>
     </div>
-    <?php endif; ?>
 
     <!-- SGI GRADE SCALE -->
     <div class="section" style="margin-top:24px;">
