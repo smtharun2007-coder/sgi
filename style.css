@@ -439,21 +439,26 @@ textarea:focus { border-color: #e94560; }
 /* PORTAL BADGE */
 .portal-badge {
     display: inline-block;
-    padding: 10px 28px;
-    border-radius: 25px;
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    margin-bottom: 20px;
-    color: #fff !important;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    padding: 12px 32px;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    margin-bottom: 24px;
+    margin-top: 8px;
+    color: #ffffff !important;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5), 0 0 20px rgba(255,255,255,0.1);
+    position: relative;
+    z-index: 1;
 }
 .student-portal { 
-    background: linear-gradient(135deg, #e94560, #c0392b) !important; 
+    background: linear-gradient(135deg, #e94560 0%, #c0392b 50%, #e74c3c 100%) !important;
+    border: 2px solid rgba(255,255,255,0.15);
 }
 .mentor-portal { 
-    background: linear-gradient(135deg, #8e44ad, #6c3483) !important; 
+    background: linear-gradient(135deg, #8e44ad 0%, #6c3483 50%, #9b59b6 100%) !important;
+    border: 2px solid rgba(255,255,255,0.15);
 }
 
 /* AUTH LOGO */
@@ -472,40 +477,61 @@ textarea:focus { border-color: #e94560; }
 
 /* SWITCH ROLE BUTTON */
 .switch-role-container {
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 2px solid #e94560;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 3px solid #e94560;
+    position: relative;
 }
 .switch-role-btn {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 24px;
-    background: linear-gradient(135deg, #1a1a2e, #2c3e50);
-    color: #fff !important;
-    border-radius: 30px;
+    gap: 12px;
+    padding: 14px 28px;
+    background: linear-gradient(135deg, #1a1a2e 0%, #2c3e50 50%, #34495e 100%);
+    color: #ffffff !important;
+    border-radius: 35px;
     text-decoration: none;
-    font-size: 14px;
-    font-weight: 700;
-    letter-spacing: 0.5px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-    border: 2px solid rgba(255,255,255,0.1);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.15);
+    border: 2px solid rgba(255,255,255,0.2);
+    position: relative;
+    z-index: 1;
+}
+.switch-role-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 35px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.1), transparent);
+    pointer-events: none;
 }
 .switch-role-btn:hover {
-    background: linear-gradient(135deg, #e94560, #c0392b);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(233,69,96,0.4);
-    border-color: transparent;
+    background: linear-gradient(135deg, #e94560 0%, #c0392b 50%, #e74c3c 100%);
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 10px 30px rgba(233,69,96,0.5);
+    border-color: rgba(255,255,255,0.3);
+}
+.switch-role-btn:active {
+    transform: translateY(-1px) scale(1);
 }
 .switch-role-btn span:last-child {
-    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    position: relative;
+    z-index: 2;
 }
 .switch-role-icon {
-    font-size: 18px;
+    font-size: 20px;
     display: inline-flex;
     align-items: center;
-    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    position: relative;
+    z-index: 2;
 }
 
 @media (max-width: 768px) {
