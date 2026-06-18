@@ -53,10 +53,6 @@ body {
 }
 .auth-page.signup { 
     align-items: center;
-    padding-top: 20px;
-    padding-bottom: 80px;
-    overflow-y: auto;
-    justify-content: center;
 }
 .auth-box {
     background: #ffffff;
@@ -642,26 +638,6 @@ textarea:focus { border-color: #e94560; }
 
 /* COPYRIGHT FOOTER - AUTH PAGES */
 .auth-page .copyright-footer {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin-top: 0;
-    padding: 16px;
-    background: rgba(26, 26, 46, 0.95);
+    color: rgba(255, 255, 255, 0.6);
     border-top: none;
-    color: rgba(255, 255, 255, 0.7);
-    font-size: 12px;
-    z-index: 1000;
-    text-align: center;
-}
-
-/* Add padding to auth-box to prevent footer overlap */
-.auth-page .auth-box {
-    margin-bottom: 60px;
-}
-
-/* Add padding to welcome-box to prevent footer overlap */
-.auth-page .welcome-box {
-    margin-bottom: 60px;
 }
