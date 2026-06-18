@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -39,8 +39,8 @@ if (isset($_POST['verify'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI â€“ Confirmation</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI – Confirmation</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -57,7 +57,7 @@ if (isset($_POST['verify'])) {
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>Confirmation â€“ Semester <?= $sem['sem'] ?></h2>
+    <h2>Confirmation – Semester <?= $sem['sem'] ?></h2>
     <hr style="margin:16px 0;">
     <h3>CAT Marks Summary</h3>
     <div class="cat-table-wrap">
@@ -70,11 +70,11 @@ if (isset($_POST['verify'])) {
                 <tr>
                     <td><?= htmlspecialchars($sub['subject_name']) ?></td>
                     <td><?= htmlspecialchars($sub['subject_code']) ?></td>
-                    <td><?= $sub['cat1'] ?? 'â€”' ?></td>
-                    <td><?= $sub['cat2'] ?? 'â€”' ?></td>
-                    <td><?= $sub['cat3'] ?? 'â€”' ?></td>
-                    <td><?= $sub['total'] ?? 'â€”' ?></td>
-                    <td><?= !empty($sub['percentage']) ? $sub['percentage'].'%' : 'â€”' ?></td>
+                    <td><?= $sub['cat1'] ?? '—' ?></td>
+                    <td><?= $sub['cat2'] ?? '—' ?></td>
+                    <td><?= $sub['cat3'] ?? '—' ?></td>
+                    <td><?= $sub['total'] ?? '—' ?></td>
+                    <td><?= !empty($sub['percentage']) ? $sub['percentage'].'%' : '—' ?></td>
                 </tr>
                 <?php endforeach; ?>
             </tbody>

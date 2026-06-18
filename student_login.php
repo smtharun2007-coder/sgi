@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 if (isset($_SESSION['user'])) { header("Location: dashboard.php"); exit; }
 $error = '';
@@ -49,13 +49,13 @@ if (isset($_POST['login'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Student Login</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Student Login</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body class="auth-page">
 <div class="auth-box">
     <h1>Student Growth Index</h1>
-    <div class="portal-badge student-portal">🎓 Student Portal</div>
+    <div class="portal-badge student-portal">?? Student Portal</div>
     <h2>Login</h2>
     <form method="POST">
         <input type="text"     name="roll"     placeholder="Roll Number" required>
@@ -66,7 +66,7 @@ if (isset($_POST['login'])) {
     <p><a href="forgot_password_student.php">Forgot Password?</a></p>
     <div class="switch-role-container">
         <a href="index.php" class="switch-role-btn">
-            <span class="switch-role-icon">🔄</span>
+            <span class="switch-role-icon">??</span>
             <span>Switch to Mentor Portal</span>
         </a>
     </div>

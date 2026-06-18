@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 requireLogin();
 $error = '';
@@ -39,8 +39,8 @@ if (isset($_POST['save'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Add Semester</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Add Semester</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -76,7 +76,7 @@ if (isset($_POST['save'])) {
                         <option value="yes">Yes</option>
                         <option value="no">No</option>
                     </select>
-                    <button type="button" class="btn-remove" onclick="removeRow(this)">✕</button>
+                    <button type="button" class="btn-remove" onclick="removeRow(this)">?</button>
                 </div>
             </div>
             <button type="button" class="btn-add-subject" onclick="addRow()">+ Add Subject</button>
@@ -107,7 +107,7 @@ function addRow() {
             <option value="yes">Yes</option>
             <option value="no">No</option>
         </select>
-        <button type="button" class="btn-remove" onclick="removeRow(this)">✕</button>
+        <button type="button" class="btn-remove" onclick="removeRow(this)">?</button>
     `;
     list.appendChild(row);
 }

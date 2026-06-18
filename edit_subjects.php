@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -44,8 +44,8 @@ if (isset($_POST['save'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI â€“ Edit Subjects</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI – Edit Subjects</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -62,7 +62,7 @@ if (isset($_POST['save'])) {
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>Edit Subjects â€“ Semester <?= $sem['sem'] ?></h2>
+    <h2>Edit Subjects – Semester <?= $sem['sem'] ?></h2>
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
     <form method="POST">
         <div class="cat-table-wrap">

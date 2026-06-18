@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 include 'config.php';
 requireLogin();
 $u = $_SESSION['user'];
@@ -17,8 +17,8 @@ $creditCursor = $subjects->find(['roll' => $u['roll']]);
 foreach (iterator_to_array($creditCursor) as $sub) {
     $total_credits += (int)($sub['credits'] ?? 0);
 }
-$avg_gpa = $gpa_count ? round($total_gpa / $gpa_count, 2) : 'â€”';
-$avg_sgi = $sgi_count ? round($total_sgi / $sgi_count, 2) : 'â€”';
+$avg_gpa = $gpa_count ? round($total_gpa / $gpa_count, 2) : '—';
+$avg_sgi = $sgi_count ? round($total_sgi / $sgi_count, 2) : '—';
 
 function grade($sgi) {
     if ($sgi >= 9) return 'O (Excellent)';
@@ -32,8 +32,8 @@ function grade($sgi) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI â€“ Dashboard</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI – Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -59,7 +59,7 @@ function grade($sgi) {
             <p><strong>Mother:</strong> <?= htmlspecialchars($u['mother']) ?></p>
             <p><strong>Department:</strong> <?= htmlspecialchars($u['dept']) ?></p>
             <p><strong>Class:</strong> <?= htmlspecialchars($u['class']) ?></p>
-            <p><strong>Year:</strong> <?= $u['year_from'] ?> â€“ <?= $u['year_to'] ?></p>
+            <p><strong>Year:</strong> <?= $u['year_from'] ?> – <?= $u['year_to'] ?></p>
             <p><strong>Email:</strong> <?= htmlspecialchars($u['email']) ?></p>
             <p><strong>Phone:</strong> <?= htmlspecialchars($u['phone']) ?></p>
             <?php if (!empty($u['mentor_id'])): ?>
@@ -120,9 +120,9 @@ function grade($sgi) {
             </div>
             <div class="sem-card-body">
                 <div class="sem-stat-grid">
-                    <div class="sem-stat"><span class="sem-stat-label">GPA</span><span class="sem-stat-value"><?= $s['gpa'] ?? 'â€”' ?></span></div>
-                    <div class="sem-stat"><span class="sem-stat-label">CGPA</span><span class="sem-stat-value"><?= $s['cgpa'] ?? 'â€”' ?></span></div>
-                    <div class="sem-stat"><span class="sem-stat-label">SGI</span><span class="sem-stat-value"><?= !empty($s['sgi']) ? round($s['sgi'], 2) : 'â€”' ?></span></div>
+                    <div class="sem-stat"><span class="sem-stat-label">GPA</span><span class="sem-stat-value"><?= $s['gpa'] ?? '—' ?></span></div>
+                    <div class="sem-stat"><span class="sem-stat-label">CGPA</span><span class="sem-stat-value"><?= $s['cgpa'] ?? '—' ?></span></div>
+                    <div class="sem-stat"><span class="sem-stat-label">SGI</span><span class="sem-stat-value"><?= !empty($s['sgi']) ? round($s['sgi'], 2) : '—' ?></span></div>
                     <div class="sem-stat"><span class="sem-stat-label">Credits</span><span class="sem-stat-value"><?= $semCredits ?></span></div>
                 </div>
                 <?php
@@ -154,7 +154,7 @@ function grade($sgi) {
     <?php if (!empty($semList)): ?>
     <div class="sem-cards" style="margin-top:20px;">
         <div class="sem-card">
-            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);"><h3>ðŸ“Š All Sem Analytics</h3></div>
+            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);"><h3>?? All Sem Analytics</h3></div>
             <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
                 <a href="analytics.php" class="btn-primary" style="width:auto;padding:10px 24px;">View Analytics</a>
             </div>

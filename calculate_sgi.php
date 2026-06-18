@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -115,8 +115,8 @@ if (isset($_POST['calculate'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Calculate</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Calculate</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -133,7 +133,7 @@ if (isset($_POST['calculate'])) {
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>Calculate SGI – Semester <?= $sem['sem'] ?></h2>
+    <h2>Calculate SGI � Semester <?= $sem['sem'] ?></h2>
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
     <form method="POST" enctype="multipart/form-data">
 
@@ -185,7 +185,7 @@ if (isset($_POST['calculate'])) {
                             <td><input type="number" name="other_count[]"   placeholder="Count" min="0" value="1" style="width:100%;margin:0;"></td>
                             <td><input type="number" step="0.01" name="other_points[]" placeholder="Points" min="0" value="0" style="width:100%;margin:0;"></td>
                             <td><input type="text"   name="other_eval_id[]" placeholder="Evaluator ID" style="width:100%;margin:0;"></td>
-                            <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">✕</button></td>
+                            <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">?</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -234,7 +234,7 @@ function addOtherRow() {
         <td><input type="number" name="other_count[]"   placeholder="Count" min="0" value="1" style="width:100%;margin:0;"></td>
         <td><input type="number" step="0.01" name="other_points[]" placeholder="Points" min="0" value="0" style="width:100%;margin:0;"></td>
         <td><input type="text"   name="other_eval_id[]" placeholder="Evaluator ID" style="width:100%;margin:0;"></td>
-        <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">✕</button></td>
+        <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">?</button></td>
     `;
     list.appendChild(row);
 }

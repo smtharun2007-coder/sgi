@@ -1,4 +1,4 @@
-Ôªø<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -25,9 +25,9 @@ foreach ($semList as $s) {
     if (!$worstSem || $s['sgi'] < $worstSem['sgi']) $worstSem = $s;
 }
 
-$avg_gpa  = $gpa_count  ? round($total_gpa  / $gpa_count,  2) : '‚Äî';
-$avg_cgpa = $cgpa_count ? round($total_cgpa / $cgpa_count, 2) : '‚Äî';
-$avg_sgi  = $sgi_count  ? round($total_sgi  / $sgi_count,  2) : '‚Äî';
+$avg_gpa  = $gpa_count  ? round($total_gpa  / $gpa_count,  2) : 'ó';
+$avg_cgpa = $cgpa_count ? round($total_cgpa / $cgpa_count, 2) : 'ó';
+$avg_sgi  = $sgi_count  ? round($total_sgi  / $sgi_count,  2) : 'ó';
 
 $subjectStats = [];
 foreach ($semList as $s) {
@@ -65,7 +65,7 @@ function grade($sgi) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI ‚Äì Subject Report</title>
+    <title>SGI ñ Subject Report</title>
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -141,8 +141,8 @@ function grade($sgi) {
 <body>
 
 <div class="print-btn-row">
-    <a href="print_select.php" class="back-btn">‚Üê Back</a>
-    <button class="print-btn" onclick="window.print()">üñ® Print Report</button>
+    <a href="print_select.php" class="back-btn">? Back</a>
+    <button class="print-btn" onclick="window.print()">?? Print Report</button>
 </div>
 
 <div class="page">
@@ -160,7 +160,7 @@ function grade($sgi) {
                 <p><?= htmlspecialchars($u['class']) ?></p>
                 <p><?= htmlspecialchars($u['reg']) ?></p>
                 <p><?= htmlspecialchars($u['dept']) ?></p>
-                <p><?= $u['year_from'] ?> ‚Äì <?= $u['year_to'] ?></p>
+                <p><?= $u['year_from'] ?> ñ <?= $u['year_to'] ?></p>
             </div>
         </div>
         <div class="report-title">
@@ -189,26 +189,26 @@ function grade($sgi) {
     <div class="highlight-row">
         <?php if ($bestSem): ?>
         <div class="highlight-card best">
-            <label>üèÜ Best Semester</label>
+            <label>?? Best Semester</label>
             <span>Semester <?= $bestSem['sem'] ?></span>
-            <small>SGI: <?= round($bestSem['sgi'], 2) ?> ‚Äî <?= grade($bestSem['sgi']) ?></small>
+            <small>SGI: <?= round($bestSem['sgi'], 2) ?> ó <?= grade($bestSem['sgi']) ?></small>
         </div>
         <?php endif; ?>
         <?php if ($worstSem): ?>
         <div class="highlight-card worst">
-            <label>üìâ Needs Improvement</label>
+            <label>?? Needs Improvement</label>
             <span>Semester <?= $worstSem['sem'] ?></span>
-            <small>SGI: <?= round($worstSem['sgi'], 2) ?> ‚Äî <?= grade($worstSem['sgi']) ?></small>
+            <small>SGI: <?= round($worstSem['sgi'], 2) ?> ó <?= grade($worstSem['sgi']) ?></small>
         </div>
         <?php endif; ?>
         <?php if (!empty($subjectAvgs)): ?>
         <div class="highlight-card best">
-            <label>‚≠ê Best Subject</label>
+            <label>? Best Subject</label>
             <span><?= htmlspecialchars($bestSubject) ?></span>
             <small>Avg CAT: <?= $subjectAvgs[$bestSubject] ?></small>
         </div>
         <div class="highlight-card worst">
-            <label>üìö Needs Focus</label>
+            <label>?? Needs Focus</label>
             <span><?= htmlspecialchars($worstSubject) ?></span>
             <small>Avg CAT: <?= $subjectAvgs[$worstSubject] ?></small>
         </div>
@@ -242,7 +242,7 @@ function grade($sgi) {
                     $caM = $subjectStats[$name]['ca_max'];
                     if ($caS !== null && $caM > 0):
                         echo round(($caS / $caM) * 100, 2);
-                    else: ?>‚Äî<?php endif; ?></td>
+                    else: ?>ó<?php endif; ?></td>
                 <td>
                     <div class="bar-wrap">
                         <div class="bar-fill" style="width:<?= $avg ?>%;background:<?= $avg >= 75 ? '#27ae60' : ($avg >= 50 ? '#f5a623' : '#e94560') ?>;"></div>

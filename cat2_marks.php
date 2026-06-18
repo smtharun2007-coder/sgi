@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -48,8 +48,8 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI â€“ CAT 2 Marks</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI – CAT 2 Marks</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -66,7 +66,7 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>CAT 2 Marks â€“ Semester <?= $sem['sem'] ?></h2>
+    <h2>CAT 2 Marks – Semester <?= $sem['sem'] ?></h2>
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
     <div style="display:flex;gap:12px;margin-bottom:16px;">
         <span style="background:#f5a623;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">AB = Absent for Exam</span>

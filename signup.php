@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 if (isset($_SESSION['user'])) { header("Location: dashboard.php"); exit; }
 $error = '';
@@ -12,12 +12,12 @@ if (isset($_POST['signup'])) {
         } else {
             $photo = '';
             if (!empty($_FILES['photo']['name'])) {
-                if ($_FILES['photo']['size'] > 2 * 1024 * 1024) { $error = "Profile photo must be ≤ 2 MB."; }
+                if ($_FILES['photo']['size'] > 2 * 1024 * 1024) { $error = "Profile photo must be = 2 MB."; }
                 else { $photo = uploadToCloudinary($_FILES['photo']['tmp_name'], 'sgi/students'); }
             }
             $signature = '';
             if (!$error && !empty($_FILES['signature']['name'])) {
-                if ($_FILES['signature']['size'] > 1 * 1024 * 1024) { $error = "Signature must be ≤ 1 MB."; }
+                if ($_FILES['signature']['size'] > 1 * 1024 * 1024) { $error = "Signature must be = 1 MB."; }
                 else { $signature = uploadToCloudinary($_FILES['signature']['tmp_name'], 'sgi/signatures'); }
             }
             if (!$error) {
@@ -49,13 +49,13 @@ if (isset($_POST['signup'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Sign Up</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Sign Up</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body class="auth-page signup">
 <div class="auth-box signup-box">
     <h1>Student Growth Index</h1>
-    <div class="portal-badge student-portal">🎓 Student Portal</div>
+    <div class="portal-badge student-portal">?? Student Portal</div>
     <h2>Create Student Account</h2>
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
     <form method="POST" enctype="multipart/form-data">
@@ -84,7 +84,7 @@ if (isset($_POST['signup'])) {
     <p>Already have an account? <a href="student_login.php">Login</a></p>
     <div class="switch-role-container">
         <a href="index.php" class="switch-role-btn">
-            <span class="switch-role-icon">🔄</span>
+            <span class="switch-role-icon">??</span>
             <span>Switch to Mentor Portal</span>
         </a>
     </div>

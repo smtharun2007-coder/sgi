@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -46,11 +46,11 @@ $docError = '';
 if ($sgiDone && isset($_POST['upload_docs'])) {
     $updateDocs = [];
     if (!empty($_FILES['result_photo']['name'])) {
-        if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) { $docError = "Semester result must be ≤ 5 MB."; }
+        if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) { $docError = "Semester result must be = 5 MB."; }
         else { $updateDocs['result_photo'] = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'image'); }
     }
     if (!$docError && !empty($_FILES['ca_photo']['name'])) {
-        if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) { $docError = "CA mark sheet photo must be ≤ 5 MB."; }
+        if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) { $docError = "CA mark sheet photo must be = 5 MB."; }
         else { $updateDocs['ca_photo'] = uploadToCloudinary($_FILES['ca_photo']['tmp_name'], 'sgi/ca_marks'); }
     }
     if (!$docError && !empty($updateDocs)) {
@@ -71,8 +71,8 @@ function grade($sgi) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Semester <?= $s['sem'] ?> Details</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Semester <?= $s['sem'] ?> Details</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -89,10 +89,10 @@ function grade($sgi) {
 </nav>
 <div class="container">
     <div class="form-box" style="padding-bottom:80px;max-width:1200px;">
-        <h2>Semester <?= $s['sem'] ?> – Details</h2>
+        <h2>Semester <?= $s['sem'] ?> � Details</h2>
         <hr style="margin:16px 0;">
 
-        <h3>CAT Marks <?php if (!$cat1Submitted): ?><a href="edit_subjects.php?sem_id=<?= $id ?>" class="btn-calc" style="font-size:12px;padding:5px 12px;margin-left:10px;">✏ Edit Subjects</a><?php endif; ?></h3>
+        <h3>CAT Marks <?php if (!$cat1Submitted): ?><a href="edit_subjects.php?sem_id=<?= $id ?>" class="btn-calc" style="font-size:12px;padding:5px 12px;margin-left:10px;">? Edit Subjects</a><?php endif; ?></h3>
         <?php if (!empty($subList)): ?>
         <div class="cat-table-wrap">
             <table class="cat-table">
@@ -117,11 +117,11 @@ function grade($sgi) {
                         <td><?= $sub['credits'] ?></td>
                         <td><?= ucfirst($sub['internal']) ?></td>
                         <?php if ($sub['internal'] === 'yes'): ?>
-                            <td><?= ($sub['cat1'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat1'] ?? '—') ?></td>
-                            <td><?= ($sub['cat2'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat2'] ?? '—') ?></td>
-                            <td><?= ($sub['cat3'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat3'] ?? '—') ?></td>
-                            <td><?= $sub['total'] ?? '—' ?></td>
-                            <td><?= !empty($sub['percentage']) ? $sub['percentage'].'%' : '—' ?></td>
+                            <td><?= ($sub['cat1'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat1'] ?? '�') ?></td>
+                            <td><?= ($sub['cat2'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat2'] ?? '�') ?></td>
+                            <td><?= ($sub['cat3'] ?? null) === 'nil' ? '<span style="color:#aaa;">NIL</span>' : ($sub['cat3'] ?? '�') ?></td>
+                            <td><?= $sub['total'] ?? '�' ?></td>
+                            <td><?= !empty($sub['percentage']) ? $sub['percentage'].'%' : '�' ?></td>
                         <?php else: ?>
                             <td colspan="5" style="text-align:center;color:#aaa;">No Internal</td>
                         <?php endif; ?>
@@ -184,15 +184,15 @@ function grade($sgi) {
         <?php if (!empty($s['gpa']) || !empty($s['cgpa']) || !empty($s['attendance'])): ?>
         <h3>Academic Details</h3>
         <div class="detail-grid">
-            <div class="detail-item"><label>GPA</label><span><?= $s['gpa'] ?? '—' ?></span></div>
-            <div class="detail-item"><label>CGPA</label><span><?= $s['cgpa'] ?? '—' ?></span></div>
+            <div class="detail-item"><label>GPA</label><span><?= $s['gpa'] ?? '�' ?></span></div>
+            <div class="detail-item"><label>CGPA</label><span><?= $s['cgpa'] ?? '�' ?></span></div>
         </div>
         <?php
         $gpa      = (float)($s['gpa'] ?? 0);
         $prev_gpa = (float)($s['prev_gpa'] ?? 0);
-        if ($gpa > $prev_gpa)      { $gpaStatus = 'Improved'; $gpaColor = 'linear-gradient(135deg,#27ae60,#2ecc71)'; $gpaIcon = '↑'; }
-        elseif ($gpa == $prev_gpa) { $gpaStatus = 'No Change'; $gpaColor = 'linear-gradient(135deg,#f5a623,#e67e22)'; $gpaIcon = '→'; }
-        else                       { $gpaStatus = 'Decreased'; $gpaColor = 'linear-gradient(135deg,#e94560,#c0392b)'; $gpaIcon = '↓'; }
+        if ($gpa > $prev_gpa)      { $gpaStatus = 'Improved'; $gpaColor = 'linear-gradient(135deg,#27ae60,#2ecc71)'; $gpaIcon = '?'; }
+        elseif ($gpa == $prev_gpa) { $gpaStatus = 'No Change'; $gpaColor = 'linear-gradient(135deg,#f5a623,#e67e22)'; $gpaIcon = '?'; }
+        else                       { $gpaStatus = 'Decreased'; $gpaColor = 'linear-gradient(135deg,#e94560,#c0392b)'; $gpaIcon = '?'; }
         ?>
         <div class="attendance-card" style="background:<?= $gpaColor ?>;margin-top:16px;">
             <div class="attendance-card-left">
@@ -234,9 +234,9 @@ function grade($sgi) {
                         <td><?= htmlspecialchars($sub['subject_code']) ?></td>
                         <td><?= $sub['credits'] ?></td>
                         <td><?= ucfirst($sub['internal']) ?></td>
-                        <td><?= $sub['ca_scored'] ?? '—' ?></td>
-                        <td><?= $sub['ca_max'] ?? '—' ?></td>
-                        <td><?= !empty($sub['ca_percent']) ? $sub['ca_percent'].'%' : '—' ?></td>
+                        <td><?= $sub['ca_scored'] ?? '�' ?></td>
+                        <td><?= $sub['ca_max'] ?? '�' ?></td>
+                        <td><?= !empty($sub['ca_percent']) ? $sub['ca_percent'].'%' : '�' ?></td>
                     </tr>
                     <?php endforeach; ?>
                 </tbody>
@@ -262,7 +262,7 @@ function grade($sgi) {
                 <span class="attendance-card-value"><?= $s['attendance'] ?>%</span>
             </div>
             <div class="attendance-card-right">
-                <span class="attendance-card-status"><?= ($s['attendance'] >= 80) ? '✓ Good Standing' : '⚠ Below Required' ?></span>
+                <span class="attendance-card-status"><?= ($s['attendance'] >= 80) ? '? Good Standing' : '? Below Required' ?></span>
             </div>
         </div>
         <?php endif; ?>
@@ -290,7 +290,7 @@ function grade($sgi) {
                 <!-- Semester Result -->
                 <div>
                     <?php if (!empty($s['result_photo'])): ?>
-                        <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">🖼 View Semester Result</a>
+                        <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">?? View Semester Result</a>
                     <?php else: ?>
                         <label>Upload Semester Result</label>
                         <input type="file" name="result_photo" accept="image/*">
@@ -299,7 +299,7 @@ function grade($sgi) {
                 <!-- CA Mark Sheet -->
                 <div>
                     <?php if (!empty($s['ca_photo'])): ?>
-                        <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📄 View CA Mark Sheet</a>
+                        <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">?? View CA Mark Sheet</a>
                     <?php else: ?>
                         <label>Upload CA Mark Sheet Photo</label>
                         <input type="file" name="ca_photo" accept="image/*">
@@ -314,11 +314,11 @@ function grade($sgi) {
         <?php endif; ?>
 
         <div style="text-align:center;margin-top:30px;">
-            <a href="dashboard.php" class="btn-home">🏠 Home</a>
+            <a href="dashboard.php" class="btn-home">?? Home</a>
             <?php if ($sgiDone): ?>
-            <a href="print_report.php?id=<?= $id ?>" class="btn-print" target="_blank">🖨 Print Report</a>
+            <a href="print_report.php?id=<?= $id ?>" class="btn-print" target="_blank">?? Print Report</a>
             <?php else: ?>
-            <span class="btn-print btn-disabled">🖨 Print Report</span>
+            <span class="btn-print btn-disabled">?? Print Report</span>
             <?php endif; ?>
         </div>
 
@@ -396,7 +396,7 @@ subLabels.forEach((label, i) => {
     <?php elseif (!$allCatsFilled): ?>
         <span class="btn-verify btn-disabled">Confirmation</span>
     <?php else: ?>
-        <span class="btn-verify btn-disabled">Confirmed ✓</span>
+        <span class="btn-verify btn-disabled">Confirmed ?</span>
     <?php endif; ?>
 
     <?php if ($verified): ?>
@@ -404,7 +404,7 @@ subLabels.forEach((label, i) => {
             <a href="final_ca_marks.php?sem_id=<?= $id ?>" class="btn-verify" style="background:#2980b9;">Final CA Marks</a>
             <span class="btn-verify btn-disabled">Calculate SGI</span>
         <?php else: ?>
-            <span class="btn-verify btn-disabled" style="background:#2980b9;">CA Done ✓</span>
+            <span class="btn-verify btn-disabled" style="background:#2980b9;">CA Done ?</span>
             <a href="calculate_sgi.php?id=<?= $id ?>" class="btn-verify">Calculate SGI</a>
         <?php endif; ?>
     <?php else: ?>

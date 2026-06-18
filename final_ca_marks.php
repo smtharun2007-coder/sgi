@@ -1,4 +1,4 @@
-ï»¿<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -39,8 +39,8 @@ if (isset($_POST['save_ca'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI â€“ Final CA Marks</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI – Final CA Marks</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -57,7 +57,7 @@ if (isset($_POST['save_ca'])) {
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>Final CA Marks â€“ Semester <?= $sem['sem'] ?></h2>
+    <h2>Final CA Marks – Semester <?= $sem['sem'] ?></h2>
     <hr style="margin:16px 0;">
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
 

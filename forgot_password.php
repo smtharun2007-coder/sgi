@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Redirect to student forgot password by default or based on query parameter
 $portal = isset($_GET['portal']) ? $_GET['portal'] : 'student';
 

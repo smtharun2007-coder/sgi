@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 requireLogin();
 $u = $_SESSION['user'];
@@ -8,12 +8,12 @@ if (isset($_POST['update'])) {
     $error_up = '';
     $photo = $u['photo'];
     if (!empty($_FILES['photo']['name'])) {
-        if ($_FILES['photo']['size'] > 2 * 1024 * 1024) { $error_up = "Profile photo must be ≤ 2 MB."; }
+        if ($_FILES['photo']['size'] > 2 * 1024 * 1024) { $error_up = "Profile photo must be = 2 MB."; }
         else { $photo = uploadToCloudinary($_FILES['photo']['tmp_name'], 'sgi/students'); }
     }
     $signature = $u['signature'];
     if (!$error_up && !empty($_FILES['signature']['name'])) {
-        if ($_FILES['signature']['size'] > 1 * 1024 * 1024) { $error_up = "Signature must be ≤ 1 MB."; }
+        if ($_FILES['signature']['size'] > 1 * 1024 * 1024) { $error_up = "Signature must be = 1 MB."; }
         else { $signature = uploadToCloudinary($_FILES['signature']['tmp_name'], 'sgi/signatures'); }
     }
     if (!$error_up) {
@@ -59,8 +59,8 @@ if (isset($_POST['change_password'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Update Profile</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Update Profile</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 if (!isset($_SESSION['mentor'])) { header("Location: mentor_login.php"); exit; }
 if (isset($_SESSION['last_mentor_activity']) && (time() - $_SESSION['last_mentor_activity'] > 1800)) {
@@ -16,7 +16,7 @@ if (isset($_POST['update'])) {
     $photo = $m['photo'];
     if (!empty($_FILES['photo']['name'])) {
         if ($_FILES['photo']['size'] > 2 * 1024 * 1024) {
-            $error_up = "Profile photo must be ≤ 2 MB.";
+            $error_up = "Profile photo must be = 2 MB.";
         } else {
             $photo = uploadToCloudinary($_FILES['photo']['tmp_name'], 'sgi/mentors');
         }
@@ -56,8 +56,8 @@ if (isset($_POST['change_password'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Mentor Profile</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Mentor Profile</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
         .mentor-navbar { background: linear-gradient(135deg, #1a1a2e, #8e44ad); }
@@ -90,7 +90,7 @@ if (isset($_POST['change_password'])) {
             <label>Current Photo</label>
             <img src="<?= htmlspecialchars(imgUrl($m['photo'])) ?>" style="width:100px;height:100px;object-fit:cover;border:1px solid #ddd;border-radius:6px;padding:4px;display:block;margin:6px 0;">
         <?php endif; ?>
-        <label>Update Photo (optional, ≤ 200 KB)</label>
+        <label>Update Photo (optional, = 200 KB)</label>
         <input type="file" name="photo" accept="image/*">
         <button type="submit" name="update" class="btn-primary">Save Changes</button>
         <a href="mentor_dashboard.php" class="btn-secondary">Cancel</a>

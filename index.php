@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 include 'config.php';
 if (isset($_SESSION['user']))   { header("Location: dashboard.php"); exit; }
 if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit; }
@@ -7,8 +7,8 @@ if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Welcome</title>
-    <link rel="stylesheet" href="style.css">
+    <title>SGI � Welcome</title>
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
         .welcome-box {
@@ -113,11 +113,11 @@ if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit
     <div class="sgi-full">Student Growth Index</div>
     <div class="role-cards">
         <a href="student_login.php" class="role-card student">
-            <div class="role-icon-wrap">📚</div>
+            <div class="role-icon-wrap">??</div>
             <div class="role-title">Student</div>
         </a>
         <a href="mentor_login.php" class="role-card mentor">
-            <div class="role-icon-wrap">🧑‍🏫</div>
+            <div class="role-icon-wrap">?????</div>
             <div class="role-title">Mentor</div>
         </a>
     </div>

@@ -188,7 +188,7 @@ if (isset($_POST['resend_otp'])) {
 <head>
     <meta charset="UTF-8">
     <title>SGI – Student Forgot Password</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
         body.auth-page {

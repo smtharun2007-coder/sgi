@@ -1,4 +1,4 @@
-Ôªø<?php
+<?php
 include 'config.php';
 requireLogin();
 
@@ -21,9 +21,9 @@ foreach ($semList as $s) {
     }
 }
 
-$avg_gpa  = $gpa_count  ? round($total_gpa  / $gpa_count,  2) : '‚Äî';
-$avg_cgpa = $cgpa_count ? round($total_cgpa / $cgpa_count, 2) : '‚Äî';
-$avg_sgi  = $sgi_count  ? round($total_sgi  / $sgi_count,  2) : '‚Äî';
+$avg_gpa  = $gpa_count  ? round($total_gpa  / $gpa_count,  2) : 'ó';
+$avg_cgpa = $cgpa_count ? round($total_cgpa / $cgpa_count, 2) : 'ó';
+$avg_sgi  = $sgi_count  ? round($total_sgi  / $sgi_count,  2) : 'ó';
 
 function grade($sgi) {
     if ($sgi >= 9) return 'O (Excellent)';
@@ -37,7 +37,7 @@ function grade($sgi) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI ‚Äì Student Report</title>
+    <title>SGI ñ Student Report</title>
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
@@ -102,8 +102,8 @@ function grade($sgi) {
 <body>
 
 <div class="print-btn-row">
-    <a href="dashboard.php" class="back-btn">‚Üê Back</a>
-    <button class="print-btn" onclick="window.print()">üñ® Print Report</button>
+    <a href="dashboard.php" class="back-btn">? Back</a>
+    <button class="print-btn" onclick="window.print()">?? Print Report</button>
 </div>
 
 <div class="page">
@@ -121,7 +121,7 @@ function grade($sgi) {
                 <p><?= htmlspecialchars($u['class']) ?></p>
                 <p><?= htmlspecialchars($u['reg']) ?></p>
                 <p><?= htmlspecialchars($u['dept']) ?></p>
-                <p><?= $u['year_from'] ?> ‚Äì <?= $u['year_to'] ?></p>
+                <p><?= $u['year_from'] ?> ñ <?= $u['year_to'] ?></p>
             </div>
         </div>
         <div class="report-title">
@@ -161,11 +161,11 @@ function grade($sgi) {
             <?php foreach ($semList as $s): ?>
             <tr>
                 <td>Semester <?= $s['sem'] ?></td>
-                <td><?= $s['gpa'] ?? '‚Äî' ?></td>
-                <td><?= $s['cgpa'] ?? '‚Äî' ?></td>
-                <td><?= !empty($s['attendance']) ? $s['attendance'].'%' : '‚Äî' ?></td>
-                <td><?= !empty($s['sgi']) ? round($s['sgi'], 2) : '‚Äî' ?></td>
-                <td><?= !empty($s['sgi']) ? grade($s['sgi']) : '‚Äî' ?></td>
+                <td><?= $s['gpa'] ?? 'ó' ?></td>
+                <td><?= $s['cgpa'] ?? 'ó' ?></td>
+                <td><?= !empty($s['attendance']) ? $s['attendance'].'%' : 'ó' ?></td>
+                <td><?= !empty($s['sgi']) ? round($s['sgi'], 2) : 'ó' ?></td>
+                <td><?= !empty($s['sgi']) ? grade($s['sgi']) : 'ó' ?></td>
             </tr>
             <?php endforeach; ?>
         </tbody>
