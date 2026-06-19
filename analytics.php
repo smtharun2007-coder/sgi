@@ -81,7 +81,10 @@ function grade($sgi) {
 </head>
 <body>
 <nav class="navbar">
-    <span class="nav-brand">SGI</span>
+<a href="dashboard.php" class="nav-brand">
+    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo">
+    SGI
+</a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Update Profile</a>

@@ -44,13 +44,16 @@ if (isset($_POST['save'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Edit Subjects</title>
+    <title>SGI â€“ Edit Subjects</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
 <nav class="navbar">
-    <span class="nav-brand">SGI</span>
+<a href="dashboard.php" class="nav-brand">
+    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo">
+    SGI
+</a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Update Profile</a>
@@ -62,7 +65,7 @@ if (isset($_POST['save'])) {
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>Edit Subjects – Semester <?= $sem['sem'] ?></h2>
+    <h2>Edit Subjects â€“ Semester <?= $sem['sem'] ?></h2>
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
     <form method="POST">
         <div class="cat-table-wrap">

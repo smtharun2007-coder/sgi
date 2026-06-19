@@ -17,8 +17,23 @@ body {
     top: 0;
     z-index: 100;
 }
-.nav-brand { color: #e94560; font-size: 22px; font-weight: 700; letter-spacing: 2px; display:flex; align-items:center; gap:8px; text-decoration:none !important; }
-.nav-brand img { width:28px; height:28px; object-fit:contain; border-radius:6px; }
+.nav-brand { 
+    color: #e94560; 
+    font-size: 22px; 
+    font-weight: 700; 
+    letter-spacing: 2px; 
+    display:flex; 
+    align-items:center; 
+    gap:10px; 
+    text-decoration:none !important; 
+}
+.nav-brand .nav-logo { 
+    width: 32px; 
+    height: 32px; 
+    object-fit: contain; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 8px rgba(233, 69, 96, 0.3);
+}
 .nav-links a { color: #ccc; text-decoration: none; margin-left: 20px; font-size: 14px; transition: color 0.2s; }
 .nav-links a:hover { color: #fff; }
 .btn-logout { background: #e94560; color: #fff !important; padding: 6px 14px; border-radius: 6px; }
