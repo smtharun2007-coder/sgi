@@ -1,9 +1,17 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* Hide scrollbar globally but keep scrolling functionality */
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
 body {
     font-family: 'Segoe UI', Arial, sans-serif;
     background: #f0f2f5;
     color: #333;
+    scrollbar-width: none;  /* Firefox */
+    -ms-overflow-style: none;  /* IE and Edge */
 }
 
 /* NAVBAR */
