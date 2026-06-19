@@ -132,6 +132,11 @@ function grade($sgi) {
 </div>
 
 <div class="page">
+    <!-- SEMESTER BADGE - CENTERED -->
+    <div style="text-align:center;margin-bottom:16px;">
+        <div class="sem-badge" style="font-size:16px;padding:8px 28px;">Semester <?= $s['sem'] ?></div>
+    </div>
+    
     <!-- HEADER -->
     <div class="report-header">
         <div class="report-profile">
@@ -153,7 +158,7 @@ function grade($sgi) {
             <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
             <h2>Academic Performance Report</h2>
-            <div class="sem-badge" style="margin-top:10px;">Semester <?= $s['sem'] ?></div>
+            <div class="sem-badge" style="margin-top:10px;display:none;">Semester <?= $s['sem'] ?></div>
             <?php if (!empty($s['mentor_id'])): ?>
             <p style="font-size:12px;color:#555;margin-top:6px;text-align:right;">Mentor ID: <strong><?= htmlspecialchars($s['mentor_id']) ?></strong></p>
             <?php endif; ?>
