@@ -32,6 +32,8 @@ body {
     height: 32px; 
     object-fit: contain; 
     border-radius: 8px; 
+    background: #fff;
+    padding: 2px;
     box-shadow: 0 2px 8px rgba(233, 69, 96, 0.3);
 }
 .nav-links a { color: #ccc; text-decoration: none; margin-left: 20px; font-size: 14px; transition: color 0.2s; }
