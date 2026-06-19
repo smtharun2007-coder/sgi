@@ -96,20 +96,13 @@ body {
     padding: 40px 35px 45px;
 }
 
-/* Custom scrollbar for signup box */
+/* Hide scrollbar for signup box but keep scrolling functionality */
+.signup-box {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
 .signup-box::-webkit-scrollbar {
-    width: 6px;
-}
-.signup-box::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 3px;
-}
-.signup-box::-webkit-scrollbar-thumb {
-    background: #e94560;
-    border-radius: 3px;
-}
-.signup-box::-webkit-scrollbar-thumb:hover {
-    background: #c73652;
+    display: none;  /* Chrome, Safari, Opera */
 }
 
 /* FORM ELEMENTS */
