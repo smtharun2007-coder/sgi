@@ -24,12 +24,10 @@ foreach ($subList as $sub) {
 
 if (isset($_POST['verify'])) {
     $prev_gpa   = (float)$_POST['prev_gpa'];
-    $gpa        = (float)$_POST['gpa'];
-    $cgpa       = (float)$_POST['cgpa'];
     $attendance = (float)$_POST['attendance'];
     $semesters->updateOne(
         ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-        ['$set' => ['prev_gpa' => $prev_gpa, 'gpa' => $gpa, 'cgpa' => $cgpa, 'attendance' => $attendance, 'verified' => true]]
+        ['$set' => ['prev_gpa' => $prev_gpa, 'attendance' => $attendance, 'verified' => true]]
     );
     header("Location: semester_detail.php?id=$sem_id");
     exit;
@@ -39,7 +37,7 @@ if (isset($_POST['verify'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Confirmation</title>
+    <title>SGI – Verify & Confirm</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
@@ -57,7 +55,7 @@ if (isset($_POST['verify'])) {
 </nav>
 <div class="container">
 <div class="form-box">
-    <h2>Confirmation – Semester <?= $sem['sem'] ?></h2>
+    <h2>Verify & Confirm – Semester <?= $sem['sem'] ?></h2>
     <hr style="margin:16px 0;">
     <h3>CAT Marks Summary</h3>
     <div class="cat-table-wrap">
@@ -94,16 +92,12 @@ if (isset($_POST['verify'])) {
     <form method="POST">
         <label>Previous Semester GPA (out of 10)</label>
         <input type="number" name="prev_gpa" step="0.01" min="0" max="10" value="<?= $sem['prev_gpa'] ?? '' ?>" required>
-        <label>GPA (out of 10)</label>
-        <input type="number" name="gpa" step="0.01" min="0" max="10" value="<?= $sem['gpa'] ?? '' ?>" required>
-        <label>CGPA (out of 10)</label>
-        <input type="number" name="cgpa" step="0.01" min="0" max="10" value="<?= $sem['cgpa'] ?? '' ?>" required>
         <label>Attendance %</label>
         <input type="number" name="attendance" step="0.01" min="0" max="100" value="<?= $sem['attendance'] ?? '' ?>" required>
         <div class="declaration-box">
             <label class="declaration-label">
                 <input type="checkbox" id="declaration" onchange="toggleSubmit()" required>
-                I hereby declare that the above CAT marks, GPA, CGPA, and attendance information provided by me are true and correct to the best of my knowledge.
+                I hereby declare that the above CAT marks, Previous GPA, and Attendance information provided by me are true and correct to the best of my knowledge.
             </label>
         </div>
         <button type="submit" name="verify" id="submitBtn" class="btn-primary" style="margin-top:20px;" disabled>Confirm & Save</button>
@@ -121,5 +115,3 @@ function toggleSubmit() {
 </div>
 </body>
 </html>
-
-

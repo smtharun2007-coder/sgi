@@ -26,11 +26,13 @@ if (isset($_POST['save_ca'])) {
             ['$set' => ['ca_scored' => $scored, 'ca_max' => $max, 'ca_percent' => $ca_percent]]
         );
     }
+    $gpa        = (float)$_POST['gpa'];
+    $cgpa       = (float)$_POST['cgpa'];
     $semesters->updateOne(
         ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-        ['$set' => ['ca_done' => true]]
+        ['$set' => ['gpa' => $gpa, 'cgpa' => $cgpa, 'ca_done' => true]]
     );
-    $success = "Final CA marks saved successfully.";
+    $success = "Final CA marks and academic details saved successfully.";
     $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll]);
     $subList   = iterator_to_array($subCursor);
 }
@@ -62,6 +64,20 @@ if (isset($_POST['save_ca'])) {
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
 
     <form method="POST">
+        <h3>Academic Details</h3>
+        <div class="detail-grid" style="margin-bottom:20px;">
+            <div class="detail-item">
+                <label>GPA (out of 10)</label>
+                <input type="number" name="gpa" step="0.01" min="0" max="10" value="<?= $sem['gpa'] ?? '' ?>" required>
+            </div>
+            <div class="detail-item">
+                <label>CGPA (out of 10)</label>
+                <input type="number" name="cgpa" step="0.01" min="0" max="10" value="<?= $sem['cgpa'] ?? '' ?>" required>
+            </div>
+        </div>
+        <hr style="margin:16px 0;">
+
+        <h3>Final CA Marks</h3>
         <div class="cat-table-wrap">
             <table class="cat-table">
                 <thead>
@@ -103,7 +119,7 @@ if (isset($_POST['save_ca'])) {
             </table>
         </div>
 
-        <button type="submit" name="save_ca" class="btn-primary" style="margin-top:20px;">Save CA Marks</button>
+        <button type="submit" name="save_ca" class="btn-primary" style="margin-top:20px;">Save CA Marks & GPA/CGPA</button>
     </form>
 
     <a href="semester_detail.php?id=<?= $sem_id ?>" class="btn-secondary" style="margin-top:12px;">Back to Semester</a>

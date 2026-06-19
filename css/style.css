@@ -35,7 +35,6 @@ body {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #e94560 100%);
     padding: 30px 20px;
     position: relative;
-    overflow: hidden;
 }
 .auth-page::before {
     content: '';
@@ -52,7 +51,10 @@ body {
     100% { transform: rotate(360deg); }
 }
 .auth-page.signup { 
-    align-items: center;
+    align-items: flex-start;
+    padding-top: 40px;
+    padding-bottom: 40px;
+    overflow-y: auto;
 }
 .auth-box {
     background: #ffffff;
@@ -88,7 +90,13 @@ body {
     font-weight: 400;
     opacity: 0.8;
 }
-.signup-box { max-width: 600px; width: 100%; }
+.signup-box { 
+    max-width: 600px; 
+    width: 100%; 
+    max-height: calc(100vh - 80px);
+    overflow-y: auto;
+    padding: 40px 35px 45px;
+}
 
 /* FORM ELEMENTS */
 input, select {

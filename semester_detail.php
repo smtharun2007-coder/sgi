@@ -38,8 +38,9 @@ foreach ($internalSubs as $sub) {
     if (isset($sub['cat1'])) { $cat1Submitted = true; break; }
 }
 
-$verified  = !empty($s['verified']);
-$sgiDone   = !empty($s['sgi']);
+$creditsDone = !empty($s['credits_done']);
+$verified     = !empty($s['verified']);
+$sgiDone      = !empty($s['sgi']);
 
 // Handle document upload for completed semesters
 $docError = '';
@@ -92,7 +93,7 @@ function grade($sgi) {
         <h2>Semester <?= $s['sem'] ?> – Details</h2>
         <hr style="margin:16px 0;">
 
-        <h3>CAT Marks <?php if (!$cat1Submitted): ?><a href="edit_subjects.php?sem_id=<?= $id ?>" class="btn-calc" style="font-size:12px;padding:5px 12px;margin-left:10px;">✏️ Edit Subjects</a><?php endif; ?></h3>
+        <h3>Subjects <?php if (!$cat1Submitted): ?><a href="edit_subjects.php?sem_id=<?= $id ?>" class="btn-calc" style="font-size:12px;padding:5px 12px;margin-left:10px;">✏️ Edit Subjects</a><?php endif; ?></h3>
         <?php if (!empty($subList)): ?>
         <div class="cat-table-wrap">
             <table class="cat-table">
@@ -184,8 +185,10 @@ function grade($sgi) {
         <?php if (!empty($s['gpa']) || !empty($s['cgpa']) || !empty($s['attendance'])): ?>
         <h3>Academic Details</h3>
         <div class="detail-grid">
+            <div class="detail-item"><label>Previous GPA</label><span><?= $s['prev_gpa'] ?? '—' ?></span></div>
             <div class="detail-item"><label>GPA</label><span><?= $s['gpa'] ?? '—' ?></span></div>
             <div class="detail-item"><label>CGPA</label><span><?= $s['cgpa'] ?? '—' ?></span></div>
+            <div class="detail-item"><label>Attendance</label><span><?= $s['attendance'] ?? '—' ?>%</span></div>
         </div>
         <?php
         $gpa      = (float)($s['gpa'] ?? 0);
@@ -391,12 +394,20 @@ subLabels.forEach((label, i) => {
         <span class="btn-calc btn-disabled">CAT 3 Marks</span>
     <?php endif; ?>
 
-    <?php if ($allCatsFilled && !$verified): ?>
-        <a href="verify_marks.php?sem_id=<?= $id ?>" class="btn-verify">Confirmation</a>
+    <?php if ($allCatsFilled && !$creditsDone): ?>
+        <a href="credit_subjects.php?sem_id=<?= $id ?>" class="btn-verify">Credit Subjects</a>
     <?php elseif (!$allCatsFilled): ?>
-        <span class="btn-verify btn-disabled">Confirmation</span>
+        <span class="btn-verify btn-disabled">Credit Subjects</span>
     <?php else: ?>
-        <span class="btn-verify btn-disabled">Confirmed ✅</span>
+        <span class="btn-verify btn-disabled">Credits Done ✅</span>
+    <?php endif; ?>
+
+    <?php if ($creditsDone && !$verified): ?>
+        <a href="verify_marks.php?sem_id=<?= $id ?>" class="btn-verify" style="background:#27ae60;">Verify & Confirm</a>
+    <?php elseif (!$creditsDone): ?>
+        <span class="btn-verify btn-disabled" style="background:#27ae60;">Verify & Confirm</span>
+    <?php else: ?>
+        <span class="btn-verify btn-disabled" style="background:#27ae60;">Verified ✅</span>
     <?php endif; ?>
 
     <?php if ($verified): ?>
