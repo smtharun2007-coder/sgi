@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
     $body  = trim($_POST['body']  ?? '');
     $type  = trim($_POST['type_custom'] ?? '') ?: (trim($_POST['type_select'] ?? '') ?: 'general');
     $type  = ($type === '__custom') ? 'general' : $type;
+    $color = trim($_POST['color'] ?? '#e94560');
     $recipient = $_POST['recipient'] ?? 'all'; // 'all' or 'own'
     if ($title && $body) {
         $attachments = [];
@@ -30,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
             'title'       => $title,
             'body'        => $body,
             'type'        => $type,
+            'color'       => $color,
             'recipient'   => $recipient,
             'attachments' => $attachments,
             'created_at'  => new MongoDB\BSON\UTCDateTime()
@@ -160,7 +162,13 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <option value="general" selected>General</option>
                     <option value="__custom">+ Custom type…</option>
                 </select>
-                <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="margin-top:6px;display:none;">
+                <div id="annTypeCustomContainer" style="margin-top:6px;display:none;">
+                    <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="width:100%;padding:10px;">
+                    <label style="margin-top:8px;display:block;">Color for this type</label>
+                    <input type="color" name="type_color" value="#e94560" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
+                </div>
+                <label style="margin-top:8px;display:block;">Type Color</label>
+                <input type="color" name="color" value="#e94560" id="typeColorPicker" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
                 <label style="margin-top:14px;">Select Students</label>
                 <div style="background:#f9f9f9;padding:12px;border-radius:6px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #e0e0e0;">
@@ -256,11 +264,11 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
         <?php else: ?>
             <?php foreach($myAnnouncements as $a):
                 $typeClass = $a['type'] ?? 'general';
-                $cardClass = $typeClass==='info'?'info':($typeClass==='general'?'success':'');
+                $color = $a['color'] ?? '#e94560';
             ?>
-            <div class="announce-card <?= $cardClass ?>" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
+            <div class="announce-card" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;border-left:4px solid <?= $color ?>;background:#fff;padding:16px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:16px;">
                 <div style="flex:1;">
-                    <div class="announce-title"><?= htmlspecialchars($a['title']) ?> <span class="badge-<?= $typeClass ?>"><?= ucfirst($typeClass) ?></span></div>
+                    <div class="announce-title"><?= htmlspecialchars($a['title']) ?> <span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;color:#fff;background:<?= $color ?>;"><?= ucfirst($typeClass) ?></span></div>
                     <div class="announce-body"><?= nl2br(htmlspecialchars($a['body'])) ?></div>
                     <?php if(!empty($a['attachments'])): ?>
                     <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
