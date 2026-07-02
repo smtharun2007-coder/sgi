@@ -162,18 +162,18 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 </select>
                 <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="margin-top:6px;display:none;">
                 <label style="margin-top:14px;">Send To</label>
-                <div style="background:#f9f9f9;padding:10px;border-radius:6px;max-height:200px;overflow-y:auto;">
-                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;">
-                        <input type="checkbox" name="students[]" value="all" checked onchange="toggleStudentCheckboxes(this)">
+                <div style="background:#f9f9f9;padding:12px;border-radius:6px;max-height:200px;overflow-y:auto;">
+                    <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;cursor:pointer;padding-bottom:8px;border-bottom:1px solid #e0e0e0;">
+                        <input type="checkbox" name="students[]" value="all" checked onchange="toggleStudentCheckboxes(this)" style="margin-top:3px;">
                         <strong>All Students (<?= count(iterator_to_array($users->find(['mentor_id' => $m['mentor_id']]))) ?> students)</strong>
                     </label>
                     <?php
                     $myStudents = $users->find(['mentor_id' => $m['mentor_id']]);
                     foreach ($myStudents as $st):
                     ?>
-                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;padding-left:20px;">
-                        <input type="checkbox" name="students[]" value="<?= htmlspecialchars($st['roll']) ?>">
-                        <?= htmlspecialchars($st['name']) ?> (<?= htmlspecialchars($st['roll']) ?>)
+                    <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;cursor:pointer;padding-left:24px;">
+                        <input type="checkbox" name="students[]" value="<?= htmlspecialchars($st['roll']) ?>" style="margin-top:3px;">
+                        <span><?= htmlspecialchars($st['name']) ?> (<?= htmlspecialchars($st['roll']) ?>)</span>
                     </label>
                     <?php endforeach; ?>
                 </div>

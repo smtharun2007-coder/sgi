@@ -124,13 +124,16 @@ function grade($sgi) {
                 <?php if (!empty($u['batch_no'])): ?>
                 <p>Batch: <?= htmlspecialchars($u['batch_no']) ?></p>
                 <?php endif; ?>
+                <?php if (!empty($u['mentor_id'])): ?>
+                <p>Mentor ID: <?= htmlspecialchars($u['mentor_id']) ?></p>
+                <?php endif; ?>
                 <p><?= $u['year_from'] ?> - <?= $u['year_to'] ?></p>
             </div>
         </div>
         <div class="report-title">
             <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
-            <h2>Overall Academic Report</h2>
+            <h2>Complete Academic Report (All Semesters)</h2>
         </div>
     </div>
 

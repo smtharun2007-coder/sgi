@@ -51,13 +51,12 @@ if (isset($_POST['signup'])) {
     <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body class="auth-page signup">
-<nav class="navbar" style="margin-bottom:20px;background:linear-gradient(135deg,#1a1a2e,#8e44ad);padding:12px 20px;border-radius:0 0 10px 10px;">
-    <a href="index.php" style="display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-size:18px;font-weight:700;">
-        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" style="height:35px;width:auto;">
-        SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor Portal</span>
-    </a>
-</nav>
 <div class="auth-box signup-box">
+    <div class="logo-container">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
+    </div>
+    <h1>Student Growth Index</h1>
+    <div class="portal-badge mentor-portal">🧑‍🏫 Mentor Portal</div>
     <h2>Create Mentor Account</h2>
     <form method="POST" enctype="multipart/form-data">
         <input type="text"   name="name"      placeholder="Full Name" required>
