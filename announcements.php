@@ -32,6 +32,8 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Profile</a>
+        <a href="about.php">About</a>
+        <a href="contact.php">Contact</a>
         <a href="print_select.php">Print</a>
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
@@ -72,10 +74,17 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
                     <?php foreach($a['attachments'] as $att): ?>
                         <?php $isImg = ($att['type']==='image'); ?>
-                        <a href="<?= htmlspecialchars($att['url']) ?>" target="_blank"
-                           style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
-                            <?= $isImg ? '&#128444;' : '&#128196;' ?> <?= htmlspecialchars($att['name']) ?>
-                        </a>
+                        <?php if($isImg): ?>
+                            <a href="#" onclick="showImg('<?= htmlspecialchars($att['url']) ?>');return false;"
+                               style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
+                                &#128444; <?= htmlspecialchars($att['name']) ?>
+                            </a>
+                        <?php else: ?>
+                            <a href="<?= htmlspecialchars($att['url']) ?>" target="_blank" rel="noopener"
+                               style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
+                                &#128196; <?= htmlspecialchars($att['name']) ?>
+                            </a>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
                 <?php endif; ?>
@@ -89,7 +98,15 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     </div>
 
 </div>
+<!-- Image lightbox -->
+<div id="imgModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:center;justify-content:center;" onclick="this.style.display='none'">
+    <img id="imgModalSrc" src="" style="max-width:92vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);">
+</div>
 <script>
+function showImg(url) {
+    document.getElementById('imgModalSrc').src = url;
+    document.getElementById('imgModal').style.display = 'flex';
+}
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');
     drop.classList.toggle('open');

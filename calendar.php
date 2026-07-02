@@ -49,6 +49,8 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Profile</a>
+        <a href="about.php">About</a>
+        <a href="contact.php">Contact</a>
         <a href="print_select.php">Print</a>
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">

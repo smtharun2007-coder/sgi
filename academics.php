@@ -43,7 +43,7 @@ function grade($sgi) {
     <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI
 </a>
     <div class="nav-links">
-        <a href="dashboard.php">&#8592; Back</a>
+        <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Profile</a>
         <a href="about.php">About</a>
         <a href="contact.php">Contact</a>

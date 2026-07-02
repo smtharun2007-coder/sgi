@@ -94,13 +94,6 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 <a href="announcements.php" class="btn-primary" style="width:auto;padding:10px 24px;">Open Announcements</a>
             </div>
         </div>
-        <div class="sem-card">
-            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);"><h3>&#128202; Analytics</h3></div>
-            <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
-                <p style="font-size:13px;color:#888;margin-bottom:16px;">View all semester analytics and performance trends.</p>
-                <a href="analytics.php" class="btn-primary" style="width:auto;padding:10px 24px;">View Analytics</a>
-            </div>
-        </div>
     </div>
 </div>
 <script>
