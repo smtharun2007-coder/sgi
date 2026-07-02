@@ -84,7 +84,7 @@ function grade($sgi) {
         <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI
     </a>
     <div class="nav-links">
-        <a href="academics.php">&#8592; Back</a>
+        <a href="dashboard.php">Home</a>
         <a href="update_profile.php">Profile</a>
         <a href="about.php">About</a>
         <a href="contact.php">Contact</a>
@@ -485,6 +485,13 @@ function markAll(e) {
     e.preventDefault();
     fetch('notifications.php?mark_all=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }

@@ -1,4 +1,4 @@
-<?php
+r<?php
 include 'config.php';
 if (!isset($_SESSION['mentor'])) { header("Location: mentor_login.php"); exit; }
 

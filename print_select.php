@@ -105,6 +105,13 @@ function markAll(e) {
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
 document.addEventListener('click', e => {
     const btn = document.getElementById('bellBtn');
     const drop = document.getElementById('notifDrop');

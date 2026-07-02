@@ -193,6 +193,13 @@ function markAll(e) {
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
 document.addEventListener('click', e => {
     if (!document.getElementById('bellBtn').contains(e.target) && !document.getElementById('notifDrop').contains(e.target))
         document.getElementById('notifDrop').classList.remove('open');

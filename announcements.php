@@ -1,4 +1,4 @@
-t<?php
+<?php
 include 'config.php';
 requireLogin();
 $u = $_SESSION['user'];
@@ -143,6 +143,13 @@ function markAll(e) {
     e.preventDefault();
     fetch('notifications.php?mark_all=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }

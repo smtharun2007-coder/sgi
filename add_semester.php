@@ -143,7 +143,7 @@ if (isset($_POST['save'])) {
         <div style="text-align:center;margin-top:20px;">
             <a href="add_semester.php" class="btn-primary" style="margin:5px;">Add Another Semester</a>
             <a href="student_approvals.php" class="btn-secondary" style="margin:5px;">View Approval Status</a>
-            <a href="dashboard.php" class="btn-secondary" style="margin:5px;">Go to Dashboard</a>
+            <a href="academics.php" class="btn-secondary" style="margin:5px;">Back to Academics</a>
         </div>
         <?php endif; ?>
     </div>
@@ -206,6 +206,13 @@ function markAll(e) {
     e.preventDefault();
     fetch('notifications.php?mark_all=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }
