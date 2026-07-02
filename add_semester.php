@@ -49,8 +49,8 @@ if (isset($_POST['save'])) {
         
         $result = $approvals->insertOne($approvalData);
         
-        // Update mentor_id in user profile if changed
-        if (!empty($mentorId) && $mentorId !== ($_SESSION['user']['mentor_id'] ?? '')) {
+        // Always update mentor_id in user profile to ensure mentor can see the approval
+        if (!empty($mentorId)) {
             $users->updateOne(['roll' => $roll], ['$set' => ['mentor_id' => $mentorId]]);
             $_SESSION['user']['mentor_id'] = $mentorId;
         }
@@ -64,6 +64,14 @@ if (isset($_POST['save'])) {
                 'created_at' => new MongoDB\BSON\UTCDateTime()
             ]);
         }
+        
+        // Create notification for student to confirm their request was submitted
+        $notifications->insertOne([
+            'roll' => $roll,
+            'message' => '✅ Your semester ' . $sem . ' registration request has been submitted and is pending mentor approval.',
+            'read' => false,
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ]);
         
         $success = 'Your semester registration request has been submitted for approval. You will be notified once your mentor reviews it.';
     }
