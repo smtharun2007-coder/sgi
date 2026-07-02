@@ -55,7 +55,7 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <a href="notifications.php?mark_all=1" onclick="markAll()">Mark all read</a></div>
+                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
                 <div id="notifList"><div class="notif-empty">Loading…</div></div>
             </div>
         </div>
@@ -83,14 +83,13 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             $today = (int)date('j'); $todayM = (int)date('n'); $todayY = (int)date('Y');
             for($d=1;$d<=$daysInMonth;$d++):
                 $isToday = ($d==$today && $month==$todayM && $year==$todayY);
+                $cellBg = !empty($events[$d]) ? htmlspecialchars($events[$d][0]['color'] ?? '#e94560') : '';
             ?>
-            <div class="cal-cell <?= $isToday?'today':'' ?>" <?= !empty($events[$d]) ? 'onclick="showDay('.$d.')" style="cursor:pointer;"' : '' ?>>
-                <div class="cal-date" style="text-align:center;"><?= $d ?></div>
+            <div class="cal-cell <?= $isToday?'today':'' ?>" style="<?= $cellBg ? 'background:'.$cellBg.';' : '' ?>" <?= !empty($events[$d]) ? 'onclick="showDay('.$d.')" style="background:'.$cellBg.';cursor:pointer;"' : '' ?>>
+                <div class="cal-date" style="text-align:center;<?= $cellBg ? 'color:#fff;font-weight:700;' : '' ?>"><?= $d ?></div>
                 <?php if(!empty($events[$d])): ?>
-                    <?php foreach($events[$d] as $ev):
-                        $evColor = htmlspecialchars($ev['color'] ?? '#e94560');
-                    ?>
-                        <span class="cal-event-dot" style="background:<?= $evColor ?>;text-align:center;display:block;border-radius:6px;">
+                    <?php foreach($events[$d] as $ev): ?>
+                        <span style="display:block;font-size:10px;color:#fff;font-weight:600;text-align:center;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                             <?= htmlspecialchars($ev['title']) ?>
                         </span>
                     <?php endforeach; ?>

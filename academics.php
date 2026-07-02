@@ -43,7 +43,7 @@ function grade($sgi) {
     <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI
 </a>
     <div class="nav-links">
-        <a href="dashboard.php">Home</a>
+        <a href="dashboard.php">&#8592; Back</a>
         <a href="update_profile.php">Profile</a>
         <a href="about.php">About</a>
         <a href="contact.php">Contact</a>
@@ -128,16 +128,7 @@ function grade($sgi) {
         <?php endif; ?>
     </div>
 
-    <?php if (!empty($semList)): ?>
-    <div class="sem-cards" style="margin-top:20px;">
-        <div class="sem-card">
-            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);"><h3>&#128202; All Sem Analytics</h3></div>
-            <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
-                <a href="analytics.php" class="btn-primary" style="width:auto;padding:10px 24px;">View Analytics</a>
-            </div>
-        </div>
-    </div>
-    <?php endif; ?>
+    <!-- ANALYTICS card removed — available via Analytics card on dashboard -->
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

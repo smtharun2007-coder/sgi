@@ -68,6 +68,17 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                     <span class="<?= $badgeClass ?>"><?= ucfirst($typeClass) ?></span>
                 </div>
                 <div class="announce-body"><?= nl2br(htmlspecialchars($a['body'])) ?></div>
+                <?php if(!empty($a['attachments'])): ?>
+                <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+                    <?php foreach($a['attachments'] as $att): ?>
+                        <?php $isImg = ($att['type']==='image'); ?>
+                        <a href="<?= htmlspecialchars($att['url']) ?>" target="_blank"
+                           style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
+                            <?= $isImg ? '&#128444;' : '&#128196;' ?> <?= htmlspecialchars($att['name']) ?>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+                <?php endif; ?>
                 <div class="announce-meta">
                     Posted by <?= htmlspecialchars($a['mentor_name'] ?? 'Mentor') ?> &nbsp;·&nbsp;
                     <?= date('d M Y, h:i A', $a['created_at']->toDateTime()->getTimestamp()) ?>

@@ -65,6 +65,17 @@ foreach ($cur as $ev) {
     $events[$day][] = $ev;
 }
 
+// Fetch all previously used types by this mentor
+$allTypes = [];
+$typeCursor = $calendar_events->find(
+    ['mentor_id' => $m['mentor_id']],
+    ['projection' => ['type'=>1,'color'=>1], 'sort' => ['created_at'=>-1]]
+);
+foreach ($typeCursor as $ev) {
+    $t = $ev['type'] ?? '';
+    if ($t && !isset($allTypes[$t])) $allTypes[$t] = $ev['color'] ?? '#e94560';
+}
+
 $monthName = date('F Y', $firstDay);
 $prev = ['month'=>$month-1==0?12:$month-1,'year'=>$month-1==0?$year-1:$year];
 $next = ['month'=>$month+1==13?1:$month+1,'year'=>$month+1==13?$year+1:$year];
@@ -94,7 +105,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll()">Mark all read</a></div>
+                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
                 <div id="notifList"><div class="notif-empty">Loading…</div></div>
             </div>
         </div>
@@ -112,24 +123,21 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <input type="text" name="title" placeholder="e.g. CAT 1 Exam" required>
                 </div>
                 <div>
-                    <label>Type (select or type custom)</label>
+                    <label>Type</label>
                     <select name="type_select" id="typeSelect" onchange="syncType(this.value)">
-                        <option value="exam">Exam</option>
-                        <option value="holiday">Holiday</option>
-                        <option value="study">Study Holiday</option>
-                        <option value="event">Event</option>
-                        <option value="other">Other</option>
-                        <option value="__custom">+ Custom type…</option>
+                        <?php foreach($allTypes as $tName => $tColor): ?>
+                        <option value="<?= htmlspecialchars($tName) ?>" data-color="<?= htmlspecialchars($tColor) ?>"><?= htmlspecialchars(ucfirst($tName)) ?></option>
+                        <?php endforeach; ?>
+                        <option value="__new">+ Create new type…</option>
                     </select>
-                    <input type="text" name="type_custom" id="typeCustom" placeholder="Custom type name" style="margin-top:6px;display:none;">
+                    <div id="newTypeWrap" style="display:<?= empty($allTypes)?'flex':'none' ?>;gap:8px;margin-top:6px;align-items:center;">
+                        <input type="text" name="type_custom" id="typeCustom" placeholder="New type name" style="margin:0;flex:1;">
+                        <input type="color" name="color" id="colorPicker" value="#e94560" style="width:46px;height:46px;padding:4px;border-radius:10px;border:2px solid #eee;cursor:pointer;flex-shrink:0;">
+                    </div>
                 </div>
                 <div>
                     <label>Description (optional)</label>
                     <input type="text" name="desc" placeholder="Details shown to students…">
-                </div>
-                <div>
-                    <label>Event Color</label>
-                    <input type="color" name="color" value="#e94560" style="width:100%;height:46px;padding:4px;border-radius:10px;border:2px solid #eee;cursor:pointer;">
                 </div>
                 <div style="display:flex;align-items:flex-end;">
                     <button type="submit" name="add_event" class="btn-primary" style="margin-top:0;width:100%;padding:14px 20px;">Add to Selected Dates</button>
@@ -179,18 +187,15 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
             $today = (int)date('j'); $todayM = (int)date('n'); $todayY = (int)date('Y');
             for($d=1;$d<=$daysInMonth;$d++):
                 $isToday = ($d==$today && $month==$todayM && $year==$todayY);
+                $cellBg = !empty($events[$d]) ? htmlspecialchars($events[$d][0]['color'] ?? '#e94560') : '';
             ?>
-            <div class="cal-cell <?= $isToday?'today':'' ?>">
-                <div class="cal-date" style="text-align:center;"><?= $d ?></div>
+            <div class="cal-cell <?= $isToday?'today':'' ?>" style="<?= $cellBg ? 'background:'.$cellBg.';' : '' ?>">
+                <div class="cal-date" style="text-align:center;<?= $cellBg ? 'color:#fff;font-weight:700;' : '' ?>"><?= $d ?></div>
                 <?php if(!empty($events[$d])): ?>
-                    <?php foreach($events[$d] as $ev):
-                        $evColor = htmlspecialchars($ev['color'] ?? '#e94560');
-                    ?>
-                        <span class="cal-event-dot" style="background:<?= $evColor ?>;text-align:center;display:block;">
+                    <?php foreach($events[$d] as $ev): ?>
+                        <span style="display:block;font-size:10px;color:#fff;font-weight:600;text-align:center;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                             <?= htmlspecialchars($ev['title']) ?>
-                            <a href="mentor_calendar.php?delete=<?= (string)$ev['_id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
-                               onclick="return confirm('Delete this event?')"
-                               style="color:#fff;margin-left:4px;font-weight:700;text-decoration:none;">×</a>
+                            <a href="mentor_calendar.php?delete=<?= (string)$ev['_id'] ?>&month=<?= $month ?>&year=<?= $year ?>" onclick="return confirm('Delete?')" style="color:#fff;font-weight:700;text-decoration:none;">×</a>
                         </span>
                     <?php endforeach; ?>
                 <?php endif; ?>
@@ -221,11 +226,24 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
     </div>
 </div>
 <script>
+const savedTypes = <?= json_encode(array_map(fn($t,$c)=>['type'=>$t,'color'=>$c], array_keys($allTypes), array_values($allTypes))) ?>;
 function syncType(val) {
-    const custom = document.getElementById('typeCustom');
-    custom.style.display = val === '__custom' ? 'block' : 'none';
-    if (val !== '__custom') custom.value = '';
+    const wrap = document.getElementById('newTypeWrap');
+    const colorPicker = document.getElementById('colorPicker');
+    if (val === '__new') {
+        wrap.style.display = 'flex';
+    } else {
+        wrap.style.display = 'none';
+        document.getElementById('typeCustom').value = '';
+        const found = savedTypes.find(t => t.type === val);
+        if (found) colorPicker.value = found.color;
+    }
 }
+// Init color from first option
+window.addEventListener('DOMContentLoaded', () => {
+    const sel = document.getElementById('typeSelect');
+    if (sel && sel.value !== '__new') syncType(sel.value);
+});
 document.querySelectorAll('.date-cb').forEach(cb => {
     cb.addEventListener('change', function() {
         const chip = this.nextElementSibling;

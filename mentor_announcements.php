@@ -10,20 +10,31 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
     $type  = trim($_POST['type_custom'] ?? '') ?: (trim($_POST['type_select'] ?? '') ?: 'general');
     $type  = ($type === '__custom') ? 'general' : $type;
     if ($title && $body) {
+        $attachments = [];
+        if (!empty($_FILES['attachments']['name'][0])) {
+            foreach ($_FILES['attachments']['tmp_name'] as $i => $tmp) {
+                if (!$tmp || $_FILES['attachments']['error'][$i] !== UPLOAD_ERR_OK) continue;
+                $origName = $_FILES['attachments']['name'][$i];
+                $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
+                $resourceType = in_array($ext, ['jpg','jpeg','png','gif','webp']) ? 'image' : 'raw';
+                $url = uploadToCloudinary($tmp, 'sgi/announcements', $resourceType);
+                $attachments[] = ['name' => $origName, 'url' => $url, 'type' => $resourceType];
+            }
+        }
         $announcements->insertOne([
             'mentor_id'   => $m['mentor_id'],
             'mentor_name' => $m['name'],
             'title'       => $title,
             'body'        => $body,
             'type'        => $type,
+            'attachments' => $attachments,
             'created_at'  => new MongoDB\BSON\UTCDateTime()
         ]);
-        // Notify all students
         $students = $users->find(['mentor_id' => $m['mentor_id']]);
         foreach ($students as $st) {
             $notifications->insertOne([
                 'roll'    => $st['roll'],
-                'message' => "📢 New announcement: $title",
+                'message' => "\xF0\x9F\x93\xA2 New announcement: $title",
                 'type'    => 'announcement',
                 'read'    => false,
                 'created_at' => new MongoDB\BSON\UTCDateTime()
@@ -120,12 +131,12 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
     <div id="post">
         <div class="form-box" style="padding:28px;margin-bottom:24px;">
             <h2 style="margin-bottom:16px;">Post Announcement</h2>
-            <form method="POST">
+            <form method="POST" enctype="multipart/form-data">
                 <label>Title</label>
                 <input type="text" name="title" placeholder="Announcement title…" required>
                 <label>Message</label>
                 <textarea name="body" rows="4" placeholder="Write your announcement…" required></textarea>
-                <label>Type (select or type custom)</label>
+                <label>Type (select or create new)</label>
                 <select name="type_select" id="annTypeSelect" onchange="document.getElementById('annTypeCustom').style.display=this.value==='__custom'?'block':'none'">
                     <option value="urgent">Urgent</option>
                     <option value="info">Info</option>
@@ -133,6 +144,8 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <option value="__custom">+ Custom type…</option>
                 </select>
                 <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="margin-top:6px;display:none;">
+                <label style="margin-top:14px;">Attachments (PDF, Word, Images — multiple allowed)</label>
+                <input type="file" name="attachments[]" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp" style="background:#f9f9f9;padding:10px;">
                 <button type="submit" name="post_announcement" class="btn-primary" style="margin-top:16px;">Post to All My Students</button>
             </form>
         </div>
@@ -210,6 +223,17 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 <div style="flex:1;">
                     <div class="announce-title"><?= htmlspecialchars($a['title']) ?> <span class="badge-<?= $typeClass ?>"><?= ucfirst($typeClass) ?></span></div>
                     <div class="announce-body"><?= nl2br(htmlspecialchars($a['body'])) ?></div>
+                    <?php if(!empty($a['attachments'])): ?>
+                    <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
+                        <?php foreach($a['attachments'] as $att): ?>
+                            <?php $isImg = ($att['type']==='image'); ?>
+                            <a href="<?= htmlspecialchars($att['url']) ?>" target="_blank"
+                               style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
+                                <?= $isImg ? '\xF0\x9F\x96\xBC' : '\xF0\x9F\x93\x84' ?> <?= htmlspecialchars($att['name']) ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
                     <div class="announce-meta"><?= date('d M Y, h:i A', $a['created_at']->toDateTime()->getTimestamp()) ?></div>
                 </div>
                 <a href="mentor_announcements.php?delete_ann=<?= (string)$a['_id'] ?>"

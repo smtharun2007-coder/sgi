@@ -6,6 +6,8 @@ if (empty($_GET['sem_id'])) { header("Location: dashboard.php"); exit; }
 
 $sem_id = $_GET['sem_id'];
 $roll   = $_SESSION['user']['roll'];
+$u      = $_SESSION['user'];
+$unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]);
 
 $sem = $semesters->findOne(['_id' => new MongoDB\BSON\ObjectId($sem_id), 'roll' => $roll]);
 if (!$sem) { header("Location: dashboard.php"); exit; }
@@ -38,7 +40,7 @@ if (isset($_POST['verify'])) {
 <head>
     <meta charset="UTF-8">
     <title>SGI – Verify & Confirm</title>
-    <link rel="stylesheet" href="/css/style.css?v=2">
+    <link rel="stylesheet" href="/css/style.css?v=3">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -48,11 +50,20 @@ if (isset($_POST['verify'])) {
     SGI
 </a>
     <div class="nav-links">
-        <a href="dashboard.php">Home</a>
-        <a href="update_profile.php">Update Profile</a>
+        <a href="semester_detail.php?id=<?= $sem_id ?>">&#8592; Back</a>
+        <a href="update_profile.php">Profile</a>
         <a href="about.php">About</a>
         <a href="contact.php">Contact</a>
         <a href="print_select.php">Print</a>
+        <div class="notif-bell-wrap">
+            <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
+                &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
+            </button>
+            <div class="notif-dropdown" id="notifDrop">
+                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
+                <div id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
+            </div>
+        </div>
         <a href="logout.php" class="btn-logout">Logout</a>
     </div>
 </nav>
@@ -112,6 +123,32 @@ if (isset($_POST['verify'])) {
 function toggleSubmit() {
     document.getElementById('submitBtn').disabled = !document.getElementById('declaration').checked;
 }
+function toggleNotif() {
+    const drop = document.getElementById('notifDrop');
+    drop.classList.toggle('open');
+    if (drop.classList.contains('open')) loadNotifs();
+}
+function loadNotifs() {
+    fetch('notifications.php?fetch=1')
+        .then(r=>r.json()).then(data=>{
+            const list = document.getElementById('notifList');
+            if (!data.length) { list.innerHTML='<div class="notif-empty">No notifications</div>'; return; }
+            list.innerHTML = data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');
+        });
+}
+function markAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?mark_all=1');
+    document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
+document.addEventListener('click', e => {
+    const btn = document.getElementById('bellBtn');
+    const drop = document.getElementById('notifDrop');
+    if (btn && drop && !btn.contains(e.target) && !drop.contains(e.target))
+        drop.classList.remove('open');
+});
 </script>
 <div class="copyright-footer">
     &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.

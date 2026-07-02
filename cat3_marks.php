@@ -5,6 +5,8 @@ requireLogin();
 if (empty($_GET['sem_id'])) { header("Location: dashboard.php"); exit; }
 $sem_id = $_GET['sem_id'];
 $roll   = $_SESSION['user']['roll'];
+$u      = $_SESSION['user'];
+$unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]);
 
 $sem = $semesters->findOne(['_id' => new MongoDB\BSON\ObjectId($sem_id), 'roll' => $roll]);
 if (!$sem) { header("Location: dashboard.php"); exit; }
@@ -64,7 +66,7 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
 <head>
     <meta charset="UTF-8">
     <title>SGI – CAT 3 Marks</title>
-    <link rel="stylesheet" href="/css/style.css?v=2">
+    <link rel="stylesheet" href="/css/style.css?v=3">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
 </head>
 <body>
@@ -74,11 +76,20 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
     SGI
 </a>
     <div class="nav-links">
-        <a href="dashboard.php">Home</a>
-        <a href="update_profile.php">Update Profile</a>
+        <a href="semester_detail.php?id=<?= $sem_id ?>">&#8592; Back</a>
+        <a href="update_profile.php">Profile</a>
         <a href="about.php">About</a>
         <a href="contact.php">Contact</a>
         <a href="print_select.php">Print</a>
+        <div class="notif-bell-wrap">
+            <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
+                &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
+            </button>
+            <div class="notif-dropdown" id="notifDrop">
+                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
+                <div id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
+            </div>
+        </div>
         <a href="logout.php" class="btn-logout">Logout</a>
     </div>
 </nav>
@@ -131,6 +142,10 @@ function calcTotal() {
     document.getElementById('cat-total').innerText   = total;
     document.getElementById('cat-percent').innerText = max > 0 ? ((total / max) * 100).toFixed(2) + '%' : '0%';
 }
+function toggleNotif(){const d=document.getElementById('notifDrop');d.classList.toggle('open');if(d.classList.contains('open'))loadNotifs();}
+function loadNotifs(){fetch('notifications.php?fetch=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML=data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');});}
+function markAll(e){e.preventDefault();fetch('notifications.php?mark_all=1');document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));const b=document.querySelector('.notif-badge');if(b)b.remove();}
+document.addEventListener('click',e=>{const btn=document.getElementById('bellBtn');const d=document.getElementById('notifDrop');if(btn&&d&&!btn.contains(e.target)&&!d.contains(e.target))d.classList.remove('open');});
 </script>
 <div class="copyright-footer">
     &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
