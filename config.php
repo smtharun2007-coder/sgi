@@ -56,7 +56,11 @@ $db        = $client->sgi_db;
 $users     = $db->users;
 $semesters = $db->semesters;
 $subjects  = $db->subjects;
-$mentors   = $db->mentors;
+$mentors       = $db->mentors;
+$announcements = $db->announcements;
+$calendar_events = $db->calendar_events;
+$notifications = $db->notifications;
+$approvals     = $db->approvals;
 
 // Session timeout - 30 minutes
 if (isset($_SESSION['user'])) {
