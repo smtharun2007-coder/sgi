@@ -52,8 +52,15 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             <p><strong>Year:</strong> <?= $u['year_from'] ?> – <?= $u['year_to'] ?></p>
             <p><strong>Email:</strong> <?= htmlspecialchars($u['email']) ?></p>
             <p><strong>Phone:</strong> <?= htmlspecialchars($u['phone']) ?></p>
-            <?php if (!empty($u['mentor_id'])): ?>
-            <div style="margin-top:14px;background:linear-gradient(135deg,#1a1a2e,#e94560);border-radius:12px;padding:20px 28px;display:inline-block;box-shadow:0 4px 14px rgba(233,69,96,0.3);">
+            <?php
+// Fetch mentor details for the popup
+$mentorData = null;
+if (!empty($u['mentor_id'])) {
+    $mentorData = $mentors->findOne(['mentor_id' => $u['mentor_id']]);
+}
+?>
+            <?php if (!empty($u['mentor_id']) && $mentorData): ?>
+            <div style="margin-top:14px;background:linear-gradient(135deg,#1a1a2e,#e94560);border-radius:12px;padding:20px 28px;display:inline-block;box-shadow:0 4px 14px rgba(233,69,96,0.3);cursor:pointer;transition:transform 0.2s,box-shadow 0.2s;" onclick="showMentorModal()" onmouseenter="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(233,69,96,0.4)';" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 14px rgba(233,69,96,0.3)';">
                 <div style="font-size:13px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">Mentor ID</div>
                 <div style="font-size:28px;font-weight:700;color:#fff;"><?= htmlspecialchars($u['mentor_id']) ?></div>
             </div>
@@ -134,6 +141,61 @@ document.addEventListener('click', e => {
         drop.classList.remove('open');
 });
 </script>
+
+<!-- Mentor Details Modal -->
+<?php if ($mentorData): ?>
+<div id="mentorModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:1000;align-items:center;justify-content:center;" onclick="if(event.target===this)closeMentorModal()">
+    <div style="background:#fff;border-radius:16px;max-width:420px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
+        <div style="background:linear-gradient(135deg,#1a1a2e,#e94560);padding:24px;text-align:center;position:relative;">
+            <button onclick="closeMentorModal()" style="position:absolute;top:12px;right:16px;background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">&times;</button>
+            <?php if (!empty($mentorData['photo'])): ?>
+            <img src="<?= htmlspecialchars(imgUrl($mentorData['photo'])) ?>" alt="Mentor Photo" style="width:100px;height:100px;border-radius:50%;border:4px solid #fff;object-fit:cover;margin-bottom:12px;">
+            <?php else: ?>
+            <div style="width:100px;height:100px;border-radius:50%;border:4px solid #fff;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font-size:40px;color:#fff;">👤</div>
+            <?php endif; ?>
+            <h2 style="color:#fff;margin:0;font-size:22px;"><?= htmlspecialchars($mentorData['name']) ?></h2>
+            <p style="color:rgba(255,255,255,0.7);margin:4px 0 0;font-size:14px;">Mentor ID: <?= htmlspecialchars($mentorData['mentor_id']) ?></p>
+        </div>
+        <div style="padding:24px;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:10px;">
+                <span style="font-size:20px;">📧</span>
+                <div>
+                    <div style="font-size:11px;color:#888;text-transform:uppercase;">Email</div>
+                    <div style="font-size:14px;color:#333;"><?= htmlspecialchars($mentorData['email'] ?? 'N/A') ?></div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:10px;">
+                <span style="font-size:20px;">📱</span>
+                <div>
+                    <div style="font-size:11px;color:#888;text-transform:uppercase;">Phone</div>
+                    <div style="font-size:14px;color:#333;"><?= htmlspecialchars($mentorData['phone'] ?? 'N/A') ?></div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;padding:12px;background:#f8f9fa;border-radius:10px;">
+                <span style="font-size:20px;">🏛️</span>
+                <div>
+                    <div style="font-size:11px;color:#888;text-transform:uppercase;">Department</div>
+                    <div style="font-size:14px;color:#333;"><?= htmlspecialchars($mentorData['dept'] ?? 'N/A') ?></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+function showMentorModal() {
+    document.getElementById('mentorModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+function closeMentorModal() {
+    document.getElementById('mentorModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeMentorModal();
+});
+</script>
+<?php endif; ?>
+
 <div class="copyright-footer">
     &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
 </div>

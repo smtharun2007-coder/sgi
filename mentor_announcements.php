@@ -100,6 +100,19 @@ $myAnnouncements = iterator_to_array($announcements->find(['mentor_id'=>$m['ment
 $pendingApprovals = iterator_to_array($approvals->find(['mentor_id'=>$m['mentor_id'],'status'=>'pending'],['sort'=>['created_at'=>-1]]));
 $pastApprovals    = iterator_to_array($approvals->find(['mentor_id'=>$m['mentor_id'],'status'=>['$in'=>['approved','rejected']]],['sort'=>['updated_at'=>-1],'limit'=>20]));
 
+// Fetch all previously used announcement types by this mentor
+$annTypes = ['urgent' => '#e94560', 'info' => '#3498db', 'general' => '#27ae60'];
+$typeCursor = $announcements->find(
+    ['mentor_id' => $m['mentor_id']],
+    ['projection' => ['type'=>1,'color'=>1], 'sort' => ['created_at'=>-1]]
+);
+foreach ($typeCursor as $ann) {
+    $t = $ann['type'] ?? '';
+    if ($t && !isset($annTypes[$t])) {
+        $annTypes[$t] = $ann['color'] ?? '#e94560';
+    }
+}
+
 $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'read'=>false]);
 ?>
 <!DOCTYPE html>
@@ -155,17 +168,17 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 <input type="text" name="title" placeholder="Announcement title…" required>
                 <label>Message</label>
                 <textarea name="body" rows="4" placeholder="Write your announcement…" required></textarea>
-                <label>Type (select or create new)</label>
-                <select name="type_select" id="annTypeSelect" onchange="document.getElementById('annTypeCustom').style.display=this.value==='__custom'?'block':'none'">
-                    <option value="urgent">Urgent</option>
-                    <option value="info">Info</option>
-                    <option value="general" selected>General</option>
-                    <option value="__custom">+ Custom type…</option>
+                <label>Type</label>
+                <select name="type_select" id="annTypeSelect" onchange="handleTypeChange()">
+                    <?php foreach($annTypes as $typeName => $typeColor): ?>
+                    <option value="<?= htmlspecialchars($typeName) ?>" data-color="<?= htmlspecialchars($typeColor) ?>"><?= ucfirst(htmlspecialchars($typeName)) ?></option>
+                    <?php endforeach; ?>
+                    <option value="__custom">+ Create new type…</option>
                 </select>
                 <div id="annTypeCustomContainer" style="margin-top:6px;display:none;">
                     <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="width:100%;padding:10px;">
                     <label style="margin-top:8px;display:block;">Color for this type</label>
-                    <input type="color" name="type_color" value="#e94560" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
+                    <input type="color" name="type_color" id="typeColorCustom" value="#e94560" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
                 </div>
                 <label style="margin-top:8px;display:block;">Type Color</label>
                 <input type="color" name="color" value="#e94560" id="typeColorPicker" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
@@ -315,6 +328,25 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
     </div>
 </div>
 <script>
+function handleTypeChange() {
+    const select = document.getElementById('annTypeSelect');
+    const customContainer = document.getElementById('annTypeCustomContainer');
+    const colorPicker = document.getElementById('typeColorPicker');
+    const customColorPicker = document.getElementById('typeColorCustom');
+    
+    if (select.value === '__custom') {
+        customContainer.style.display = 'block';
+    } else {
+        customContainer.style.display = 'none';
+        // Update color picker to match selected type's color
+        const selectedOption = select.options[select.selectedIndex];
+        const color = selectedOption.getAttribute('data-color');
+        if (color) {
+            colorPicker.value = color;
+        }
+    }
+}
+
 function toggleStudentCheckboxes(checkbox) {
     const checkboxes = document.querySelectorAll('input[name="students[]"]');
     checkboxes.forEach(cb => {
