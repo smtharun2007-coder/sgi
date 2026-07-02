@@ -45,9 +45,9 @@ function grade($sgi) {
 </a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
-        <a href="calendar.php">Calendar</a>
-        <a href="announcements.php">Announcements</a>
         <a href="update_profile.php">Profile</a>
+        <a href="about.php">About</a>
+        <a href="contact.php">Contact</a>
         <a href="print_select.php">Print</a>
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
@@ -163,17 +163,31 @@ function grade($sgi) {
         <?php endif; ?>
     </div>
 
-    <!-- ANALYTICS CARD -->
-    <?php if (!empty($semList)): ?>
+    <!-- ANALYTICS + CALENDAR + ANNOUNCEMENTS CARDS -->
     <div class="sem-cards" style="margin-top:20px;">
+        <?php if (!empty($semList)): ?>
         <div class="sem-card">
-            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);"><h3>📊 All Sem Analytics</h3></div>
+            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);"><h3>&#128202; All Sem Analytics</h3></div>
             <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
                 <a href="analytics.php" class="btn-primary" style="width:auto;padding:10px 24px;">View Analytics</a>
             </div>
         </div>
+        <?php endif; ?>
+        <div class="sem-card">
+            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#2980b9);"><h3>&#128197; Calendar</h3></div>
+            <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">View exam dates, holidays &amp; events from your mentor.</p>
+                <a href="calendar.php" class="btn-primary" style="width:auto;padding:10px 24px;">Open Calendar</a>
+            </div>
+        </div>
+        <div class="sem-card">
+            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#e94560);"><h3>&#128226; Announcements</h3></div>
+            <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">View announcements &amp; submit requests to your mentor.</p>
+                <a href="announcements.php" class="btn-primary" style="width:auto;padding:10px 24px;">Open Announcements</a>
+            </div>
+        </div>
     </div>
-    <?php endif; ?>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <?php if (!empty($semList)): ?>

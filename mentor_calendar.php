@@ -8,32 +8,34 @@ $year  = (int)($_GET['year']  ?? date('Y'));
 if ($month < 1)  { $month = 12; $year--; }
 if ($month > 12) { $month = 1;  $year++; }
 
-// Add event
+// Add event (supports multiple dates)
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['add_event'])) {
-    $date = $_POST['event_date'] ?? '';
+    $dates = $_POST['event_dates'] ?? [];
     $title = trim($_POST['title'] ?? '');
-    $type  = $_POST['type'] ?? 'other';
+    $type  = trim($_POST['type_custom'] ?? '') ?: (trim($_POST['type_select'] ?? '') ?: 'other');
     $desc  = trim($_POST['desc'] ?? '');
-    if ($date && $title) {
-        $ts = strtotime($date);
-        $calendar_events->insertOne([
-            'mentor_id' => $m['mentor_id'],
-            'date'      => new MongoDB\BSON\UTCDateTime($ts * 1000),
-            'title'     => $title,
-            'type'      => $type,
-            'desc'      => $desc,
-            'created_at'=> new MongoDB\BSON\UTCDateTime()
-        ]);
-        // Notify all students of this mentor
-        $students = $users->find(['mentor_id' => $m['mentor_id']]);
-        foreach ($students as $st) {
-            $notifications->insertOne([
-                'roll'    => $st['roll'],
-                'message' => "📅 New calendar event: $title on " . date('d M Y', $ts),
-                'type'    => 'calendar',
-                'read'    => false,
-                'created_at' => new MongoDB\BSON\UTCDateTime()
+    if (!empty($dates) && $title) {
+        $students = iterator_to_array($users->find(['mentor_id' => $m['mentor_id']]));
+        foreach ($dates as $date) {
+            $ts = strtotime($date);
+            if (!$ts) continue;
+            $calendar_events->insertOne([
+                'mentor_id' => $m['mentor_id'],
+                'date'      => new MongoDB\BSON\UTCDateTime($ts * 1000),
+                'title'     => $title,
+                'type'      => $type,
+                'desc'      => $desc,
+                'created_at'=> new MongoDB\BSON\UTCDateTime()
             ]);
+            foreach ($students as $st) {
+                $notifications->insertOne([
+                    'roll'    => $st['roll'],
+                    'message' => "📅 New calendar event: $title on " . date('d M Y', $ts),
+                    'type'    => 'calendar',
+                    'read'    => false,
+                    'created_at' => new MongoDB\BSON\UTCDateTime()
+                ]);
+            }
         }
         header("Location: mentor_calendar.php?month=$month&year=$year");
         exit;
@@ -100,31 +102,51 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
     <!-- Add Event Form -->
     <div class="form-box" style="margin-bottom:24px;">
         <h2 style="margin-bottom:16px;">Add Calendar Event</h2>
-        <form method="POST" style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:12px;align-items:end;">
-            <div>
-                <label>Date</label>
-                <input type="date" name="event_date" required>
+        <form method="POST">
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px;margin-bottom:12px;">
+                <div>
+                    <label>Title</label>
+                    <input type="text" name="title" placeholder="e.g. CAT 1 Exam" required>
+                </div>
+                <div>
+                    <label>Type (select or type custom)</label>
+                    <select name="type_select" id="typeSelect" onchange="syncType(this.value)">
+                        <option value="exam">Exam</option>
+                        <option value="holiday">Holiday</option>
+                        <option value="study">Study Holiday</option>
+                        <option value="event">Event</option>
+                        <option value="other">Other</option>
+                        <option value="__custom">+ Custom type…</option>
+                    </select>
+                    <input type="text" name="type_custom" id="typeCustom" placeholder="Custom type name" style="margin-top:6px;display:none;">
+                </div>
+                <div>
+                    <label>Description (optional)</label>
+                    <input type="text" name="desc" placeholder="Details shown to students…">
+                </div>
+                <div style="display:flex;align-items:flex-end;">
+                    <button type="submit" name="add_event" class="btn-primary" style="margin-top:0;width:100%;padding:14px 20px;">Add to Selected Dates</button>
+                </div>
             </div>
             <div>
-                <label>Title</label>
-                <input type="text" name="title" placeholder="e.g. CAT 1 Exam" required>
-            </div>
-            <div>
-                <label>Type</label>
-                <select name="type">
-                    <option value="exam">Exam</option>
-                    <option value="holiday">Holiday</option>
-                    <option value="study">Study Holiday</option>
-                    <option value="event">Event</option>
-                    <option value="other">Other</option>
-                </select>
-            </div>
-            <div>
-                <label>Description (optional)</label>
-                <input type="text" name="desc" placeholder="Details…">
-            </div>
-            <div>
-                <button type="submit" name="add_event" class="btn-primary" style="margin-top:0;width:auto;padding:14px 20px;">Add</button>
+                <label>Select Dates (click to toggle, can select multiple)</label>
+                <div id="datePickerWrap" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;padding:16px;background:#f9f9f9;border-radius:10px;border:2px solid #eee;">
+                    <?php
+                    $daysInFormMonth = (int)date('t', $firstDay);
+                    for($fd=1;$fd<=$daysInFormMonth;$fd++):
+                        $dateVal = sprintf('%04d-%02d-%02d',$year,$month,$fd);
+                        $dayName = date('D', mktime(0,0,0,$month,$fd,$year));
+                    ?>
+                    <label style="cursor:pointer;text-align:center;">
+                        <input type="checkbox" name="event_dates[]" value="<?= $dateVal ?>" style="display:none;" class="date-cb">
+                        <span class="date-chip" data-val="<?= $dateVal ?>">
+                            <span style="font-size:10px;display:block;color:#888;"><?= $dayName ?></span>
+                            <span style="font-size:15px;font-weight:700;"><?= $fd ?></span>
+                        </span>
+                    </label>
+                    <?php endfor; ?>
+                </div>
+                <div style="margin-top:8px;font-size:12px;color:#888;">Selected: <span id="selectedCount">0</span> date(s)</div>
             </div>
         </form>
     </div>
@@ -177,6 +199,24 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
     </div>
 </div>
 <script>
+function syncType(val) {
+    const custom = document.getElementById('typeCustom');
+    custom.style.display = val === '__custom' ? 'block' : 'none';
+    if (val !== '__custom') custom.value = '';
+}
+document.querySelectorAll('.date-cb').forEach(cb => {
+    cb.addEventListener('change', function() {
+        const chip = this.nextElementSibling;
+        chip.style.background = this.checked ? '#1a1a2e' : '#fff';
+        chip.style.color = this.checked ? '#fff' : '#333';
+        document.getElementById('selectedCount').textContent =
+            document.querySelectorAll('.date-cb:checked').length;
+    });
+});
+// Style chips
+document.querySelectorAll('.date-chip').forEach(chip => {
+    chip.style.cssText = 'display:inline-block;padding:8px 10px;border-radius:8px;border:2px solid #eee;background:#fff;color:#333;min-width:44px;transition:all 0.15s;';
+});
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');
     drop.classList.toggle('open');

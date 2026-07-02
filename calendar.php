@@ -48,8 +48,6 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     </a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
-        <a href="calendar.php" style="color:#fff;font-weight:700;">Calendar</a>
-        <a href="announcements.php">Announcements</a>
         <a href="update_profile.php">Profile</a>
         <a href="print_select.php">Print</a>
         <div class="notif-bell-wrap">
@@ -86,11 +84,11 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             for($d=1;$d<=$daysInMonth;$d++):
                 $isToday = ($d==$today && $month==$todayM && $year==$todayY);
             ?>
-            <div class="cal-cell <?= $isToday?'today':'' ?>">
-                <div class="cal-date"><?= $d ?></div>
+            <div class="cal-cell <?= $isToday?'today':'' ?>" <?= !empty($events[$d]) ? 'onclick="showDay('.$d.')" style="cursor:pointer;"' : '' ?>>
+                <div class="cal-date" style="text-align:center;"><?= $d ?></div>
                 <?php if(!empty($events[$d])): ?>
                     <?php foreach($events[$d] as $ev): ?>
-                        <span class="cal-event-dot <?= htmlspecialchars($ev['type']) ?>" title="<?= htmlspecialchars($ev['title']) ?>">
+                        <span class="cal-event-dot <?= htmlspecialchars($ev['type']) ?>" style="text-align:center;display:block;">
                             <?= htmlspecialchars($ev['title']) ?>
                         </span>
                     <?php endforeach; ?>
@@ -112,7 +110,53 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Day detail modal -->
+<div id="dayModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:14px;padding:28px 32px;width:90%;max-width:440px;box-shadow:0 12px 40px rgba(0,0,0,0.2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <h3 id="modalDate" style="color:#1a1a2e;font-size:16px;"></h3>
+            <button onclick="closeModal()" style="background:none;border:none;font-size:22px;cursor:pointer;color:#888;">&times;</button>
+        </div>
+        <div id="modalEvents"></div>
+    </div>
+</div>
 <script>
+const calEvents = <?php
+    $jsEvents = [];
+    foreach($events as $day => $evList) {
+        foreach($evList as $ev) {
+            $jsEvents[$day][] = [
+                'title' => $ev['title'],
+                'type'  => $ev['type'],
+                'desc'  => $ev['desc'] ?? ''
+            ];
+        }
+    }
+    echo json_encode($jsEvents);
+?>;
+const monthName = '<?= $monthName ?>';
+function showDay(d) {
+    const evs = calEvents[d];
+    if (!evs || !evs.length) return;
+    document.getElementById('modalDate').textContent = d + ' ' + monthName;
+    document.getElementById('modalEvents').innerHTML = evs.map(e => `
+        <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0f2f5;">
+            <span class="cal-event-dot ${e.type}" style="flex-shrink:0;padding:4px 10px;border-radius:8px;">${e.type.toUpperCase()}</span>
+            <div>
+                <div style="font-weight:700;color:#1a1a2e;font-size:14px;">${e.title}</div>
+                ${e.desc ? `<div style="font-size:12px;color:#666;margin-top:4px;">${e.desc}</div>` : ''}
+            </div>
+        </div>`).join('');
+    const modal = document.getElementById('dayModal');
+    modal.style.display = 'flex';
+}
+function closeModal() {
+    document.getElementById('dayModal').style.display = 'none';
+}
+document.getElementById('dayModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+});
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');
     drop.classList.toggle('open');

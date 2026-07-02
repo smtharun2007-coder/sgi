@@ -14,36 +14,6 @@ if ($mentor_id) {
     $list = iterator_to_array($cur);
 }
 
-// Submit approval request
-$msg = '';
-if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['request_approval'])) {
-    $subject = trim($_POST['subject'] ?? '');
-    $reason  = trim($_POST['reason']  ?? '');
-    if ($subject && $reason && $mentor_id) {
-        $approvals->insertOne([
-            'roll'      => $u['roll'],
-            'name'      => $u['name'],
-            'mentor_id' => $mentor_id,
-            'subject'   => $subject,
-            'reason'    => $reason,
-            'status'    => 'pending',
-            'created_at'=> new MongoDB\BSON\UTCDateTime()
-        ]);
-        // Notify mentor
-        $notifications->insertOne([
-            'mentor_id' => $mentor_id,
-            'message'   => "📋 Approval request from {$u['name']} ({$u['roll']}): $subject",
-            'type'      => 'approval',
-            'read'      => false,
-            'created_at'=> new MongoDB\BSON\UTCDateTime()
-        ]);
-        $msg = 'success';
-    }
-}
-
-// My approval requests
-$myApprovals = iterator_to_array($approvals->find(['roll'=>$u['roll']],['sort'=>['created_at'=>-1]]));
-
 $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]);
 ?>
 <!DOCTYPE html>
@@ -61,8 +31,6 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     </a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
-        <a href="calendar.php">Calendar</a>
-        <a href="announcements.php" style="color:#fff;font-weight:700;">Announcements</a>
         <a href="update_profile.php">Profile</a>
         <a href="print_select.php">Print</a>
         <div class="notif-bell-wrap">
@@ -80,9 +48,7 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
 <div class="container">
 
     <div class="page-tabs">
-        <a href="#announcements" class="page-tab active">📢 Announcements</a>
-        <a href="#approvals" class="page-tab">📋 My Requests</a>
-        <a href="#new-request" class="page-tab">+ New Request</a>
+        <a href="#announcements" class="page-tab active">&#128226; Announcements</a>
     </div>
 
     <!-- ANNOUNCEMENTS -->
@@ -92,8 +58,9 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             <p class="no-data">No announcements yet.</p>
         <?php else: ?>
             <?php foreach($list as $a):
-                $typeClass = $a['type'] ?? 'urgent';
-                $badgeClass = 'badge-'.($typeClass==='urgent'?'urgent':($typeClass==='info'?'info':'general'));
+                $typeClass  = $a['type'] ?? 'general';
+                $knownTypes = ['urgent','info','general'];
+                $badgeClass = in_array($typeClass,$knownTypes) ? 'badge-'.$typeClass : 'badge-general';
                 $cardClass  = $typeClass==='info'?'info':($typeClass==='general'?'success':'');
             ?>
             <div class="announce-card <?= $cardClass ?>">
@@ -108,53 +75,6 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 </div>
             </div>
             <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-
-    <hr style="margin:32px 0;">
-
-    <!-- MY APPROVAL REQUESTS -->
-    <div id="approvals">
-        <h3 style="color:#1a1a2e;margin-bottom:16px;">My Approval Requests</h3>
-        <?php if(empty($myApprovals)): ?>
-            <p class="no-data">No requests submitted yet.</p>
-        <?php else: ?>
-            <?php foreach($myApprovals as $ap): ?>
-            <div class="approval-card">
-                <div class="approval-info">
-                    <div class="a-title"><?= htmlspecialchars($ap['subject']) ?></div>
-                    <div class="a-sub"><?= htmlspecialchars($ap['reason']) ?></div>
-                    <div class="a-sub" style="margin-top:4px;color:#aaa;"><?= date('d M Y', $ap['created_at']->toDateTime()->getTimestamp()) ?></div>
-                    <?php if(!empty($ap['mentor_remark'])): ?>
-                        <div class="a-sub" style="margin-top:6px;color:#555;">Mentor: <?= htmlspecialchars($ap['mentor_remark']) ?></div>
-                    <?php endif; ?>
-                </div>
-                <span class="status-<?= $ap['status'] ?>"><?= ucfirst($ap['status']) ?></span>
-            </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-
-    <hr style="margin:32px 0;">
-
-    <!-- NEW REQUEST FORM -->
-    <div id="new-request">
-        <h3 style="color:#1a1a2e;margin-bottom:16px;">Submit Approval Request to Mentor</h3>
-        <?php if($msg==='success'): ?>
-            <p class="success">Request submitted successfully. Your mentor will review it.</p>
-        <?php endif; ?>
-        <?php if(!$mentor_id): ?>
-            <p class="error">No mentor assigned to your account.</p>
-        <?php else: ?>
-        <div class="form-box" style="padding:28px;">
-            <form method="POST">
-                <label>Subject / Title</label>
-                <input type="text" name="subject" placeholder="e.g. Leave request, Re-exam request…" required>
-                <label>Reason / Details</label>
-                <textarea name="reason" rows="4" placeholder="Explain your request…" required></textarea>
-                <button type="submit" name="request_approval" class="btn-primary" style="margin-top:16px;">Submit Request</button>
-            </form>
-        </div>
         <?php endif; ?>
     </div>
 

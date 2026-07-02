@@ -7,7 +7,8 @@ $m = $_SESSION['mentor'];
 if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
     $title = trim($_POST['title'] ?? '');
     $body  = trim($_POST['body']  ?? '');
-    $type  = $_POST['type'] ?? 'general';
+    $type  = trim($_POST['type_custom'] ?? '') ?: (trim($_POST['type_select'] ?? '') ?: 'general');
+    $type  = ($type === '__custom') ? 'general' : $type;
     if ($title && $body) {
         $announcements->insertOne([
             'mentor_id'   => $m['mentor_id'],
@@ -124,12 +125,14 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 <input type="text" name="title" placeholder="Announcement title…" required>
                 <label>Message</label>
                 <textarea name="body" rows="4" placeholder="Write your announcement…" required></textarea>
-                <label>Type</label>
-                <select name="type">
+                <label>Type (select or type custom)</label>
+                <select name="type_select" id="annTypeSelect" onchange="document.getElementById('annTypeCustom').style.display=this.value==='__custom'?'block':'none'">
                     <option value="urgent">Urgent</option>
                     <option value="info">Info</option>
                     <option value="general" selected>General</option>
+                    <option value="__custom">+ Custom type…</option>
                 </select>
+                <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="margin-top:6px;display:none;">
                 <button type="submit" name="post_announcement" class="btn-primary" style="margin-top:16px;">Post to All My Students</button>
             </form>
         </div>
