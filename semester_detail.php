@@ -438,12 +438,14 @@ subLabels.forEach((label, i) => {
 </div>
 <?php endif; ?>
 <!-- Document viewer modal -->
-<div id="docModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2001;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:60px;" onclick="if(event.target===this)closeDocModal()">
+<div id="docModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2001;flex-direction:column;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeDocModal()">
     <div style="position:absolute;top:15px;right:20px;z-index:2002;">
         <button onclick="closeDocModal()" style="background:none;border:none;color:#fff;font-size:32px;cursor:pointer;padding:0 10px;">&times;</button>
     </div>
-    <div id="docTitle" style="color:#fff;font-size:16px;margin-bottom:15px;font-weight:600;"></div>
-    <iframe id="docViewer" src="" style="width:90vw;height:80vh;border:1px solid #444;border-radius:8px;background:#fff;"></iframe>
+    <div id="docTitle" style="color:#fff;font-size:16px;margin-bottom:15px;font-weight:600;text-align:center;"></div>
+    <div style="max-width:90vw;max-height:80vh;display:flex;align-items:center;justify-content:center;">
+        <iframe id="docViewer" src="" style="max-width:90vw;max-height:80vh;border:1px solid #444;border-radius:8px;background:#fff;"></iframe>
+    </div>
     <div style="margin-top:15px;">
         <a id="docDownloadLink" href="" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;font-size:14px;">Open in new tab / Download</a>
     </div>

@@ -35,12 +35,13 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
             'created_at'  => new MongoDB\BSON\UTCDateTime()
         ]);
         // Send notifications based on recipient selection
-        $query = ['mentor_id' => $m['mentor_id']];
         if ($recipient === 'own') {
             // Only send to students with this specific mentor
-            $query['mentor_id'] = $m['mentor_id'];
+            $students = $users->find(['mentor_id' => $m['mentor_id']]);
+        } else {
+            // Send to all students under this mentor (same as own for now, since all students have a mentor)
+            $students = $users->find(['mentor_id' => $m['mentor_id']]);
         }
-        $students = $users->find($query);
         foreach ($students as $st) {
             $notifications->insertOne([
                 'roll'    => $st['roll'],

@@ -54,6 +54,12 @@ if (isset($_POST['signup'])) {
     <link rel="stylesheet" href="/css/style.css?v=2">
 </head>
 <body class="auth-page signup">
+<nav class="navbar" style="margin-bottom:20px;background:linear-gradient(135deg,#1a1a2e,#e94560);padding:12px 20px;border-radius:0 0 10px 10px;">
+    <a href="index.php" style="display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-size:18px;font-weight:700;">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" style="height:35px;width:auto;">
+        SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Student Portal</span>
+    </a>
+</nav>
 <div class="auth-box signup-box">
     <div class="logo-container">
         <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">

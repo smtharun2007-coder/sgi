@@ -132,16 +132,10 @@ function grade($sgi) {
             <h1>Student Growth Index</h1>
             <h2>Overall Academic Report</h2>
             <?php if (!empty($u['batch_no'])): ?>
-            <div style="margin-top:8px;background:linear-gradient(135deg,#1a1a2e,#2980b9);border-radius:10px;padding:12px 18px;display:inline-block;box-shadow:0 3px 10px rgba(41,128,185,0.3);">
-                <div style="font-size:11px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Batch</div>
-                <div style="font-size:20px;font-weight:700;color:#fff;"><?= htmlspecialchars($u['batch_no']) ?></div>
-            </div>
+            <p style="font-size:13px;color:#555;margin-top:4px;"><strong>Batch:</strong> <?= htmlspecialchars($u['batch_no']) ?></p>
             <?php endif; ?>
             <?php if (!empty($u['mentor_id'])): ?>
-            <div style="margin-top:10px;background:linear-gradient(135deg,#1a1a2e,#e94560);border-radius:12px;padding:14px 22px;display:inline-block;box-shadow:0 3px 12px rgba(233,69,96,0.3);">
-                <div style="font-size:11px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mentor ID</div>
-                <div style="font-size:22px;font-weight:700;color:#fff;"><?= htmlspecialchars($u['mentor_id']) ?></div>
-            </div>
+            <p style="font-size:13px;color:#555;margin-top:2px;"><strong>Mentor ID:</strong> <?= htmlspecialchars($u['mentor_id']) ?></p>
             <?php endif; ?>
         </div>
     </div>
