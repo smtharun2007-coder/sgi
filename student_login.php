@@ -28,6 +28,7 @@ if (isset($_POST['login'])) {
                 'father'    => $user['father'] ?? '',
                 'mother'    => $user['mother'] ?? '',
                 'dept'      => $user['dept'] ?? '',
+                'batch_no'  => $user['batch_no'] ?? '',
                 'class'     => $user['class'] ?? '',
                 'year_from' => $user['year_from'] ?? '',
                 'year_to'   => $user['year_to'] ?? '',
