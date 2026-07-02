@@ -355,6 +355,11 @@ function toggleStudentCheckboxes(checkbox) {
         cb.checked = checkbox.checked;
     });
 }
+// Initialize type selector on page load
+document.addEventListener('DOMContentLoaded', function() {
+    handleTypeChange();  // Check initial state
+});
+
 // Also handle individual student checkbox clicks
 document.addEventListener('DOMContentLoaded', function() {
     const studentCheckboxes = document.querySelectorAll('input[name="students[]"]');
