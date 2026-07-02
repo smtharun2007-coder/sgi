@@ -176,10 +176,12 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <?php endforeach; ?>
                     <option value="__custom">+ Create new type…</option>
                 </select>
+                <!-- Hidden field to store the color for existing types -->
+                <input type="hidden" name="color" id="selectedColor" value="#e94560">
                 <div id="annTypeCustomContainer" style="margin-top:6px;display:none;">
                     <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="width:100%;padding:10px;">
                     <label style="margin-top:8px;display:block;">Color for this new type</label>
-                    <input type="color" name="color" id="typeColorCustom" value="#e94560" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
+                    <input type="color" name="color" id="typeColorCustom" value="#e94560" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;" onchange="document.getElementById('selectedColor').value=this.value;">
                 </div>
                 <label style="margin-top:14px;">Select Students</label>
                 <div style="background:#f9f9f9;padding:12px;border-radius:6px;">
@@ -330,13 +332,19 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
 function handleTypeChange() {
     const select = document.getElementById('annTypeSelect');
     const customContainer = document.getElementById('annTypeCustomContainer');
+    const hiddenColor = document.getElementById('selectedColor');
     
     if (select.value === '__custom') {
         // Show custom type input and color picker for creating new type
         customContainer.style.display = 'block';
     } else {
-        // Hide custom type container - color is already stored with the type
+        // Hide custom type container - get color from selected option
         customContainer.style.display = 'none';
+        const selectedOption = select.options[select.selectedIndex];
+        const color = selectedOption.getAttribute('data-color');
+        if (color) {
+            hiddenColor.value = color;
+        }
     }
 }
 
