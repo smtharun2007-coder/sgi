@@ -5,17 +5,19 @@ $isMentor = isset($_SESSION['mentor']);
 $isStudent = isset($_SESSION['user']);
 
 if (!$isMentor && !$isStudent) {
+    header('Content-Type: application/json');
     echo json_encode([]); exit;
 }
 
-// Mark all read
+// Mark all read — always return JSON, never plain text
 if (isset($_GET['mark_all'])) {
     if ($isMentor) {
         $notifications->updateMany(['mentor_id'=>$_SESSION['mentor']['mentor_id'],'read'=>false],['$set'=>['read'=>true]]);
     } else {
         $notifications->updateMany(['roll'=>$_SESSION['user']['roll'],'read'=>false],['$set'=>['read'=>true]]);
     }
-    if (!isset($_GET['fetch'])) { echo 'ok'; exit; }
+    header('Content-Type: application/json');
+    echo json_encode(['status'=>'ok']); exit;
 }
 
 // Fetch notifications as JSON
@@ -29,19 +31,14 @@ if (isset($_GET['fetch'])) {
     $result = [];
     foreach ($cur as $n) {
         $result[] = [
-            'message' => $n['message'],
+            'message' => htmlspecialchars($n['message']),
             'read'    => (bool)$n['read'],
             'time'    => date('d M, h:i A', $n['created_at']->toDateTime()->getTimestamp())
         ];
-    }
-    // Mark all as read after fetching
-    if ($isMentor) {
-        $notifications->updateMany(['mentor_id'=>$_SESSION['mentor']['mentor_id'],'read'=>false],['$set'=>['read'=>true]]);
-    } else {
-        $notifications->updateMany(['roll'=>$_SESSION['user']['roll'],'read'=>false],['$set'=>['read'=>true]]);
     }
     echo json_encode($result);
     exit;
 }
 
-echo 'ok';
+header('Content-Type: application/json');
+echo json_encode(['status'=>'ok']);

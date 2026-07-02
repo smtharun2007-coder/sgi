@@ -38,7 +38,7 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll()">Mark all read</a></div>
+                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
                 <div id="notifList"><div class="notif-empty">Loading…</div></div>
             </div>
         </div>
@@ -53,7 +53,6 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
 
     <!-- ANNOUNCEMENTS -->
     <div id="announcements">
-        <h3 style="color:#1a1a2e;margin-bottom:16px;">Announcements from Mentor</h3>
         <?php if(empty($list)): ?>
             <p class="no-data">No announcements yet.</p>
         <?php else: ?>
@@ -93,7 +92,8 @@ function loadNotifs() {
             list.innerHTML = data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');
         });
 }
-function markAll() {
+function markAll(e) {
+    e.preventDefault();
     fetch('notifications.php?mark_all=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
     const badge = document.querySelector('.notif-badge');

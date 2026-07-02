@@ -13,7 +13,9 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['add_event'])) {
     $dates = $_POST['event_dates'] ?? [];
     $title = trim($_POST['title'] ?? '');
     $type  = trim($_POST['type_custom'] ?? '') ?: (trim($_POST['type_select'] ?? '') ?: 'other');
+    $type  = ($type === '__custom') ? 'other' : $type;
     $desc  = trim($_POST['desc'] ?? '');
+    $color = trim($_POST['color'] ?? '#e94560');
     if (!empty($dates) && $title) {
         $students = iterator_to_array($users->find(['mentor_id' => $m['mentor_id']]));
         foreach ($dates as $date) {
@@ -24,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['add_event'])) {
                 'date'      => new MongoDB\BSON\UTCDateTime($ts * 1000),
                 'title'     => $title,
                 'type'      => $type,
+                'color'     => $color,
                 'desc'      => $desc,
                 'created_at'=> new MongoDB\BSON\UTCDateTime()
             ]);
@@ -124,6 +127,10 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <label>Description (optional)</label>
                     <input type="text" name="desc" placeholder="Details shown to students…">
                 </div>
+                <div>
+                    <label>Event Color</label>
+                    <input type="color" name="color" value="#e94560" style="width:100%;height:46px;padding:4px;border-radius:10px;border:2px solid #eee;cursor:pointer;">
+                </div>
                 <div style="display:flex;align-items:flex-end;">
                     <button type="submit" name="add_event" class="btn-primary" style="margin-top:0;width:100%;padding:14px 20px;">Add to Selected Dates</button>
                 </div>
@@ -174,10 +181,12 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 $isToday = ($d==$today && $month==$todayM && $year==$todayY);
             ?>
             <div class="cal-cell <?= $isToday?'today':'' ?>">
-                <div class="cal-date"><?= $d ?></div>
+                <div class="cal-date" style="text-align:center;"><?= $d ?></div>
                 <?php if(!empty($events[$d])): ?>
-                    <?php foreach($events[$d] as $ev): ?>
-                        <span class="cal-event-dot <?= htmlspecialchars($ev['type']) ?>">
+                    <?php foreach($events[$d] as $ev):
+                        $evColor = htmlspecialchars($ev['color'] ?? '#e94560');
+                    ?>
+                        <span class="cal-event-dot" style="background:<?= $evColor ?>;text-align:center;display:block;">
                             <?= htmlspecialchars($ev['title']) ?>
                             <a href="mentor_calendar.php?delete=<?= (string)$ev['_id'] ?>&month=<?= $month ?>&year=<?= $year ?>"
                                onclick="return confirm('Delete this event?')"
@@ -189,13 +198,26 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
             <?php endfor; ?>
         </div>
 
+        <?php
+        // Build legend from only types used this month
+        $usedTypes = [];
+        foreach($events as $dayEvs) {
+            foreach($dayEvs as $ev) {
+                $key = $ev['type'];
+                if (!isset($usedTypes[$key])) $usedTypes[$key] = $ev['color'] ?? '#e94560';
+            }
+        }
+        ?>
+        <?php if(!empty($usedTypes)): ?>
         <div class="cal-legend">
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#e94560"></span> Exam</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#27ae60"></span> Holiday</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#f5a623"></span> Study Holiday</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#2980b9"></span> Event</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#8e44ad"></span> Other</span>
+            <?php foreach($usedTypes as $typeName => $typeColor): ?>
+            <span class="cal-legend-item">
+                <span class="cal-legend-dot" style="background:<?= htmlspecialchars($typeColor) ?>"></span>
+                <?= htmlspecialchars(ucfirst($typeName)) ?>
+            </span>
+            <?php endforeach; ?>
         </div>
+        <?php endif; ?>
     </div>
 </div>
 <script>
@@ -230,7 +252,8 @@ function loadNotifs() {
             list.innerHTML = data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');
         });
 }
-function markAll() {
+function markAll(e) {
+    e.preventDefault();
     fetch('notifications.php?mark_all=1&mentor=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
     const badge = document.querySelector('.notif-badge');

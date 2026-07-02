@@ -87,8 +87,10 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             <div class="cal-cell <?= $isToday?'today':'' ?>" <?= !empty($events[$d]) ? 'onclick="showDay('.$d.')" style="cursor:pointer;"' : '' ?>>
                 <div class="cal-date" style="text-align:center;"><?= $d ?></div>
                 <?php if(!empty($events[$d])): ?>
-                    <?php foreach($events[$d] as $ev): ?>
-                        <span class="cal-event-dot <?= htmlspecialchars($ev['type']) ?>" style="text-align:center;display:block;">
+                    <?php foreach($events[$d] as $ev):
+                        $evColor = htmlspecialchars($ev['color'] ?? '#e94560');
+                    ?>
+                        <span class="cal-event-dot" style="background:<?= $evColor ?>;text-align:center;display:block;border-radius:6px;">
                             <?= htmlspecialchars($ev['title']) ?>
                         </span>
                     <?php endforeach; ?>
@@ -97,13 +99,26 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             <?php endfor; ?>
         </div>
 
+        <?php
+        // Legend: only types used this month
+        $usedTypes = [];
+        foreach($events as $dayEvs) {
+            foreach($dayEvs as $ev) {
+                $key = $ev['type'];
+                if (!isset($usedTypes[$key])) $usedTypes[$key] = $ev['color'] ?? '#e94560';
+            }
+        }
+        ?>
+        <?php if(!empty($usedTypes)): ?>
         <div class="cal-legend">
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#e94560"></span> Exam</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#27ae60"></span> Holiday</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#f5a623"></span> Study Holiday</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#2980b9"></span> Event</span>
-            <span class="cal-legend-item"><span class="cal-legend-dot" style="background:#8e44ad"></span> Other</span>
+            <?php foreach($usedTypes as $typeName => $typeColor): ?>
+            <span class="cal-legend-item">
+                <span class="cal-legend-dot" style="background:<?= htmlspecialchars($typeColor) ?>"></span>
+                <?= htmlspecialchars(ucfirst($typeName)) ?>
+            </span>
+            <?php endforeach; ?>
         </div>
+        <?php endif; ?>
 
         <?php if(!$mentor_id): ?>
             <p class="no-data" style="margin-top:20px;">No mentor assigned. Calendar events will appear once a mentor is linked to your account.</p>
@@ -129,6 +144,7 @@ const calEvents = <?php
             $jsEvents[$day][] = [
                 'title' => $ev['title'],
                 'type'  => $ev['type'],
+                'color' => $ev['color'] ?? '#e94560',
                 'desc'  => $ev['desc'] ?? ''
             ];
         }
@@ -142,14 +158,13 @@ function showDay(d) {
     document.getElementById('modalDate').textContent = d + ' ' + monthName;
     document.getElementById('modalEvents').innerHTML = evs.map(e => `
         <div style="display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px solid #f0f2f5;">
-            <span class="cal-event-dot ${e.type}" style="flex-shrink:0;padding:4px 10px;border-radius:8px;">${e.type.toUpperCase()}</span>
+            <span style="flex-shrink:0;padding:4px 10px;border-radius:8px;background:${e.color};color:#fff;font-size:11px;font-weight:700;">${e.type.toUpperCase()}</span>
             <div>
                 <div style="font-weight:700;color:#1a1a2e;font-size:14px;">${e.title}</div>
                 ${e.desc ? `<div style="font-size:12px;color:#666;margin-top:4px;">${e.desc}</div>` : ''}
             </div>
         </div>`).join('');
-    const modal = document.getElementById('dayModal');
-    modal.style.display = 'flex';
+    document.getElementById('dayModal').style.display = 'flex';
 }
 function closeModal() {
     document.getElementById('dayModal').style.display = 'none';
@@ -170,7 +185,8 @@ function loadNotifs() {
             list.innerHTML = data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');
         });
 }
-function markAll() {
+function markAll(e) {
+    e.preventDefault();
     fetch('notifications.php?mark_all=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
     const badge = document.querySelector('.notif-badge');
