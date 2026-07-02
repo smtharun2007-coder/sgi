@@ -23,11 +23,12 @@ if (isset($_POST['update'])) {
     }
     if (!$error_up) {
         $update = [
-            'name'  => $_POST['name'],
-            'email' => $_POST['email'],
-            'dept'  => $_POST['dept'],
-            'phone' => $_POST['phone'],
-            'photo' => $photo,
+            'name'     => $_POST['name'],
+            'email'    => $_POST['email'],
+            'dept'     => $_POST['dept'],
+            'batch_no' => $_POST['batch_no'],
+            'phone'    => $_POST['phone'],
+            'photo'    => $photo,
         ];
         $mentors->updateOne(['mentor_id' => $m['mentor_id']], ['$set' => $update]);
         $_SESSION['mentor'] = array_merge($m, $update);
@@ -56,7 +57,7 @@ if (isset($_POST['change_password'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>SGI – Mentor Profile</title>
+    <title>SGI â€“ Mentor Profile</title>
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
@@ -85,6 +86,7 @@ if (isset($_POST['change_password'])) {
         <input type="text"  name="name"  placeholder="Full Name"   value="<?= htmlspecialchars($m['name']) ?>"  required>
         <input type="email" name="email" placeholder="Email"        value="<?= htmlspecialchars($m['email']) ?>" required>
         <input type="text"  name="dept"  placeholder="Department"  value="<?= htmlspecialchars($m['dept']) ?>">
+        <input type="text"  name="batch_no" placeholder="Batch No" value="<?= htmlspecialchars($m['batch_no'] ?? '') ?>">
         <input type="tel"   name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($m['phone']) ?>">
         <?php if (!empty($m['photo'])): ?>
             <label>Current Photo</label>

@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
     $body  = trim($_POST['body']  ?? '');
     $type  = trim($_POST['type_custom'] ?? '') ?: (trim($_POST['type_select'] ?? '') ?: 'general');
     $type  = ($type === '__custom') ? 'general' : $type;
+    $recipient = $_POST['recipient'] ?? 'all'; // 'all' or 'own'
     if ($title && $body) {
         $attachments = [];
         if (!empty($_FILES['attachments']['name'][0])) {
@@ -17,7 +18,9 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
                 $origName = $_FILES['attachments']['name'][$i];
                 $ext = strtolower(pathinfo($origName, PATHINFO_EXTENSION));
                 $resourceType = in_array($ext, ['jpg','jpeg','png','gif','webp']) ? 'image' : 'raw';
-                $url = uploadToCloudinary($tmp, 'sgi/announcements', $resourceType);
+                // Generate unique public_id to preserve filename
+                $publicId = 'ann_' . time() . '_' . pathinfo($origName, PATHINFO_FILENAME);
+                $url = uploadToCloudinary($tmp, 'sgi/announcements', $resourceType, $publicId);
                 $attachments[] = ['name' => $origName, 'url' => $url, 'type' => $resourceType];
             }
         }
@@ -27,10 +30,17 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
             'title'       => $title,
             'body'        => $body,
             'type'        => $type,
+            'recipient'   => $recipient,
             'attachments' => $attachments,
             'created_at'  => new MongoDB\BSON\UTCDateTime()
         ]);
-        $students = $users->find(['mentor_id' => $m['mentor_id']]);
+        // Send notifications based on recipient selection
+        $query = ['mentor_id' => $m['mentor_id']];
+        if ($recipient === 'own') {
+            // Only send to students with this specific mentor
+            $query['mentor_id'] = $m['mentor_id'];
+        }
+        $students = $users->find($query);
         foreach ($students as $st) {
             $notifications->insertOne([
                 'roll'    => $st['roll'],
@@ -144,9 +154,14 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <option value="__custom">+ Custom type…</option>
                 </select>
                 <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="margin-top:6px;display:none;">
+                <label style="margin-top:14px;">Send To</label>
+                <select name="recipient" style="background:#f9f9f9;padding:10px;">
+                    <option value="all">All Students (under my mentorship)</option>
+                    <option value="own">Only My Own Students</option>
+                </select>
                 <label style="margin-top:14px;">Attachments (PDF, Word, Images — multiple allowed)</label>
                 <input type="file" name="attachments[]" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp" style="background:#f9f9f9;padding:10px;">
-                <button type="submit" name="post_announcement" class="btn-primary" style="margin-top:16px;">Post to All My Students</button>
+                <button type="submit" name="post_announcement" class="btn-primary" style="margin-top:16px;">Post Announcement</button>
             </form>
         </div>
     </div>

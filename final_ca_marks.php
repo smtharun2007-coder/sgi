@@ -17,6 +17,7 @@ $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll]);
 $subList   = iterator_to_array($subCursor);
 
 $success = '';
+$uploadError = '';
 if (isset($_POST['save_ca'])) {
     foreach ($subList as $sub) {
         $sub_id   = (string)$sub['_id'];
@@ -30,13 +31,38 @@ if (isset($_POST['save_ca'])) {
     }
     $gpa        = (float)$_POST['gpa'];
     $cgpa       = (float)$_POST['cgpa'];
-    $semesters->updateOne(
-        ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-        ['$set' => ['gpa' => $gpa, 'cgpa' => $cgpa, 'ca_done' => true]]
-    );
-    $success = "Final CA marks and academic details saved successfully.";
-    $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll]);
-    $subList   = iterator_to_array($subCursor);
+    
+    // Handle file uploads
+    $updateData = ['gpa' => $gpa, 'cgpa' => $cgpa, 'ca_done' => true];
+    
+    if (!empty($_FILES['result_photo']['name'])) {
+        if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) {
+            $uploadError = "Semester result must be ≤ 5 MB.";
+        } else {
+            $result_photo = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'image');
+            $updateData['result_photo'] = $result_photo;
+        }
+    }
+    
+    if (!$uploadError && !empty($_FILES['ca_photo']['name'])) {
+        if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) {
+            $uploadError = "CA mark sheet must be ≤ 5 MB.";
+        } else {
+            $ca_photo = uploadToCloudinary($_FILES['ca_photo']['tmp_name'], 'sgi/ca_marks');
+            $updateData['ca_photo'] = $ca_photo;
+        }
+    }
+    
+    if (!$uploadError) {
+        $semesters->updateOne(
+            ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
+            ['$set' => $updateData]
+        );
+        $success = "Final CA marks, academic details, and documents saved successfully.";
+        $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll]);
+        $subList   = iterator_to_array($subCursor);
+        $sem = $semesters->findOne(['_id' => new MongoDB\BSON\ObjectId($sem_id), 'roll' => $roll]);
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -76,8 +102,9 @@ if (isset($_POST['save_ca'])) {
     <h2>Final CA Marks – Semester <?= $sem['sem'] ?></h2>
     <hr style="margin:16px 0;">
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
+    <?php if ($uploadError): ?><p class="error"><?= $uploadError ?></p><?php endif; ?>
 
-    <form method="POST">
+    <form method="POST" enctype="multipart/form-data">
         <h3>Academic Details</h3>
         <div class="detail-grid" style="margin-bottom:20px;">
             <div class="detail-item">
@@ -133,7 +160,27 @@ if (isset($_POST['save_ca'])) {
             </table>
         </div>
 
-        <button type="submit" name="save_ca" class="btn-primary" style="margin-top:20px;">Save CA Marks & GPA/CGPA</button>
+        <hr style="margin:20px 0;">
+
+        <h3>Upload Documents</h3>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+            <div>
+                <label>Semester Result (PDF/Image, ≤ 5 MB)</label>
+                <input type="file" name="result_photo" accept=".pdf,image/*" style="margin-top:6px;">
+                <?php if (!empty($sem['result_photo'])): ?>
+                    <p style="font-size:12px;color:#27ae60;margin-top:4px;">✓ Document already uploaded</p>
+                <?php endif; ?>
+            </div>
+            <div>
+                <label>CA Mark Sheet (PDF/Image, ≤ 5 MB)</label>
+                <input type="file" name="ca_photo" accept=".pdf,image/*" style="margin-top:6px;">
+                <?php if (!empty($sem['ca_photo'])): ?>
+                    <p style="font-size:12px;color:#27ae60;margin-top:4px;">✓ Document already uploaded</p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <button type="submit" name="save_ca" class="btn-primary" style="margin-top:20px;">Save CA Marks, GPA/CGPA & Documents</button>
     </form>
 
     <a href="semester_detail.php?id=<?= $sem_id ?>" class="btn-secondary" style="margin-top:12px;">Back to Semester</a>

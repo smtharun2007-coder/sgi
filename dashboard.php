@@ -45,6 +45,9 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             <p><strong>Father:</strong> <?= htmlspecialchars($u['father']) ?></p>
             <p><strong>Mother:</strong> <?= htmlspecialchars($u['mother']) ?></p>
             <p><strong>Department:</strong> <?= htmlspecialchars($u['dept']) ?></p>
+            <?php if (!empty($u['batch_no'])): ?>
+            <p><strong>Batch No:</strong> <?= htmlspecialchars($u['batch_no']) ?></p>
+            <?php endif; ?>
             <p><strong>Class:</strong> <?= htmlspecialchars($u['class']) ?></p>
             <p><strong>Year:</strong> <?= $u['year_from'] ?> – <?= $u['year_to'] ?></p>
             <p><strong>Email:</strong> <?= htmlspecialchars($u['email']) ?></p>

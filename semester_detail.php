@@ -306,7 +306,7 @@ function grade($sgi) {
                 <!-- Semester Result -->
                 <div>
                     <?php if (!empty($s['result_photo'])): ?>
-                        <a href="<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📄 View Semester Result</a>
+                        <a href="#" onclick="showDoc('<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>','Semester Result');return false;" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📄 View Semester Result</a>
                     <?php else: ?>
                         <label>Upload Semester Result</label>
                         <input type="file" name="result_photo" accept="image/*">
@@ -315,7 +315,7 @@ function grade($sgi) {
                 <!-- CA Mark Sheet -->
                 <div>
                     <?php if (!empty($s['ca_photo'])): ?>
-                        <a href="<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>" target="_blank" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📋 View CA Mark Sheet</a>
+                        <a href="#" onclick="showDoc('<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>','CA Mark Sheet');return false;" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📋 View CA Mark Sheet</a>
                     <?php else: ?>
                         <label>Upload CA Mark Sheet Photo</label>
                         <input type="file" name="ca_photo" accept="image/*">
@@ -437,7 +437,28 @@ subLabels.forEach((label, i) => {
     <?php endif; ?>
 </div>
 <?php endif; ?>
+<!-- Document viewer modal -->
+<div id="docModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2001;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:60px;" onclick="if(event.target===this)closeDocModal()">
+    <div style="position:absolute;top:15px;right:20px;z-index:2002;">
+        <button onclick="closeDocModal()" style="background:none;border:none;color:#fff;font-size:32px;cursor:pointer;padding:0 10px;">&times;</button>
+    </div>
+    <div id="docTitle" style="color:#fff;font-size:16px;margin-bottom:15px;font-weight:600;"></div>
+    <iframe id="docViewer" src="" style="width:90vw;height:80vh;border:1px solid #444;border-radius:8px;background:#fff;"></iframe>
+    <div style="margin-top:15px;">
+        <a id="docDownloadLink" href="" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;font-size:14px;">Open in new tab / Download</a>
+    </div>
+</div>
 <script>
+function showDoc(url, title) {
+    document.getElementById('docTitle').textContent = title;
+    document.getElementById('docViewer').src = url;
+    document.getElementById('docDownloadLink').href = url;
+    document.getElementById('docModal').style.display = 'flex';
+}
+function closeDocModal() {
+    document.getElementById('docModal').style.display = 'none';
+    document.getElementById('docViewer').src = '';
+}
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');
     drop.classList.toggle('open');

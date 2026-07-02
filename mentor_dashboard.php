@@ -111,6 +111,9 @@ $studentList   = iterator_to_array($studentCursor);
             <h2><?= htmlspecialchars($m['name']) ?></h2>
             <p class="profile-roll"><?= htmlspecialchars($m['mentor_id']) ?></p>
             <p><strong>Department:</strong> <?= htmlspecialchars($m['dept']) ?></p>
+            <?php if (!empty($m['batch_no'])): ?>
+            <p><strong>Batch No:</strong> <?= htmlspecialchars($m['batch_no']) ?></p>
+            <?php endif; ?>
             <p><strong>Email:</strong> <?= htmlspecialchars($m['email']) ?></p>
             <p><strong>Phone:</strong> <?= htmlspecialchars($m['phone']) ?></p>
             <div style="margin-top:14px;"><span class="mentor-badge">MENTOR</span></div>

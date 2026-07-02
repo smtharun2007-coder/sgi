@@ -42,12 +42,16 @@ if (file_exists(__DIR__ . '/.env')) {
     'url' => ['secure' => true]
 ]);
 
-function uploadToCloudinary($fileTmpPath, $folder = 'sgi', $resourceType = 'image') {
+function uploadToCloudinary($fileTmpPath, $folder = 'sgi', $resourceType = 'image', $publicId = null) {
     $uploader = new \Cloudinary\Api\Upload\UploadApi();
-    $result = $uploader->upload($fileTmpPath, [
+    $uploadOptions = [
         'folder' => $folder,
         'resource_type' => $resourceType
-    ]);
+    ];
+    if ($publicId !== null) {
+        $uploadOptions['public_id'] = $publicId;
+    }
+    $result = $uploader->upload($fileTmpPath, $uploadOptions);
     return $result['secure_url'];
 }
 

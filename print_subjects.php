@@ -160,6 +160,9 @@ function grade($sgi) {
                 <p><?= htmlspecialchars($u['class']) ?></p>
                 <p><?= htmlspecialchars($u['reg']) ?></p>
                 <p><?= htmlspecialchars($u['dept']) ?></p>
+                <?php if (!empty($u['batch_no'])): ?>
+                <p>Batch: <?= htmlspecialchars($u['batch_no']) ?></p>
+                <?php endif; ?>
                 <p><?= $u['year_from'] ?> - <?= $u['year_to'] ?></p>
             </div>
         </div>
@@ -256,7 +259,7 @@ function grade($sgi) {
 
     <!-- DECLARATION -->
     <div class="declaration">
-        <p>I hereby declare that all the information provided in this report including subject details, GPA, CGPA, attendance and SGI scores are true and correct to the best of my knowledge.</p>
+        <p>I hereby declare that all the information provided in this report including subject details, GPA, CGPA, and SGI scores are true and correct to the best of my knowledge.</p>
         <div class="sign-row">
             <div class="sign-box" style="flex:0.7;">
                 <?php if (!empty($u['signature'])): ?>

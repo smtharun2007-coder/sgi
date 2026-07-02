@@ -44,15 +44,7 @@ if (isset($_POST['calculate'])) {
     if ($_POST['reg'] !== $sem['reg']) {
         $error = "Integrated Number does not match. Please try again.";
     } else {
-        // Handle file uploads
-        $result_photo = '';
-        if (!empty($_FILES['result_photo']['name'])) {
-            $result_photo = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'image');
-        }
-        $ca_photo = '';
-        if (!empty($_FILES['ca_photo']['name'])) {
-            $ca_photo = uploadToCloudinary($_FILES['ca_photo']['tmp_name'], 'sgi/ca_marks');
-        }
+        // Documents are now uploaded in Final CA Marks step
         // ACADEMIC from auto-fetched values
         $academic = 0.15*$cat1_10 + 0.15*$cat2_10 + 0.2*$cat3_10
                   + 0.25*$gpa + 0.25*$cgpa;
@@ -100,8 +92,7 @@ if (isset($_POST['calculate'])) {
                 'activities_score' => round($activities, 2),
                 'discipline_score' => round($discipline, 2),
             ];
-        if ($result_photo) $updateData['result_photo'] = $result_photo;
-        if ($ca_photo)     $updateData['ca_photo']     = $ca_photo;
+        // Documents are uploaded in Final CA Marks step
 
         $semesters->updateOne(
             ['_id' => new MongoDB\BSON\ObjectId($id)],
@@ -224,11 +215,7 @@ if (isset($_POST['calculate'])) {
         <div><label>Attendance</label><input type="text" value="<?= $attendance ?>%" readonly></div>
         <div><label>Previous GPA</label><input type="text" value="<?= $prev_gpa ?>" readonly></div>
 
-        <h3>Documents</h3>
-        <label>Upload Semester Result</label>
-        <input type="file" name="result_photo" accept="image/*">
-        <label style="margin-top:10px;">Upload CA Mark Sheet (photo/PDF)</label>
-        <input type="file" name="ca_photo" accept="image/*,application/pdf">
+        <p style="font-size:12px;color:#888;margin:16px 0;">Note: Documents (Semester Result & CA Mark Sheet) are uploaded in the Final CA Marks step.</p>
 
         <button type="submit" name="calculate" class="btn-primary">Calculate SGI</button>
         <a href="semester_detail.php?id=<?= $id ?>" class="btn-secondary">Cancel</a>

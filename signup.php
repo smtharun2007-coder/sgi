@@ -30,6 +30,7 @@ if (isset($_POST['signup'])) {
                 'mother'    => $_POST['mother'],
                 'email'     => $_POST['email'],
                 'dept'      => $_POST['dept'],
+                'batch_no'  => $_POST['batch_no'],
                 'year_from' => (int)$_POST['year_from'],
                 'year_to'   => (int)$_POST['year_to'],
                 'class'     => $_POST['class'],
@@ -71,6 +72,7 @@ if (isset($_POST['signup'])) {
         <input type="text"   name="mother"    placeholder="Mother's Name" required>
         <input type="email"  name="email"     placeholder="Email" required>
         <input type="text"   name="dept"      placeholder="Department" required>
+        <input type="text"   name="batch_no"  placeholder="Batch No (e.g. CSE2022)" required>
         <input type="number" name="year_from" placeholder="Academic Year From (e.g. 2022)" required>
         <input type="number" name="year_to"   placeholder="Academic Year To (e.g. 2026)" required>
         <input type="text"   name="class"     placeholder="Class (e.g. CSE-A)" required>
