@@ -61,11 +61,6 @@ if (isset($_POST['signup'])) {
     </a>
 </nav>
 <div class="auth-box signup-box">
-    <div class="logo-container">
-        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
-    </div>
-    <h1>Student Growth Index</h1>
-    <div class="portal-badge student-portal">🎓 Student Portal</div>
     <h2>Create Student Account</h2>
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
     <form method="POST" enctype="multipart/form-data">

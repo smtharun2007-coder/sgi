@@ -131,12 +131,6 @@ function grade($sgi) {
             <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
             <h2>Overall Academic Report</h2>
-            <?php if (!empty($u['batch_no'])): ?>
-            <p style="font-size:13px;color:#555;margin-top:4px;"><strong>Batch:</strong> <?= htmlspecialchars($u['batch_no']) ?></p>
-            <?php endif; ?>
-            <?php if (!empty($u['mentor_id'])): ?>
-            <p style="font-size:13px;color:#555;margin-top:2px;"><strong>Mentor ID:</strong> <?= htmlspecialchars($u['mentor_id']) ?></p>
-            <?php endif; ?>
         </div>
     </div>
 

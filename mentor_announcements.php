@@ -34,13 +34,19 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['post_announcement'])) {
             'attachments' => $attachments,
             'created_at'  => new MongoDB\BSON\UTCDateTime()
         ]);
-        // Send notifications based on recipient selection
-        if ($recipient === 'own') {
-            // Only send to students with this specific mentor
+        // Send notifications based on selected students
+        $selectedStudents = $_POST['students'] ?? [];
+        if (in_array('all', $selectedStudents)) {
+            // Send to all students under this mentor
             $students = $users->find(['mentor_id' => $m['mentor_id']]);
         } else {
-            // Send to all students under this mentor (same as own for now, since all students have a mentor)
-            $students = $users->find(['mentor_id' => $m['mentor_id']]);
+            // Send only to selected students
+            $studentRolls = array_filter($selectedStudents, fn($r) => $r !== 'all');
+            if (!empty($studentRolls)) {
+                $students = $users->find(['roll' => ['$in' => $studentRolls]]);
+            } else {
+                $students = [];
+            }
         }
         foreach ($students as $st) {
             $notifications->insertOne([
@@ -156,10 +162,21 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 </select>
                 <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="margin-top:6px;display:none;">
                 <label style="margin-top:14px;">Send To</label>
-                <select name="recipient" style="background:#f9f9f9;padding:10px;">
-                    <option value="all">All Students (under my mentorship)</option>
-                    <option value="own">Only My Own Students</option>
-                </select>
+                <div style="background:#f9f9f9;padding:10px;border-radius:6px;max-height:200px;overflow-y:auto;">
+                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;">
+                        <input type="checkbox" name="students[]" value="all" checked onchange="toggleStudentCheckboxes(this)">
+                        <strong>All Students (<?= count(iterator_to_array($users->find(['mentor_id' => $m['mentor_id']]))) ?> students)</strong>
+                    </label>
+                    <?php
+                    $myStudents = $users->find(['mentor_id' => $m['mentor_id']]);
+                    foreach ($myStudents as $st):
+                    ?>
+                    <label style="display:flex;align-items:center;gap:8px;margin-bottom:6px;cursor:pointer;padding-left:20px;">
+                        <input type="checkbox" name="students[]" value="<?= htmlspecialchars($st['roll']) ?>">
+                        <?= htmlspecialchars($st['name']) ?> (<?= htmlspecialchars($st['roll']) ?>)
+                    </label>
+                    <?php endforeach; ?>
+                </div>
                 <label style="margin-top:14px;">Attachments (PDF, Word, Images — multiple allowed)</label>
                 <input type="file" name="attachments[]" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp" style="background:#f9f9f9;padding:10px;">
                 <button type="submit" name="post_announcement" class="btn-primary" style="margin-top:16px;">Post Announcement</button>
@@ -284,6 +301,34 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
     </div>
 </div>
 <script>
+function toggleStudentCheckboxes(checkbox) {
+    const checkboxes = document.querySelectorAll('input[name="students[]"]');
+    checkboxes.forEach(cb => {
+        if (cb.value === 'all') return; // Don't uncheck the "All" checkbox itself
+        cb.checked = checkbox.checked;
+    });
+}
+// Also handle individual student checkbox clicks
+document.addEventListener('DOMContentLoaded', function() {
+    const studentCheckboxes = document.querySelectorAll('input[name="students[]"]');
+    studentCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            const allCheckbox = document.querySelector('input[name="students[]"][value="all"]');
+            // If any individual checkbox is unchecked, uncheck "All"
+            if (this.value !== 'all' && !this.checked) {
+                allCheckbox.checked = false;
+            }
+            // If all individual checkboxes are checked, check "All"
+            const individualCheckboxes = document.querySelectorAll('input[name="students[]"]:not([value="all"])');
+            const allIndividualChecked = Array.from(individualCheckboxes).every(cb => cb.checked);
+            if (allIndividualChecked && individualCheckboxes.length > 0) {
+                allCheckbox.checked = true;
+            } else if (this.value === 'all' && !this.checked) {
+                // If "All" is unchecked, keep individual checkboxes as they are
+            }
+        });
+    });
+});
 function mentorShowImg(url) {
     document.getElementById('mentorImgModalSrc').src = url;
     document.getElementById('mentorImgModal').style.display = 'flex';
