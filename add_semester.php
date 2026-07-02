@@ -4,37 +4,69 @@ requireLogin();
 $u = $_SESSION['user'];
 $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]);
 $error = '';
+$success = '';
+
 if (isset($_POST['save'])) {
     $roll = $_SESSION['user']['roll'];
     $reg  = $_SESSION['user']['reg'];
     $sem  = (int)$_POST['sem'];
-
-    $result = $semesters->insertOne(['roll' => $roll, 'reg' => $reg, 'sem' => $sem, 'mentor_id' => $_POST['mentor_id']]);
-    $sem_id = (string)$result->getInsertedId();
-
-    if (!empty($_POST['mentor_id'])) {
-        $users->updateOne(['roll' => $roll], ['$set' => ['mentor_id' => $_POST['mentor_id']]]);
-        $_SESSION['user']['mentor_id'] = $_POST['mentor_id'];
-    }
-
+    $mentorId = trim($_POST['mentor_id']);
+    
+    // Collect subjects data
     $names    = $_POST['subject_name'];
     $codes    = $_POST['subject_code'];
     $credits  = $_POST['credits'];
     $internal = $_POST['internal'];
-
+    
+    $subjectsData = [];
     foreach ($names as $i => $name) {
         if (empty(trim($name))) continue;
-        $subjects->insertOne([
-            'sem_id'       => $sem_id,
-            'roll'         => $roll,
-            'subject_name' => $name,
-            'subject_code' => $codes[$i],
-            'credits'      => (int)$credits[$i],
-            'internal'     => $internal[$i],
-        ]);
+        $subjectsData[] = [
+            'name'   => trim($name),
+            'code'   => trim($codes[$i]),
+            'credits' => (int)$credits[$i],
+            'internal' => $internal[$i],
+        ];
     }
-    header("Location: dashboard.php");
-    exit;
+    
+    if (empty($subjectsData)) {
+        $error = 'Please add at least one subject.';
+    } else {
+        // Create approval request instead of direct save
+        $approvalData = [
+            'student_roll' => $roll,
+            'student_name' => $_SESSION['user']['name'],
+            'type' => 'Semester Registration',
+            'semester' => $sem,
+            'reg' => $reg,
+            'mentor_id' => $mentorId,
+            'subjects' => $subjectsData,
+            'subject_count' => count($subjectsData),
+            'message' => 'Request to register Semester ' . $sem . ' with ' . count($subjectsData) . ' subjects',
+            'status' => 'pending',
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ];
+        
+        $result = $approvals->insertOne($approvalData);
+        
+        // Update mentor_id in user profile if changed
+        if (!empty($mentorId) && $mentorId !== ($_SESSION['user']['mentor_id'] ?? '')) {
+            $users->updateOne(['roll' => $roll], ['$set' => ['mentor_id' => $mentorId]]);
+            $_SESSION['user']['mentor_id'] = $mentorId;
+        }
+        
+        // Create notification for mentor
+        if (!empty($mentorId)) {
+            $notifications->insertOne([
+                'mentor_id' => $mentorId,
+                'message' => '📝 New semester registration request from ' . $_SESSION['user']['name'] . ' (' . $roll . ') - Semester ' . $sem,
+                'read' => false,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ]);
+        }
+        
+        $success = 'Your semester registration request has been submitted for approval. You will be notified once your mentor reviews it.';
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -73,6 +105,8 @@ if (isset($_POST['save'])) {
     <div class="form-box">
         <h2>Add Semester Details</h2>
         <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
+        <?php if ($success): ?><p class="success" style="background:#d4edda;color:#155724;padding:12px;border-radius:8px;margin-bottom:16px;"><?= $success ?></p><?php endif; ?>
+        <?php if (!$success): ?>
         <form method="POST" id="sem-form">
             <input type="hidden" name="save" value="1">
             <label>Semester Number</label>
@@ -97,6 +131,13 @@ if (isset($_POST['save'])) {
             <button type="button" class="btn-primary" style="margin-top:20px;" onclick="checkMentorId()">Save Semester</button>
             <a href="dashboard.php" class="btn-secondary">Cancel</a>
         </form>
+        <?php else: ?>
+        <div style="text-align:center;margin-top:20px;">
+            <a href="add_semester.php" class="btn-primary" style="margin:5px;">Add Another Semester</a>
+            <a href="student_approvals.php" class="btn-secondary" style="margin:5px;">View Approval Status</a>
+            <a href="dashboard.php" class="btn-secondary" style="margin:5px;">Go to Dashboard</a>
+        </div>
+        <?php endif; ?>
     </div>
 </div>
 

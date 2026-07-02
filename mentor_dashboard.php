@@ -88,6 +88,7 @@ $studentList   = iterator_to_array($studentCursor);
 </a>
     <div class="nav-links">
         <a href="mentor_dashboard.php">Home</a>
+        <a href="mentor_approvals.php">Approvals</a>
         <a href="mentor_calendar.php">Calendar</a>
         <a href="mentor_announcements.php">Announcements</a>
         <a href="mentor_update_profile.php">Profile</a>
