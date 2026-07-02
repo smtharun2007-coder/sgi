@@ -59,15 +59,13 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
             <p class="no-data">No announcements yet.</p>
         <?php else: ?>
             <?php foreach($list as $a):
-                $typeClass  = $a['type'] ?? 'general';
-                $knownTypes = ['urgent','info','general'];
-                $badgeClass = in_array($typeClass,$knownTypes) ? 'badge-'.$typeClass : 'badge-general';
-                $cardClass  = $typeClass==='info'?'info':($typeClass==='general'?'success':'');
+                $typeClass = $a['type'] ?? 'general';
+                $color     = $a['color'] ?? '#e94560';
             ?>
-            <div class="announce-card <?= $cardClass ?>">
+            <div class="announce-card" style="border-left:4px solid <?= $color ?>;background:#fff;padding:16px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:16px;">
                 <div class="announce-title">
                     <?= htmlspecialchars($a['title']) ?>
-                    <span class="<?= $badgeClass ?>"><?= ucfirst($typeClass) ?></span>
+                    <span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;color:#fff;background:<?= $color ?>;"><?= ucfirst($typeClass) ?></span>
                 </div>
                 <div class="announce-body"><?= nl2br(htmlspecialchars($a['body'])) ?></div>
                 <?php if(!empty($a['attachments'])): ?>

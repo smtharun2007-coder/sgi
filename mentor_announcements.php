@@ -100,15 +100,16 @@ $myAnnouncements = iterator_to_array($announcements->find(['mentor_id'=>$m['ment
 $pendingApprovals = iterator_to_array($approvals->find(['mentor_id'=>$m['mentor_id'],'status'=>'pending'],['sort'=>['created_at'=>-1]]));
 $pastApprovals    = iterator_to_array($approvals->find(['mentor_id'=>$m['mentor_id'],'status'=>['$in'=>['approved','rejected']]],['sort'=>['updated_at'=>-1],'limit'=>20]));
 
-// Fetch all previously used announcement types by this mentor
-$annTypes = ['urgent' => '#e94560', 'info' => '#3498db', 'general' => '#27ae60'];
+// Fetch all previously used announcement types by this mentor (only custom types)
+$annTypes = [];
 $typeCursor = $announcements->find(
     ['mentor_id' => $m['mentor_id']],
     ['projection' => ['type'=>1,'color'=>1], 'sort' => ['created_at'=>-1]]
 );
 foreach ($typeCursor as $ann) {
     $t = $ann['type'] ?? '';
-    if ($t && !isset($annTypes[$t])) {
+    // Only add custom types (not the default ones)
+    if ($t && $t !== 'urgent' && $t !== 'info' && $t !== 'general' && !isset($annTypes[$t])) {
         $annTypes[$t] = $ann['color'] ?? '#e94560';
     }
 }
