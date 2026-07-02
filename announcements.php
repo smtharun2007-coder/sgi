@@ -1,4 +1,4 @@
-<?php
+t<?php
 include 'config.php';
 requireLogin();
 $u = $_SESSION['user'];

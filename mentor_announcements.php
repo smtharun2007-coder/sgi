@@ -178,11 +178,9 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 </select>
                 <div id="annTypeCustomContainer" style="margin-top:6px;display:none;">
                     <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="width:100%;padding:10px;">
-                    <label style="margin-top:8px;display:block;">Color for this type</label>
-                    <input type="color" name="type_color" id="typeColorCustom" value="#e94560" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
+                    <label style="margin-top:8px;display:block;">Color for this new type</label>
+                    <input type="color" name="color" id="typeColorCustom" value="#e94560" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
                 </div>
-                <label style="margin-top:8px;display:block;">Type Color</label>
-                <input type="color" name="color" value="#e94560" id="typeColorPicker" style="width:60px;height:40px;padding:0;border:none;cursor:pointer;">
                 <label style="margin-top:14px;">Select Students</label>
                 <div style="background:#f9f9f9;padding:12px;border-radius:6px;">
                     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #e0e0e0;">
@@ -332,19 +330,13 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
 function handleTypeChange() {
     const select = document.getElementById('annTypeSelect');
     const customContainer = document.getElementById('annTypeCustomContainer');
-    const colorPicker = document.getElementById('typeColorPicker');
-    const customColorPicker = document.getElementById('typeColorCustom');
     
     if (select.value === '__custom') {
+        // Show custom type input and color picker for creating new type
         customContainer.style.display = 'block';
     } else {
+        // Hide custom type container - color is already stored with the type
         customContainer.style.display = 'none';
-        // Update color picker to match selected type's color
-        const selectedOption = select.options[select.selectedIndex];
-        const color = selectedOption.getAttribute('data-color');
-        if (color) {
-            colorPicker.value = color;
-        }
     }
 }
 
