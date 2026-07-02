@@ -344,6 +344,9 @@ function handleTypeChange() {
         const color = selectedOption.getAttribute('data-color');
         if (color) {
             hiddenColor.value = color;
+            console.log('Type selected:', selectedOption.value, 'Color:', color);
+        } else {
+            console.log('No data-color found for:', selectedOption.value);
         }
     }
 }
