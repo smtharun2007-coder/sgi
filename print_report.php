@@ -151,19 +151,18 @@ function grade($sgi) {
                 <p><?= htmlspecialchars($u['class']) ?></p>
                 <p><?= htmlspecialchars($u['reg']) ?></p>
                 <p><?= htmlspecialchars($u['dept']) ?></p>
-                <?php if (!empty($u['batch_no'])): ?>
-                <p>Batch: <?= htmlspecialchars($u['batch_no']) ?></p>
-                <?php endif; ?>
                 <p><?= $u['year_from'] ?> - <?= $u['year_to'] ?></p>
             </div>
         </div>
         <div class="report-title">
             <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
-            <h2>Semester <?= $s['sem'] ?> Performance Report</h2>
-            <div class="sem-badge" style="margin-top:10px;display:none;">Semester <?= $s['sem'] ?></div>
+            <h2>Performance Report</h2>
+            <?php if (!empty($u['batch_no'])): ?>
+            <p style="font-size:12px;color:#555;margin-top:6px;text-align:right;">Batch: <strong><?= htmlspecialchars($u['batch_no']) ?></strong></p>
+            <?php endif; ?>
             <?php if (!empty($s['mentor_id'])): ?>
-            <p style="font-size:12px;color:#555;margin-top:6px;text-align:right;">Mentor ID: <strong><?= htmlspecialchars($s['mentor_id']) ?></strong></p>
+            <p style="font-size:12px;color:#555;margin-top:2px;text-align:right;">Mentor ID: <strong><?= htmlspecialchars($s['mentor_id']) ?></strong></p>
             <?php endif; ?>
         </div>
     </div>

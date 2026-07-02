@@ -160,12 +160,6 @@ function grade($sgi) {
                 <p><?= htmlspecialchars($u['class']) ?></p>
                 <p><?= htmlspecialchars($u['reg']) ?></p>
                 <p><?= htmlspecialchars($u['dept']) ?></p>
-                <?php if (!empty($u['batch_no'])): ?>
-                <p>Batch: <?= htmlspecialchars($u['batch_no']) ?></p>
-                <?php endif; ?>
-                <?php if (!empty($u['mentor_id'])): ?>
-                <p>Mentor ID: <?= htmlspecialchars($u['mentor_id']) ?></p>
-                <?php endif; ?>
                 <p><?= $u['year_from'] ?> - <?= $u['year_to'] ?></p>
             </div>
         </div>
@@ -173,6 +167,12 @@ function grade($sgi) {
             <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
             <h2>Subject-wise Performance Report</h2>
+            <?php if (!empty($u['batch_no'])): ?>
+            <p style="font-size:12px;color:#555;margin-top:6px;text-align:right;">Batch: <strong><?= htmlspecialchars($u['batch_no']) ?></strong></p>
+            <?php endif; ?>
+            <?php if (!empty($u['mentor_id'])): ?>
+            <p style="font-size:12px;color:#555;margin-top:2px;text-align:right;">Mentor ID: <strong><?= htmlspecialchars($u['mentor_id']) ?></strong></p>
+            <?php endif; ?>
         </div>
     </div>
 
