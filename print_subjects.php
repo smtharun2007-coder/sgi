@@ -170,8 +170,17 @@ function grade($sgi) {
             <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
             <h2>All Subject Report</h2>
+            <?php if (!empty($u['batch_no'])): ?>
+            <div style="margin-top:8px;background:linear-gradient(135deg,#1a1a2e,#2980b9);border-radius:10px;padding:12px 18px;display:inline-block;box-shadow:0 3px 10px rgba(41,128,185,0.3);">
+                <div style="font-size:11px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Batch</div>
+                <div style="font-size:20px;font-weight:700;color:#fff;"><?= htmlspecialchars($u['batch_no']) ?></div>
+            </div>
+            <?php endif; ?>
             <?php if (!empty($u['mentor_id'])): ?>
-            <p style="font-size:12px;color:#555;margin-top:6px;text-align:right;">Mentor ID: <strong><?= htmlspecialchars($u['mentor_id']) ?></strong></p>
+            <div style="margin-top:10px;background:linear-gradient(135deg,#1a1a2e,#e94560);border-radius:12px;padding:14px 22px;display:inline-block;box-shadow:0 3px 12px rgba(233,69,96,0.3);">
+                <div style="font-size:11px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">Mentor ID</div>
+                <div style="font-size:22px;font-weight:700;color:#fff;"><?= htmlspecialchars($u['mentor_id']) ?></div>
+            </div>
             <?php endif; ?>
         </div>
     </div>

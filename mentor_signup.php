@@ -63,7 +63,7 @@ if (isset($_POST['signup'])) {
         <input type="text"   name="mentor_id" placeholder="Mentor ID (unique login ID)" required>
         <input type="email"  name="email"     placeholder="Email" required>
         <input type="text"   name="dept"      placeholder="Department" required>
-        <input type="text"   name="batch_no"  placeholder="Batch No (e.g. CSE2022)" required>
+        <input type="text"   name="batch_no"  placeholder="Batch No (e.g. 11TCS20)" required>
         <input type="tel"    name="phone"     placeholder="Phone Number" required>
         <label>Profile Photo (optional, = 200 KB)</label>
         <input type="file"   name="photo"     accept="image/*">

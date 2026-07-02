@@ -106,7 +106,7 @@ if (isset($_POST['change_password'])) {
         <input type="text"   name="mother"    placeholder="Mother's Name" value="<?= htmlspecialchars($u['mother']) ?>">
         <input type="email"  name="email"     placeholder="Email"         value="<?= htmlspecialchars($u['email']) ?>" required>
         <input type="text"   name="dept"      placeholder="Department"    value="<?= htmlspecialchars($u['dept']) ?>">
-        <input type="text"   name="batch_no"  placeholder="Batch No"      value="<?= htmlspecialchars($u['batch_no'] ?? '') ?>">
+        <input type="text"   name="batch_no"  placeholder="Batch No (e.g. 11TCS20)" value="<?= htmlspecialchars($u['batch_no'] ?? '') ?>">
         <input type="number" name="year_from" placeholder="Year From"     value="<?= $u['year_from'] ?>">
         <input type="number" name="year_to"   placeholder="Year To"       value="<?= $u['year_to'] ?>">
         <input type="text"   name="class"     placeholder="Class"         value="<?= htmlspecialchars($u['class']) ?>">

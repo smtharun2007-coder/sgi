@@ -165,14 +165,14 @@ if (isset($_POST['save_ca'])) {
         <h3>Upload Documents</h3>
         <div style="display:flex;flex-direction:column;gap:16px;">
             <div>
-                <label>Semester Result (PDF/Image, ≤ 5 MB)</label>
+                <label>Semester Result (Image, ≤ 5 MB)</label>
                 <input type="file" name="result_photo" accept=".pdf,image/*" style="margin-top:6px;">
                 <?php if (!empty($sem['result_photo'])): ?>
                     <p style="font-size:12px;color:#27ae60;margin-top:4px;">✓ Document already uploaded</p>
                 <?php endif; ?>
             </div>
             <div>
-                <label>CA Mark Sheet (PDF/Image, ≤ 5 MB)</label>
+                <label>CA Mark Sheet (Image, ≤ 5 MB)</label>
                 <input type="file" name="ca_photo" accept=".pdf,image/*" style="margin-top:6px;">
                 <?php if (!empty($sem['ca_photo'])): ?>
                     <p style="font-size:12px;color:#27ae60;margin-top:4px;">✓ Document already uploaded</p>

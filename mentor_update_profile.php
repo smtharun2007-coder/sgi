@@ -86,7 +86,7 @@ if (isset($_POST['change_password'])) {
         <input type="text"  name="name"  placeholder="Full Name"   value="<?= htmlspecialchars($m['name']) ?>"  required>
         <input type="email" name="email" placeholder="Email"        value="<?= htmlspecialchars($m['email']) ?>" required>
         <input type="text"  name="dept"  placeholder="Department"  value="<?= htmlspecialchars($m['dept']) ?>">
-        <input type="text"  name="batch_no" placeholder="Batch No" value="<?= htmlspecialchars($m['batch_no'] ?? '') ?>">
+        <input type="text"  name="batch_no" placeholder="Batch No (e.g. 11TCS20)" value="<?= htmlspecialchars($m['batch_no'] ?? '') ?>">
         <input type="tel"   name="phone" placeholder="Phone Number" value="<?= htmlspecialchars($m['phone']) ?>">
         <?php if (!empty($m['photo'])): ?>
             <label>Current Photo</label>
