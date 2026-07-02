@@ -161,21 +161,27 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <option value="__custom">+ Custom type…</option>
                 </select>
                 <input type="text" name="type_custom" id="annTypeCustom" placeholder="e.g. Reminder, Warning…" style="margin-top:6px;display:none;">
-                <label style="margin-top:14px;">Send To</label>
-                <div style="background:#f9f9f9;padding:12px;border-radius:6px;max-height:200px;overflow-y:auto;">
-                    <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;cursor:pointer;padding-bottom:8px;border-bottom:1px solid #e0e0e0;">
-                        <input type="checkbox" name="students[]" value="all" checked onchange="toggleStudentCheckboxes(this)" style="margin-top:3px;">
-                        <strong>All Students (<?= count(iterator_to_array($users->find(['mentor_id' => $m['mentor_id']]))) ?> students)</strong>
-                    </label>
-                    <?php
-                    $myStudents = $users->find(['mentor_id' => $m['mentor_id']]);
-                    foreach ($myStudents as $st):
-                    ?>
-                    <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:6px;cursor:pointer;padding-left:24px;">
-                        <input type="checkbox" name="students[]" value="<?= htmlspecialchars($st['roll']) ?>" style="margin-top:3px;">
-                        <span><?= htmlspecialchars($st['name']) ?> (<?= htmlspecialchars($st['roll']) ?>)</span>
-                    </label>
-                    <?php endforeach; ?>
+                <label style="margin-top:14px;">Select Students</label>
+                <div style="background:#f9f9f9;padding:12px;border-radius:6px;">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #e0e0e0;">
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;">
+                            <input type="checkbox" name="students[]" value="all" checked onchange="toggleStudentCheckboxes(this)" style="width:16px;height:16px;cursor:pointer;">
+                            <strong style="font-size:13px;">All Students</strong>
+                            <span style="color:#888;font-size:12px;">(<?= count(iterator_to_array($users->find(['mentor_id' => $m['mentor_id']]))) ?>)</span>
+                        </label>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;max-height:180px;overflow-y:auto;">
+                        <?php
+                        $myStudents = $users->find(['mentor_id' => $m['mentor_id']]);
+                        foreach ($myStudents as $st):
+                        ?>
+                        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 8px;border-radius:4px;transition:background 0.2s;" onmouseenter="this.style.background='#f0f0f0'" onmouseleave="this.style.background='transparent'">
+                            <input type="checkbox" name="students[]" value="<?= htmlspecialchars($st['roll']) ?>" style="width:15px;height:15px;cursor:pointer;">
+                            <span style="font-size:12px;"><?= htmlspecialchars($st['name']) ?></span>
+                            <span style="font-size:11px;color:#888;"><?= htmlspecialchars($st['roll']) ?></span>
+                        </label>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
                 <label style="margin-top:14px;">Attachments (PDF, Word, Images — multiple allowed)</label>
                 <input type="file" name="attachments[]" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif,.webp" style="background:#f9f9f9;padding:10px;">

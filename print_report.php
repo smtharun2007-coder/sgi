@@ -157,7 +157,7 @@ function grade($sgi) {
         <div class="report-title">
             <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" style="height:55px;display:block;margin-left:auto;margin-bottom:8px;">
             <h1>Student Growth Index</h1>
-            <h2>Performance Report</h2>
+            <h2>Acadamic Performance Report</h2>
             <?php if (!empty($u['batch_no'])): ?>
             <p style="font-size:12px;color:#555;margin-top:6px;text-align:right;">Batch: <strong><?= htmlspecialchars($u['batch_no']) ?></strong></p>
             <?php endif; ?>
