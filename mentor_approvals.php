@@ -15,178 +15,250 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
         .mentor-navbar { background: linear-gradient(135deg, #1a1a2e, #8e44ad); }
-        .approval-card {
-            background: #fff;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-            margin-top: 24px;
-        }
-        .approval-header {
-            background: linear-gradient(135deg, #1a1a2e, #8e44ad);
-            padding: 16px 24px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .approval-row {
-            padding: 16px 24px;
-            border-bottom: 1px solid #f0f2f5;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            transition: background 0.2s;
-        }
-        .approval-row:hover { background: #fafafa; }
-        .approval-row:last-child { border-bottom: none; }
-        .approval-info { flex: 1; }
-        .approval-type {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-        .approval-meta {
-            font-size: 12px;
-            color: #888;
-            display: flex;
-            gap: 12px;
-            margin-top: 4px;
-        }
-        .approval-student {
-            font-size: 13px;
-            color: #8e44ad;
-            font-weight: 600;
-            margin-top: 4px;
-        }
-        .approval-subjects-preview {
-            font-size: 11px;
-            color: #888;
-            margin-top: 4px;
-            font-style: italic;
-        }
-        .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            flex-shrink: 0;
-        }
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
+        
+        /* Stats Cards */
         .stats-row {
             display: flex;
-            gap: 16px;
-            margin-top: 20px;
+            gap: 20px;
+            margin-top: 24px;
         }
         .stat-card {
             flex: 1;
             background: #fff;
-            border-radius: 12px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 24px;
             text-align: center;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: all 0.3s ease;
+            border-top: 4px solid transparent;
         }
-        .stat-card:hover { transform: translateY(-2px); }
-        .stat-card.pending { border-top: 4px solid #ffc107; }
-        .stat-card.approved { border-top: 4px solid #28a745; }
-        .stat-card.rejected { border-top: 4px solid #dc3545; }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+        .stat-card.pending { border-top-color: #ffc107; }
+        .stat-card.approved { border-top-color: #28a745; }
+        .stat-card.rejected { border-top-color: #dc3545; }
         .stat-card .stat-number {
-            font-size: 28px;
+            font-size: 36px;
             font-weight: 700;
             color: #1a1a2e;
+            line-height: 1;
         }
         .stat-card .stat-label {
-            font-size: 12px;
+            font-size: 13px;
             color: #888;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 4px;
+            letter-spacing: 1px;
+            margin-top: 8px;
         }
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-            color: #888;
+
+        /* Main Card */
+        .main-card {
+            background: #fff;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-top: 24px;
         }
-        .empty-state .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        .filter-tabs {
+        .main-header {
+            background: linear-gradient(135deg, #1a1a2e, #8e44ad);
+            padding: 20px 28px;
+            color: #fff;
             display: flex;
-            gap: 8px;
-            padding: 16px 24px 0;
+            justify-content: space-between;
+            align-items: center;
         }
-        .filter-tab {
+        .main-header h2 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Filters */
+        .filters-bar {
+            padding: 16px 28px;
+            background: #f8f9fa;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+            border-bottom: 1px solid #eee;
+        }
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .filter-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #555;
+            white-space: nowrap;
+        }
+        .filter-group select {
+            padding: 8px 14px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 13px;
+            background: #fff;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .filter-group select:focus {
+            outline: none;
+            border-color: #8e44ad;
+        }
+        .status-tabs {
+            display: flex;
+            gap: 6px;
+        }
+        .status-tab {
             padding: 6px 16px;
             border: none;
-            background: #f0f2f5;
+            background: #e9ecef;
             border-radius: 20px;
-            font-size: 13px;
+            font-size: 12px;
+            font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
-            font-weight: 500;
+            color: #555;
         }
-        .filter-tab.active {
+        .status-tab.active {
             background: linear-gradient(135deg, #1a1a2e, #8e44ad);
             color: #fff;
         }
-        .filter-tab:hover:not(.active) {
-            background: #e0e0e0;
+        .status-tab:hover:not(.active) {
+            background: #dee2e6;
         }
-        .semester-badge {
+
+        /* Approval Items */
+        .approval-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+        .approval-item {
+            padding: 18px 28px;
+            border-bottom: 1px solid #f0f2f5;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+        .approval-item:hover {
+            background: #f8f9fa;
+        }
+        .approval-item:last-child {
+            border-bottom: none;
+        }
+        .approval-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
             background: linear-gradient(135deg, #1a1a2e, #8e44ad);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             color: #fff;
-            padding: 2px 8px;
-            border-radius: 6px;
+            font-weight: 700;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+        .approval-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .approval-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .approval-subtitle {
+            font-size: 12px;
+            color: #888;
+        }
+        .approval-meta {
+            display: flex;
+            gap: 12px;
+            margin-top: 4px;
+        }
+        .approval-meta span {
+            font-size: 11px;
+            color: #aaa;
+        }
+        .approval-actions {
+            display: flex;
+            gap: 6px;
+            flex-shrink: 0;
+        }
+        
+        /* Status Badges */
+        .badge {
+            padding: 4px 12px;
+            border-radius: 20px;
             font-size: 11px;
             font-weight: 600;
-            margin-left: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .btn-action {
-            padding: 6px 14px;
-            border-radius: 6px;
+        .badge-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .badge-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+        .badge-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Action Buttons */
+        .btn-sm {
+            padding: 6px 12px;
+            border-radius: 8px;
             font-size: 12px;
             font-weight: 600;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
-            margin-left: 4px;
         }
-        .btn-approve {
+        .btn-approve-sm {
             background: #28a745;
             color: #fff;
         }
-        .btn-approve:hover { background: #218838; }
-        .btn-reject {
+        .btn-approve-sm:hover { background: #218838; }
+        .btn-reject-sm {
             background: #dc3545;
             color: #fff;
         }
-        .btn-reject:hover { background: #c82333; }
-        .btn-view {
+        .btn-reject-sm:hover { background: #c82333; }
+        .btn-view-sm {
             background: #17a2b8;
             color: #fff;
         }
-        .btn-view:hover { background: #138496; }
-        
-        /* Modal styles */
+        .btn-view-sm:hover { background: #138496; }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: #888;
+        }
+        .empty-state .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -195,18 +267,24 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         }
         .modal-overlay.active {
             display: flex;
         }
-        .modal-content {
+        .modal-box {
             background: #fff;
-            border-radius: 16px;
-            max-width: 550px;
+            border-radius: 20px;
+            max-width: 560px;
             width: 90%;
             max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlide 0.3s ease;
+        }
+        @keyframes modalSlide {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         .modal-header {
             background: linear-gradient(135deg, #1a1a2e, #8e44ad);
@@ -215,91 +293,160 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 20px 20px 0 0;
         }
-        .modal-header h3 { margin: 0; }
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
         .modal-close {
             background: none;
             border: none;
             color: #fff;
             font-size: 24px;
             cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background 0.2s;
         }
+        .modal-close:hover { background: rgba(255,255,255,0.2); }
         .modal-body { padding: 24px; }
-        .detail-row {
-            display: flex;
-            margin-bottom: 12px;
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
         }
-        .detail-label {
-            font-weight: 600;
-            color: #333;
-            width: 120px;
-            flex-shrink: 0;
-        }
-        .detail-value { color: #555; }
-        .subjects-list {
+        .info-item {
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 8px;
+            padding: 12px 16px;
+            border-radius: 10px;
         }
-        .subject-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px 0;
-            border-bottom: 1px solid #eee;
+        .info-item label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .info-item span {
+            font-size: 14px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .subjects-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+        .subjects-table th {
+            text-align: left;
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            padding: 8px 12px;
+            border-bottom: 2px solid #eee;
+        }
+        .subjects-table td {
+            padding: 10px 12px;
             font-size: 13px;
+            border-bottom: 1px solid #f0f2f5;
         }
-        .subject-item:last-child { border-bottom: none; }
-        .remarks-section {
+        .subjects-table tr:last-child td { border-bottom: none; }
+        
+        .remarks-box {
+            background: #fff3f3;
+            border-left: 4px solid #dc3545;
+            padding: 14px 16px;
+            border-radius: 8px;
             margin-top: 16px;
         }
-        .remarks-section label {
+        .remarks-box.approved {
+            background: #f3fff3;
+            border-left-color: #28a745;
+        }
+        .remarks-box label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .remarks-box p {
+            margin: 0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .textarea-box {
+            margin-top: 16px;
+        }
+        .textarea-box label {
             display: block;
             font-size: 13px;
             font-weight: 600;
             color: #333;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
-        .remarks-section textarea {
+        .textarea-box textarea {
             width: 100%;
-            padding: 10px 14px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
             font-size: 14px;
             font-family: inherit;
             min-height: 80px;
             resize: vertical;
+            transition: border-color 0.2s;
             box-sizing: border-box;
         }
-        .remarks-section textarea:focus {
+        .textarea-box textarea:focus {
             outline: none;
             border-color: #8e44ad;
         }
-        .action-buttons {
+
+        .modal-actions {
             display: flex;
             gap: 10px;
             margin-top: 20px;
         }
-        .action-buttons button {
+        .modal-actions button {
             flex: 1;
             padding: 12px;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
             border: none;
             transition: all 0.2s;
         }
-        .btn-approve-large {
+        .btn-approve-full {
             background: linear-gradient(135deg, #28a745, #20c997);
             color: #fff;
         }
-        .btn-approve-large:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(40,167,69,0.3); }
-        .btn-reject-large {
+        .btn-approve-full:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40,167,69,0.3);
+        }
+        .btn-reject-full {
             background: linear-gradient(135deg, #dc3545, #fd7e14);
             color: #fff;
         }
-        .btn-reject-large:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(220,53,69,0.3); }
+        .btn-reject-full:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220,53,69,0.3);
+        }
+        .btn-cancel-full {
+            background: #e9ecef;
+            color: #555;
+        }
+        .btn-cancel-full:hover { background: #dee2e6; }
     </style>
 </head>
 <body>
@@ -327,36 +474,56 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
 
 <div class="container">
     <!-- Stats -->
-    <div class="stats-row" id="statsRow">
-        <div class="stat-card pending" onclick="filterBy('pending')">
+    <div class="stats-row">
+        <div class="stat-card pending" onclick="setStatusFilter('pending')">
             <div class="stat-number" id="pendingCount">0</div>
-            <div class="stat-label">Pending Requests</div>
+            <div class="stat-label">Pending</div>
         </div>
-        <div class="stat-card approved" onclick="filterBy('approved')">
+        <div class="stat-card approved" onclick="setStatusFilter('approved')">
             <div class="stat-number" id="approvedCount">0</div>
             <div class="stat-label">Approved</div>
         </div>
-        <div class="stat-card rejected" onclick="filterBy('rejected')">
+        <div class="stat-card rejected" onclick="setStatusFilter('rejected')">
             <div class="stat-number" id="rejectedCount">0</div>
             <div class="stat-label">Rejected</div>
         </div>
     </div>
 
-    <!-- Approval List -->
-    <div class="approval-card">
-        <div class="approval-header">
-            <span>📋 Student Semester Registration Requests</span>
+    <!-- Main Card -->
+    <div class="main-card">
+        <div class="main-header">
+            <h2>📋 Student Semester Registration Requests</h2>
         </div>
         
-        <!-- Filter Tabs -->
-        <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">All</button>
-            <button class="filter-tab" data-filter="pending">Pending</button>
-            <button class="filter-tab" data-filter="approved">Approved</button>
-            <button class="filter-tab" data-filter="rejected">Rejected</button>
+        <!-- Filters -->
+        <div class="filters-bar">
+            <div class="filter-group">
+                <label>Semester:</label>
+                <select id="semesterFilter" onchange="applyFilters()">
+                    <option value="all">All Semesters</option>
+                    <option value="1">Semester 1</option>
+                    <option value="2">Semester 2</option>
+                    <option value="3">Semester 3</option>
+                    <option value="4">Semester 4</option>
+                    <option value="5">Semester 5</option>
+                    <option value="6">Semester 6</option>
+                    <option value="7">Semester 7</option>
+                    <option value="8">Semester 8</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label>Status:</label>
+                <div class="status-tabs" id="statusTabs">
+                    <button class="status-tab active" data-status="all" onclick="setStatusFilter('all')">All</button>
+                    <button class="status-tab" data-status="pending" onclick="setStatusFilter('pending')">Pending</button>
+                    <button class="status-tab" data-status="approved" onclick="setStatusFilter('approved')">Approved</button>
+                    <button class="status-tab" data-status="rejected" onclick="setStatusFilter('rejected')">Rejected</button>
+                </div>
+            </div>
         </div>
         
-        <div id="approvalList">
+        <!-- Approval List -->
+        <div class="approval-list" id="approvalList">
             <div class="empty-state">
                 <div class="empty-icon">📋</div>
                 <p>Loading approval requests...</p>
@@ -367,7 +534,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
 
 <!-- Detail Modal -->
 <div class="modal-overlay" id="detailModal">
-    <div class="modal-content">
+    <div class="modal-box">
         <div class="modal-header">
             <h3 id="modalTitle">Request Details</h3>
             <button class="modal-close" onclick="closeModal()">&times;</button>
@@ -379,10 +546,10 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
 </div>
 
 <script>
-let currentFilter = 'all';
+let currentStatusFilter = 'all';
+let currentSemesterFilter = 'all';
 let approvals = [];
 
-// Load approvals on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadApprovals();
 });
@@ -409,99 +576,133 @@ function updateStats() {
     document.getElementById('rejectedCount').textContent = rejected;
 }
 
+function setStatusFilter(status) {
+    currentStatusFilter = status;
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    const tab = document.querySelector(`[data-status="${status}"]`);
+    if (tab) tab.classList.add('active');
+    renderApprovals();
+}
+
+function applyFilters() {
+    currentSemesterFilter = document.getElementById('semesterFilter').value;
+    renderApprovals();
+}
+
+function getFilteredApprovals() {
+    return approvals.filter(a => {
+        const statusMatch = currentStatusFilter === 'all' || a.status === currentStatusFilter;
+        const semMatch = currentSemesterFilter === 'all' || a.semester == currentSemesterFilter;
+        return statusMatch && semMatch;
+    });
+}
+
 function renderApprovals() {
     const list = document.getElementById('approvalList');
-    const filtered = currentFilter === 'all' 
-        ? approvals 
-        : approvals.filter(a => a.status === currentFilter);
+    const filtered = getFilteredApprovals();
     
     if (filtered.length === 0) {
         list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📋</div>
-                <p>No ${currentFilter === 'all' ? '' : currentFilter} approval requests found.</p>
+                <p>No approval requests found.</p>
             </div>
         `;
         return;
     }
     
     list.innerHTML = filtered.map(a => `
-        <div class="approval-row">
-            <div class="approval-info">
-                <div class="approval-type">
-                    📚 ${a.type || 'Semester Registration'}
-                    <span class="semester-badge">Sem ${a.semester || '?'}</span>
+        <div class="approval-item" onclick="showDetails('${a._id}')">
+            <div class="approval-avatar">${a.student_name.charAt(0).toUpperCase()}</div>
+            <div class="approval-content">
+                <div class="approval-title">
+                    ${a.type || 'Semester Registration'}
+                    <span class="badge badge-${a.status}">${a.status}</span>
                 </div>
-                <div class="approval-student">👤 ${a.student_name} (${a.student_roll})</div>
+                <div class="approval-subtitle">${a.student_name} (${a.student_roll})</div>
                 <div class="approval-meta">
                     <span>📅 ${a.created_at}</span>
+                    <span>📚 Sem ${a.semester || '?'}</span>
                     <span>📝 ${a.subject_count || 0} subjects</span>
                 </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span class="status-badge status-${a.status}">${a.status}</span>
+            <div class="approval-actions">
                 ${a.status === 'pending' ? `
-                    <button class="btn-action btn-approve" onclick="openActionModal('${a._id}', 'approve')" title="Approve">✓</button>
-                    <button class="btn-action btn-reject" onclick="openActionModal('${a._id}', 'reject')" title="Reject">✗</button>
+                    <button class="btn-sm btn-approve-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'approve')" title="Approve">✓</button>
+                    <button class="btn-sm btn-reject-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'reject')" title="Reject">✗</button>
                 ` : `
-                    <button class="btn-action btn-view" onclick="showDetails('${a._id}')" title="View Details">👁</button>
+                    <button class="btn-sm btn-view-sm" onclick="event.stopPropagation();showDetails('${a._id}')" title="View">👁</button>
                 `}
             </div>
         </div>
     `).join('');
 }
 
-function filterBy(filter) {
-    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-    const tab = document.querySelector(`[data-filter="${filter}"]`);
-    if (tab) tab.classList.add('active');
-    currentFilter = filter;
-    renderApprovals();
-}
-
 function showDetails(id) {
     const approval = approvals.find(a => a._id === id);
     if (!approval) return;
     
-    document.getElementById('modalTitle').textContent = `Semester ${approval.semester || approval.type} Registration - ${approval.student_name}`;
+    const statusColor = approval.status === 'approved' ? '#28a745' : approval.status === 'rejected' ? '#dc3545' : '#ffc107';
+    const statusIcon = approval.status === 'approved' ? '✅' : approval.status === 'rejected' ? '❌' : '⏳';
+    
+    document.getElementById('modalTitle').textContent = `${statusIcon} ${approval.type || 'Semester Registration'} - Sem ${approval.semester}`;
     document.getElementById('modalBody').innerHTML = `
-        <div class="detail-row">
-            <div class="detail-label">Student:</div>
-            <div class="detail-value">${approval.student_name} (${approval.student_roll})</div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Status:</div>
-            <div class="detail-value"><span class="status-badge status-${approval.status}">${approval.status}</span></div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Semester:</div>
-            <div class="detail-value">${approval.semester || 'N/A'}</div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Submitted:</div>
-            <div class="detail-value">${approval.created_at}</div>
-        </div>
-        ${approval.updated_at ? `
-        <div class="detail-row">
-            <div class="detail-label">Updated:</div>
-            <div class="detail-value">${approval.updated_at}</div>
-        </div>` : ''}
-        ${approval.mentor_remarks ? `
-        <div class="detail-row">
-            <div class="detail-label">Remarks:</div>
-            <div class="detail-value">${escapeHtml(approval.mentor_remarks)}</div>
-        </div>` : ''}
-        <div style="margin-top:16px;">
-            <div class="detail-label" style="margin-bottom:8px;">Subjects (${approval.subject_count || 0}):</div>
-            <div class="subjects-list">
-                ${approval.subjects ? approval.subjects.map(s => `
-                    <div class="subject-item">
-                        <span>${escapeHtml(s.name)} (${escapeHtml(s.code)})</span>
-                        <span>Credits: ${s.credits} | Internal: ${s.internal}</span>
-                    </div>
-                `).join('') : '<div style="color:#888;font-size:13px;">No subject details available</div>'}
+        <div class="info-grid">
+            <div class="info-item">
+                <label>Student</label>
+                <span>${approval.student_name}</span>
+            </div>
+            <div class="info-item">
+                <label>Roll Number</label>
+                <span>${approval.student_roll}</span>
+            </div>
+            <div class="info-item">
+                <label>Status</label>
+                <span class="badge badge-${approval.status}">${approval.status}</span>
+            </div>
+            <div class="info-item">
+                <label>Semester</label>
+                <span>Semester ${approval.semester}</span>
+            </div>
+            <div class="info-item">
+                <label>Submitted</label>
+                <span>${approval.created_at}</span>
+            </div>
+            <div class="info-item">
+                <label>${approval.updated_at ? 'Processed' : 'Last Updated'}</label>
+                <span>${approval.updated_at || '—'}</span>
             </div>
         </div>
+        
+        ${approval.mentor_remarks ? `
+        <div class="remarks-box ${approval.status === 'approved' ? 'approved' : ''}">
+            <label>${approval.status === 'approved' ? '✅ Approval Remarks' : '❌ Rejection Reason'}</label>
+            <p>${escapeHtml(approval.mentor_remarks)}</p>
+        </div>` : ''}
+        
+        <h4 style="margin-top:20px;margin-bottom:8px;color:#1a1a2e;">📚 Registered Subjects (${approval.subject_count || 0})</h4>
+        <table class="subjects-table">
+            <thead>
+                <tr>
+                    <th>Subject Name</th>
+                    <th>Code</th>
+                    <th>Credits</th>
+                    <th>Internal</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${approval.subjects && approval.subjects.length > 0 ? approval.subjects.map(s => `
+                    <tr>
+                        <td><strong>${escapeHtml(s.name)}</strong></td>
+                        <td style="color:#888;">${escapeHtml(s.code)}</td>
+                        <td style="text-align:center;">${s.credits}</td>
+                        <td style="text-align:center;color:${s.internal === 'yes' ? '#28a745' : '#dc3545'};font-weight:600;">
+                            ${s.internal === 'yes' ? '✓ Yes' : '✗ No'}
+                        </td>
+                    </tr>
+                `).join('') : '<tr><td colspan="4" style="text-align:center;color:#888;">No subjects found</td></tr>'}
+            </tbody>
+        </table>
     `;
     document.getElementById('detailModal').classList.add('active');
 }
@@ -511,23 +712,27 @@ function openActionModal(id, action) {
     if (!approval) return;
     
     const isApprove = action === 'approve';
-    const title = isApprove ? 'Approve Request' : 'Reject Request';
-    const btnClass = isApprove ? 'btn-approve-large' : 'btn-reject-large';
-    const btnText = isApprove ? '✓ Approve' : '✗ Reject';
     
-    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalTitle').textContent = isApprove ? '✅ Approve Request' : '❌ Reject Request';
     document.getElementById('modalBody').innerHTML = `
-        <div style="background:${isApprove ? '#d4edda' : '#f8d7da'};padding:16px;border-radius:10px;margin-bottom:16px;">
-            <strong>${approval.student_name}</strong> (${approval.student_roll})<br>
-            <span style="font-size:13px;">Semester ${approval.semester} Registration - ${approval.subject_count || 0} subjects</span>
+        <div style="background:${isApprove ? '#d4edda' : '#f8d7da'};padding:16px;border-radius:12px;margin-bottom:16px;display:flex;align-items:center;gap:12px;">
+            <div style="font-size:32px;">${isApprove ? '✅' : '❌'}</div>
+            <div>
+                <div style="font-weight:600;color:#333;">${approval.student_name}</div>
+                <div style="font-size:13px;color:#666;">${approval.student_roll} · Semester ${approval.semester} · ${approval.subject_count || 0} subjects</div>
+            </div>
         </div>
-        <div class="remarks-section">
-            <label>${isApprove ? 'Approval Remarks (optional)' : 'Rejection Reason (required)'}</label>
-            <textarea id="remarksInput" placeholder="${isApprove ? 'Add any comments for the student...' : 'Please provide a reason for rejection...'}" ${!isApprove ? 'required' : ''}></textarea>
+        
+        <div class="textarea-box">
+            <label>${isApprove ? 'Approval Remarks (optional)' : 'Rejection Reason (required) *'}</label>
+            <textarea id="remarksInput" placeholder="${isApprove ? 'Add any comments for the student...' : 'Please provide a reason for rejection...'}"></textarea>
         </div>
-        <div class="action-buttons">
-            <button class="${btnClass}" onclick="processApproval('${id}', '${action}')">${btnText}</button>
-            <button style="flex:1;padding:12px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:1px solid #ddd;background:#fff;" onclick="closeModal()">Cancel</button>
+        
+        <div class="modal-actions">
+            <button class="${isApprove ? 'btn-approve-full' : 'btn-reject-full'}" onclick="processApproval('${id}', '${action}')">
+                ${isApprove ? '✓ Approve Request' : '✗ Reject Request'}
+            </button>
+            <button class="btn-cancel-full" onclick="closeModal()">Cancel</button>
         </div>
     `;
     document.getElementById('detailModal').classList.add('active');
@@ -535,6 +740,7 @@ function openActionModal(id, action) {
 
 function processApproval(id, action) {
     const remarks = document.getElementById('remarksInput').value.trim();
+    const status = action === 'approve' ? 'approved' : 'rejected';
     
     if (action === 'reject' && !remarks) {
         alert('Please provide a reason for rejection.');
@@ -543,7 +749,7 @@ function processApproval(id, action) {
     
     const formData = new FormData();
     formData.append('approval_id', id);
-    formData.append('status', action);
+    formData.append('status', status);
     formData.append('remarks', remarks);
     formData.append('update_status', '1');
     
@@ -569,22 +775,10 @@ function escapeHtml(text) {
     return div.innerHTML;
 }
 
-// Filter tabs
-document.querySelectorAll('.filter-tab').forEach(tab => {
-    tab.addEventListener('click', function() {
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
-        this.classList.add('active');
-        currentFilter = this.dataset.filter;
-        renderApprovals();
-    });
-});
-
-// Close modal on outside click
 document.getElementById('detailModal').addEventListener('click', function(e) {
     if (e.target === this) closeModal();
 });
 
-// Close modal on Escape
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeModal();
 });
