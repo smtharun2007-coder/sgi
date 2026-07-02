@@ -54,7 +54,7 @@ function grade($sgi) {
             </button>
             <div class="notif-dropdown" id="notifDrop">
                 <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
-                <div id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
+                <div class="notif-list-scroll" id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
             </div>
         </div>
         <a href="logout.php" class="btn-logout">Logout</a>
@@ -128,7 +128,18 @@ function grade($sgi) {
         <?php endif; ?>
     </div>
 
-    <!-- ANALYTICS card removed — available via Analytics card on dashboard -->
+    <!-- ALL SEMESTER ANALYSIS CONTAINER -->
+    <?php if (!empty($semList)): ?>
+    <div class="sem-cards" style="margin-top:20px;">
+        <div class="sem-card">
+            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);"><h3>&#128200; All Semester Analysis</h3></div>
+            <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">View best/worst semester, subject averages, CA marks & complete analytics.</p>
+                <a href="analytics.php" class="btn-primary" style="width:auto;padding:10px 24px;">Open Analytics</a>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
 
 </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

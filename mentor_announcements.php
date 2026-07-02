@@ -227,10 +227,17 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <div style="margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;">
                         <?php foreach($a['attachments'] as $att): ?>
                             <?php $isImg = ($att['type']==='image'); ?>
-                            <a href="<?= htmlspecialchars($att['url']) ?>" target="_blank"
-                               style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
-                                <?= $isImg ? '\xF0\x9F\x96\xBC' : '\xF0\x9F\x93\x84' ?> <?= htmlspecialchars($att['name']) ?>
-                            </a>
+                            <?php if($isImg): ?>
+                                <a href="#" onclick="mentorShowImg('<?= htmlspecialchars($att['url']) ?>');return false;"
+                                   style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
+                                    &#128444; <?= htmlspecialchars($att['name']) ?>
+                                </a>
+                            <?php else: ?>
+                                <a href="#" onclick="mentorShowDoc('<?= htmlspecialchars($att['url']) ?>','<?= htmlspecialchars($att['name']) ?>');return false;"
+                                   style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f0f2f5;border-radius:8px;font-size:12px;color:#1a1a2e;text-decoration:none;border:1px solid #e0e0e0;">
+                                    &#128196; <?= htmlspecialchars($att['name']) ?>
+                                </a>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     </div>
                     <?php endif; ?>
@@ -245,7 +252,36 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
     </div>
 
 </div>
+<!-- Image lightbox -->
+<div id="mentorImgModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:2000;align-items:center;justify-content:center;" onclick="this.style.display='none'">
+    <img id="mentorImgModalSrc" src="" style="max-width:92vw;max-height:90vh;border-radius:10px;box-shadow:0 8px 40px rgba(0,0,0,0.5);">
+</div>
+<!-- Document viewer modal -->
+<div id="mentorDocModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2001;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:60px;">
+    <div style="position:absolute;top:15px;right:20px;z-index:2002;">
+        <button onclick="mentorCloseDocModal()" style="background:none;border:none;color:#fff;font-size:32px;cursor:pointer;padding:0 10px;">&times;</button>
+    </div>
+    <div id="mentorDocTitle" style="color:#fff;font-size:16px;margin-bottom:15px;font-weight:600;"></div>
+    <iframe id="mentorDocViewer" src="" style="width:90vw;height:80vh;border:1px solid #444;border-radius:8px;background:#fff;"></iframe>
+    <div style="margin-top:15px;">
+        <a id="mentorDocDownloadLink" href="" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;font-size:14px;">Open in new tab / Download</a>
+    </div>
+</div>
 <script>
+function mentorShowImg(url) {
+    document.getElementById('mentorImgModalSrc').src = url;
+    document.getElementById('mentorImgModal').style.display = 'flex';
+}
+function mentorShowDoc(url, name) {
+    document.getElementById('mentorDocTitle').textContent = name;
+    document.getElementById('mentorDocViewer').src = url;
+    document.getElementById('mentorDocDownloadLink').href = url;
+    document.getElementById('mentorDocModal').style.display = 'flex';
+}
+function mentorCloseDocModal() {
+    document.getElementById('mentorDocModal').style.display = 'none';
+    document.getElementById('mentorDocViewer').src = '';
+}
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');
     drop.classList.toggle('open');
