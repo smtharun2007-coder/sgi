@@ -832,3 +832,72 @@ textarea:focus { border-color: #e94560; }
 .page-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
 .page-tab { padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; color: #555; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.07); transition: all 0.2s; }
 .page-tab:hover, .page-tab.active { background: #1a1a2e; color: #fff; }
+
+/* ── NOTIFICATION BELL ── */
+.notif-bell-wrap { position: relative; display: inline-flex; align-items: center; margin-left: 16px; }
+.notif-bell-btn  { background: none; border: none; cursor: pointer; color: #ccc; font-size: 20px; position: relative; padding: 4px; line-height:1; }
+.notif-bell-btn:hover { color: #fff; }
+.notif-badge { position: absolute; top: -2px; right: -4px; background: #e94560; color: #fff; font-size: 10px; font-weight: 700; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; }
+.notif-dropdown { position: absolute; top: 36px; right: 0; width: 320px; background: #fff; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.18); z-index: 999; overflow: hidden; display: none; }
+.notif-dropdown.open { display: block; }
+.notif-dropdown-header { background: #1a1a2e; color: #fff; padding: 12px 16px; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.notif-dropdown-header a { color: #e94560; font-size: 11px; text-decoration: none; white-space: nowrap; }
+.notif-list-scroll { max-height: 300px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #e94560 #f0f2f5; }
+.notif-list-scroll::-webkit-scrollbar { width: 4px; }
+.notif-list-scroll::-webkit-scrollbar-track { background: #f0f2f5; }
+.notif-list-scroll::-webkit-scrollbar-thumb { background: #e94560; border-radius: 4px; }
+.notif-item { padding: 12px 16px; border-bottom: 1px solid #f0f2f5; font-size: 13px; color: #444; }
+.notif-item.unread { background: #fff8f9; border-left: 3px solid #e94560; }
+.notif-item .notif-time { font-size: 11px; color: #aaa; margin-top: 3px; }
+.notif-empty { padding: 20px; text-align: center; color: #aaa; font-size: 13px; }
+
+/* ── CALENDAR ── */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.cal-nav h2 { font-size: 18px; color: #1a1a2e; }
+.cal-nav-btn { background: #1a1a2e; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; font-size: 14px; text-decoration: none; display:inline-block; transition: background 0.2s; }
+.cal-nav-btn:hover { background: #e94560; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.cal-day-name { text-align: center; font-size: 12px; font-weight: 700; color: #888; padding: 6px 0; text-transform: uppercase; }
+.cal-cell { background: #fff; border-radius: 10px; min-height: 80px; padding: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); }
+.cal-cell.empty { background: transparent; box-shadow: none; }
+.cal-cell.today { border: 2px solid #e94560; }
+.cal-date { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+.cal-event-dot { font-size: 10px; padding: 2px 6px; border-radius: 10px; color: #fff; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display:block; }
+.cal-event-dot.exam     { background: #e94560; }
+.cal-event-dot.holiday  { background: #27ae60; }
+.cal-event-dot.study    { background: #f5a623; }
+.cal-event-dot.event    { background: #2980b9; }
+.cal-event-dot.other    { background: #8e44ad; }
+.cal-legend { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 16px; }
+.cal-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #555; }
+.cal-legend-dot { width: 12px; height: 12px; border-radius: 50%; display:inline-block; }
+
+/* ── ANNOUNCEMENTS ── */
+.announce-card { background: #fff; border-radius: 12px; padding: 20px 24px; margin-bottom: 14px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); border-left: 4px solid #e94560; }
+.announce-card.info    { border-left-color: #2980b9; }
+.announce-card.warning { border-left-color: #f5a623; }
+.announce-card.success { border-left-color: #27ae60; }
+.announce-title { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 6px; }
+.announce-body  { font-size: 13px; color: #555; line-height: 1.6; }
+.announce-meta  { font-size: 11px; color: #aaa; margin-top: 8px; }
+.badge-urgent  { display:inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #fff; background: #e94560; margin-left:6px; }
+.badge-info    { display:inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #fff; background: #2980b9; margin-left:6px; }
+.badge-general { display:inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 600; color: #fff; background: #8e44ad; margin-left:6px; }
+
+/* ── APPROVAL CARDS ── */
+.approval-card { background: #fff; border-radius: 12px; padding: 18px 22px; margin-bottom: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.07); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+.approval-info .a-title { font-size: 14px; font-weight: 700; color: #1a1a2e; }
+.approval-info .a-sub   { font-size: 12px; color: #888; margin-top: 3px; }
+.approval-actions { display: flex; gap: 8px; flex-shrink:0; }
+.btn-approve { background: #27ae60; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-approve:hover { background: #1e8449; }
+.btn-reject  { background: #e94560; color: #fff; border: none; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-reject:hover  { background: #c73652; }
+.status-pending  { display:inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #fff; background: #f5a623; }
+.status-approved { display:inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #fff; background: #27ae60; }
+.status-rejected { display:inline-block; padding: 3px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #fff; background: #e94560; }
+
+/* ── PAGE TABS ── */
+.page-tabs { display: flex; gap: 8px; margin-bottom: 24px; flex-wrap: wrap; }
+.page-tab { padding: 9px 20px; border-radius: 8px; font-size: 13px; font-weight: 600; text-decoration: none; color: #555; background: #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.07); transition: all 0.2s; }
+.page-tab:hover, .page-tab.active { background: #1a1a2e; color: #fff; }

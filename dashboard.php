@@ -28,8 +28,8 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
-                <div id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
+                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
+                <div class="notif-list-scroll" id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
             </div>
         </div>
         <a href="logout.php" class="btn-logout">Logout</a>
@@ -117,6 +117,13 @@ function markAll(e) {
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
 document.addEventListener('click', e => {
     const btn = document.getElementById('bellBtn');
     const drop = document.getElementById('notifDrop');
@@ -129,3 +136,4 @@ document.addEventListener('click', e => {
 </div>
 </body>
 </html>
+

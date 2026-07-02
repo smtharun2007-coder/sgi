@@ -20,6 +20,17 @@ if (isset($_GET['mark_all'])) {
     echo json_encode(['status'=>'ok']); exit;
 }
 
+// Delete all notifications
+if (isset($_GET['delete_all'])) {
+    if ($isMentor) {
+        $notifications->deleteMany(['mentor_id'=>$_SESSION['mentor']['mentor_id']]);
+    } else {
+        $notifications->deleteMany(['roll'=>$_SESSION['user']['roll']]);
+    }
+    header('Content-Type: application/json');
+    echo json_encode(['status'=>'ok']); exit;
+}
+
 // Fetch notifications as JSON
 if (isset($_GET['fetch'])) {
     header('Content-Type: application/json');
