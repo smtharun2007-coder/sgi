@@ -195,7 +195,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <?php foreach($events[$d] as $ev): ?>
                         <span style="display:block;font-size:10px;color:#fff;font-weight:600;text-align:center;padding:1px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
                             <?= htmlspecialchars($ev['title']) ?>
-                            <a href="mentor_calendar.php?delete=<?= (string)$ev['_id'] ?>&month=<?= $month ?>&year=<?= $year ?>" onclick="return confirm('Delete?')" style="color:#fff;font-weight:700;text-decoration:none;">×</a>
+                            <a href="mentor_calendar.php?delete=<?= (string)$ev['_id'] ?>&month=<?= $month ?>&year=<?= $year ?>" onclick="event.preventDefault();customConfirm('Delete this event?', function(){window.location.href='mentor_calendar.php?delete=<?= (string)$ev['_id'] ?>&month=<?= $month ?>&year=<?= $year ?>';});return false;" style="color:#fff;font-weight:700;text-decoration:none;">×</a>
                         </span>
                     <?php endforeach; ?>
                 <?php endif; ?>

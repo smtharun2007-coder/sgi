@@ -435,7 +435,7 @@ if (isset($_POST['update_status']) && $isMentor) {
                 
             case 'Project Evaluation':
                 // Handle project evaluation by evaluator
-                // When evaluator approves, notify the student's mentor
+                // When evaluator approves/rejects, notify the student's mentor and student
                 if (!empty($approval['project_data'])) {
                     $projectData = $approval['project_data'];
                     if ($projectData instanceof \MongoDB\Model\BSONDocument) {
@@ -443,23 +443,45 @@ if (isset($_POST['update_status']) && $isMentor) {
                     }
                     
                     $mentorId = $projectData['submitted_by_mentor'] ?? '';
+                    $projectName = $projectData['project_name'] ?? '';
+                    $studentName = $projectData['submitted_by'] ?? '';
+                    
                     if (!empty($mentorId)) {
-                        // Notify the student's mentor that evaluator has approved
+                        if ($status === 'approved') {
+                            // Notify the student's mentor that evaluator has approved
+                            $notifications->insertOne([
+                                'mentor_id' => $mentorId,
+                                'message' => '✅ Evaluator has approved the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). You can now proceed with SGI approval.',
+                                'read' => false,
+                                'created_at' => new MongoDB\BSON\UTCDateTime()
+                            ]);
+                        } else {
+                            // Notify the student's mentor that evaluator has rejected
+                            $notifications->insertOne([
+                                'mentor_id' => $mentorId,
+                                'message' => '❌ Evaluator has REJECTED the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). Reason: ' . ($remarks ?: 'Not specified'),
+                                'read' => false,
+                                'created_at' => new MongoDB\BSON\UTCDateTime()
+                            ]);
+                        }
+                    }
+                    
+                    // Notify the student
+                    if ($status === 'approved') {
                         $notifications->insertOne([
-                            'mentor_id' => $mentorId,
-                            'message' => '✅ Evaluator has approved the other project "' . ($projectData['project_name'] ?? '') . '" for student ' . ($projectData['submitted_by'] ?? '') . ' (' . $roll . '). You can now proceed with SGI approval.',
+                            'roll' => $roll,
+                            'message' => '✅ Your other project "' . $projectName . '" has been approved by the evaluator.',
+                            'read' => false,
+                            'created_at' => new MongoDB\BSON\UTCDateTime()
+                        ]);
+                    } else {
+                        $notifications->insertOne([
+                            'roll' => $roll,
+                            'message' => '❌ Your other project "' . $projectName . '" has been REJECTED by the evaluator. Reason: ' . ($remarks ?: 'Not specified'),
                             'read' => false,
                             'created_at' => new MongoDB\BSON\UTCDateTime()
                         ]);
                     }
-                    
-                    // Also notify the student
-                    $notifications->insertOne([
-                        'roll' => $roll,
-                        'message' => '✅ Your other project "' . ($projectData['project_name'] ?? '') . '" has been approved by the evaluator.',
-                        'read' => false,
-                        'created_at' => new MongoDB\BSON\UTCDateTime()
-                    ]);
                 }
                 break;
         }

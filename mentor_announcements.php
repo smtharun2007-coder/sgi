@@ -305,7 +305,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                     <div class="announce-meta"><?= date('d M Y, h:i A', $a['created_at']->toDateTime()->getTimestamp()) ?></div>
                 </div>
                 <a href="mentor_announcements.php?delete_ann=<?= (string)$a['_id'] ?>"
-                   onclick="return confirm('Delete this announcement?')"
+                   onclick="event.preventDefault();customConfirm('Delete this announcement?', function(){window.location.href='mentor_announcements.php?delete_ann=<?= (string)$a['_id'] ?>';});return false;"
                    style="color:#e94560;font-size:18px;text-decoration:none;flex-shrink:0;">🗑</a>
             </div>
             <?php endforeach; ?>

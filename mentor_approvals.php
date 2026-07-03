@@ -1045,7 +1045,21 @@ function showDetails(id) {
     }
     // Handle Project Evaluation approval type (for evaluators)
     else if (approval.type === 'Project Evaluation') {
-        const projectData = approval.project_data || {};
+        let projectData = approval.project_data || {};
+        // Handle BSONDocument conversion - if projectData has $numberInt or similar, it's a BSON doc
+        if (typeof projectData === 'object' && projectData !== null && !Array.isArray(projectData)) {
+            // Check if it's a BSON-like object with weird keys
+            if (projectData.project_name === undefined && Object.keys(projectData).length > 0) {
+                // Try to extract values from BSON-like structure
+                projectData = {
+                    project_name: projectData.project_name || projectData.name || '',
+                    count: projectData.count || projectData.no || 0,
+                    points: projectData.points || projectData.point || 0,
+                    submitted_by: projectData.submitted_by || projectData.student || '',
+                    submitted_by_mentor: projectData.submitted_by_mentor || projectData.mentor_id || ''
+                };
+            }
+        }
         
         subjectsHtml = `
             <!-- Project Evaluation Details -->
@@ -1373,7 +1387,7 @@ function processApproval(id, action) {
     const status = action === 'approve' ? 'approved' : 'rejected';
     
     if (action === 'reject' && !remarks) {
-        alert('Please provide a reason for rejection.');
+        showToast('Please provide a reason for rejection.', 'warning');
         return;
     }
     
@@ -1390,7 +1404,7 @@ function processApproval(id, action) {
                 closeModal();
                 loadApprovals();
             } else {
-                alert(data.message || 'Failed to process');
+                showToast(data.message || 'Failed to process', 'error');
             }
         });
 }

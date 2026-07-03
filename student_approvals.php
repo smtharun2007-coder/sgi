@@ -622,7 +622,7 @@ function closeModal() {
 }
 
 function deleteApproval(id) {
-    if (!confirm('Are you sure you want to cancel this pending request?')) return;
+    if (!window.customConfirm) { confirm('Are you sure you want to cancel this pending request?') || (function(){return;})(); } else { customConfirm('Are you sure you want to cancel this pending request?', function(){ proceedDelete(id); }); return; }
 
     const formData = new FormData();
     formData.append('approval_id', id);
@@ -634,7 +634,7 @@ function deleteApproval(id) {
             if (data.status === 'success') {
                 loadApprovals();
             } else {
-                alert(data.message || 'Failed to delete');
+                showToast(data.message || 'Failed to delete', 'error');
             }
         });
 }

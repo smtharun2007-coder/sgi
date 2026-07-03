@@ -310,7 +310,7 @@ if (isset($_POST['confirm_credits'])) {
                     <td><?= $sub['credits'] ?></td>
                     <td style="text-align:center;">
                         <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&remove_pending=<?= $tempId ?>" 
-                           onclick="return confirm('Remove this pending subject?')" 
+                           onclick="event.preventDefault();customConfirm('Remove this pending subject?', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>';});return false;"
                            class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;">Remove</a>
                     </td>
                 </tr>
@@ -354,11 +354,11 @@ if (isset($_POST['confirm_credits'])) {
                     <td style="text-align:center;">
                         <?php if ($isMarkedForDeletion): ?>
                             <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>" 
-                               onclick="return confirm('Undo deletion mark?')" 
+                               onclick="event.preventDefault();customConfirm('Undo deletion mark?', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>';});return false;"
                                class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;background:#ffc107;color:#000;">Undo</a>
                         <?php else: ?>
                             <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&mark_delete=<?= $sid ?>" 
-                               onclick="return confirm('Mark this subject for deletion? It will be removed after mentor approval.')" 
+                               onclick="event.preventDefault();customConfirm('Mark this subject for deletion? It will be removed after mentor approval.', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&mark_delete=<?= $sid ?>';});return false;"
                                class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;background:#dc3545;">Mark Delete</a>
                         <?php endif; ?>
                     </td>
