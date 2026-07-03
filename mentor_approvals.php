@@ -649,8 +649,86 @@ function showDetails(id) {
     
     let subjectsHtml = '';
     
+    // Handle Verification approval type
+    if (approval.type === 'Verification') {
+        const verificationData = approval.verification_data || {};
+        const catMarks = approval.cat_marks || [];
+        
+        subjectsHtml = `
+            <!-- Verification Data -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span style="color:#28a745;">📊</span> Verification Details
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="background:#f8f9fa;padding:16px;border-radius:10px;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">Previous GPA</div>
+                        <div style="font-size:24px;font-weight:700;color:#1a1a2e;">${verificationData.prev_gpa || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:16px;border-radius:10px;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">Attendance</div>
+                        <div style="font-size:24px;font-weight:700;color:#1a1a2e;">${verificationData.attendance || '—'}%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CAT Marks for all subjects -->
+            ${catMarks.length > 0 ? `
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>📋</span> CAT Marks (${catMarks.length} Subjects)
+                </h4>
+                <table class="subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Name</th>
+                            <th>Code</th>
+                            <th>CAT 1</th>
+                            <th>CAT 2</th>
+                            <th>CAT 3</th>
+                            <th>Total</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${catMarks.map(s => `
+                            <tr>
+                                <td><strong>${escapeHtml(s.subject_name)}</strong></td>
+                                <td style="color:#888;">${escapeHtml(s.subject_code)}</td>
+                                <td style="text-align:center;">${s.cat1 !== undefined ? (s.cat1 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : s.cat1) : '—'}</td>
+                                <td style="text-align:center;">${s.cat2 !== undefined ? (s.cat2 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : s.cat2) : '—'}</td>
+                                <td style="text-align:center;">${s.cat3 !== undefined ? (s.cat3 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : s.cat3) : '—'}</td>
+                                <td style="text-align:center;font-weight:600;">${s.total !== undefined ? s.total : '—'}</td>
+                                <td style="text-align:center;color:${parseFloat(s.percentage) >= 80 ? '#28a745' : parseFloat(s.percentage) >= 60 ? '#f5a623' : '#dc3545'};font-weight:600;">${s.percentage !== undefined ? s.percentage + '%' : '—'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <!-- Summary -->
+            <div style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:12px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;">📊 Summary</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                    <div style="background:#d4edda;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">Subjects</div>
+                        <div style="font-size:24px;font-weight:700;color:#28a745;">${catMarks.length}</div>
+                    </div>
+                    <div style="background:#e7f3ff;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">Prev GPA</div>
+                        <div style="font-size:24px;font-weight:700;color:#0066cc;">${verificationData.prev_gpa || '—'}</div>
+                    </div>
+                    <div style="background:#fff3cd;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">Attendance</div>
+                        <div style="font-size:24px;font-weight:700;color:#856404;">${verificationData.attendance || '—'}%</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     // Handle Credit Subjects approval type with detailed comparison
-    if (approval.type === 'Credit Subjects') {
+    else if (approval.type === 'Credit Subjects') {
         const creditSubjects = approval.credit_subjects || [];
         const creditDeletions = approval.credit_deletions || [];
         const existingSubjects = approval.existing_subjects || [];

@@ -483,11 +483,11 @@ subLabels.forEach((label, i) => {
     <?php endif; ?>
 
     <?php if ($creditsDone && !$verified): ?>
-        <a href="verify_marks.php?sem_id=<?= $id ?>" class="btn-verify" style="background:#27ae60;">Verify & Confirm</a>
+        <a href="verify_marks.php?sem_id=<?= $id ?>" class="btn-verify" style="background:#27ae60 !important;">Verify & Confirm</a>
     <?php elseif (!$creditsDone): ?>
-        <span class="btn-verify btn-disabled" style="background:#27ae60;">Verify & Confirm</span>
+        <span class="btn-verify btn-disabled" style="background:#27ae60 !important;">Verify & Confirm</span>
     <?php else: ?>
-        <span class="btn-verify btn-disabled" style="background:#27ae60;">Verified ✅</span>
+        <span class="btn-verify btn-disabled" style="background:#27ae60 !important;">Verified ✅</span>
     <?php endif; ?>
 
     <?php if ($verified): ?>
