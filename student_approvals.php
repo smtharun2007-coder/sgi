@@ -372,13 +372,15 @@ $currentSemNum = $currentSem['sem'] ?? null;
 </head>
 <body>
 <nav class="navbar">
-<a href="dashboard.php" class="nav-brand">
-    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI
-</a>
+    <a href="dashboard.php" class="nav-brand">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI
+    </a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
-        <a href="student_approvals.php" style="color:#e94560;font-weight:600;">Approvals</a>
         <a href="update_profile.php">Profile</a>
+        <a href="about.php">About</a>
+        <a href="contact.php">Contact</a>
+        <a href="print_select.php">Print</a>
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
                 &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
