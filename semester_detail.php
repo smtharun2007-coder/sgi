@@ -373,11 +373,13 @@ function grade($sgi) {
         <hr style="margin:24px 0;">
         <?php endif; ?>
 
-        <!-- APPROVAL HISTORY SECTION -->
+        <!-- APPROVAL HISTORY LINK -->
         <hr style="margin:24px 0;">
-        <h3>📋 Approval History</h3>
-        <div id="approvalHistory">
-            <p style="color:#888;text-align:center;padding:20px;">Loading approval history...</p>
+        <div style="text-align:center;padding:20px;">
+            <a href="student_approvals.php" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;font-size:14px;">
+                📋 View All Approval Requests
+            </a>
+            <p style="color:#888;font-size:13px;margin-top:8px;">Track the status of your semester registration, credit subjects, and verification requests</p>
         </div>
 
         <div style="text-align:center;margin-top:30px;">
@@ -550,146 +552,11 @@ document.addEventListener('click', e => {
         drop.classList.remove('open');
 });
 
-// Approval History Functions
-const semesterId = '<?= $id ?>';
-const semesterNum = <?= $s['sem'] ?>;
-
-// Load approval history on page load
-document.addEventListener('DOMContentLoaded', function() {
-    loadApprovalHistory();
-});
-
-function loadApprovalHistory() {
-    fetch('approvals.php?fetch=1')
-        .then(r => r.json())
-        .then(data => {
-            const approvals = data.filter(a => a.semester == semesterNum);
-            renderApprovalHistory(approvals);
-        });
-}
-
-function renderApprovalHistory(approvals) {
-    const container = document.getElementById('approvalHistory');
-    
-    if (approvals.length === 0) {
-        container.innerHTML = '<p style="color:#888;text-align:center;padding:20px;">No approval history found for this semester.</p>';
-        return;
-    }
-    
-    container.innerHTML = approvals.map(a => {
-        const requestName = a.type || 'Semester Registration Request';
-        return `
-        <div class="approval-history-item" onclick="showApprovalPopup(${JSON.stringify(a).replace(/"/g, '"')})" style="
-            background: #fff;
-            border-radius: 10px;
-            padding: 14px 18px;
-            margin-bottom: 10px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        " onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)';" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 2px 8px rgba(0,0,0,0.06)';">
-            <div>
-                <div style="font-size:15px;font-weight:700;color:#1a1a2e;margin-bottom:4px;">📋 ${escapeHtml(requestName)}</div>
-                <div style="font-size:12px;color:#888;">📅 Submitted: ${a.created_at}${a.subject_count ? ' · 📚 ' + a.subject_count + ' subjects' : ''}</div>
-                ${a.updated_at ? `<div style="font-size:11px;color:#888;margin-top:2px;">⏰ Processed: ${a.updated_at}</div>` : ''}
-            </div>
-            <span class="status-badge status-${a.status}" style="
-                padding: 4px 14px;
-                border-radius: 20px;
-                font-size: 12px;
-                font-weight: 600;
-                text-transform: uppercase;
-                background: ${a.status === 'pending' ? '#fff3cd' : a.status === 'approved' ? '#d4edda' : '#f8d7da'};
-                color: ${a.status === 'pending' ? '#856404' : a.status === 'approved' ? '#155724' : '#721c24'};
-            ">${a.status}</span>
-        </div>
-    `).join('');
-}
-
-function showApprovalPopup(approval) {
-    const popup = document.createElement('div');
-    popup.id = 'approvalPopup';
-    popup.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:2000;display:flex;align-items:center;justify-content:center;';
-    popup.onclick = function(e) { if(e.target === this) closeApprovalPopup(); };
-    
-    const statusColor = approval.status === 'approved' ? '#28a745' : approval.status === 'rejected' ? '#dc3545' : '#ffc107';
-    const statusIcon = approval.status === 'approved' ? '✅' : approval.status === 'rejected' ? '❌' : '⏳';
-    
-    popup.innerHTML = `
-        <div style="background:#fff;border-radius:16px;max-width:450px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);overflow:hidden;">
-            <div style="background:${statusColor};padding:20px 24px;color:#fff;display:flex;justify-content:space-between;align-items:center;">
-                <h3 style="margin:0;font-size:18px;">${statusIcon} Approval Details</h3>
-                <button onclick="closeApprovalPopup()" style="background:none;border:none;color:#fff;font-size:24px;cursor:pointer;">&times;</button>
-            </div>
-            <div style="padding:24px;">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding:12px;background:#f8f9fa;border-radius:10px;">
-                    <span style="font-weight:600;color:#333;">Status</span>
-                    <span style="padding:4px 14px;border-radius:20px;font-size:13px;font-weight:600;text-transform:uppercase;background:${statusColor};color:#fff;">${approval.status}</span>
-                </div>
-                <div style="margin-bottom:12px;">
-                    <span style="font-size:12px;color:#888;text-transform:uppercase;">Request Type</span>
-                    <div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-top:2px;">${escapeHtml(approval.type || 'Semester Registration')}</div>
-                </div>
-                <div style="margin-bottom:12px;">
-                    <span style="font-size:12px;color:#888;text-transform:uppercase;">Semester</span>
-                    <div style="font-size:15px;font-weight:600;color:#1a1a2e;margin-top:2px;">Semester ${approval.semester}</div>
-                </div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
-                    <div>
-                        <span style="font-size:12px;color:#888;text-transform:uppercase;">Submitted On</span>
-                        <div style="font-size:14px;color:#333;margin-top:2px;">${approval.created_at}</div>
-                    </div>
-                    <div>
-                        <span style="font-size:12px;color:#888;text-transform:uppercase;">${approval.updated_at ? 'Processed On' : 'Last Updated'}</span>
-                        <div style="font-size:14px;color:#333;margin-top:2px;">${approval.updated_at || '—'}</div>
-                    </div>
-                </div>
-                ${approval.mentor_remarks ? `
-                <div style="margin-top:16px;padding:12px;background:${approval.status === 'rejected' ? '#fff3f3' : '#f3fff3'};border-radius:10px;border-left:4px solid ${approval.status === 'rejected' ? '#dc3545' : '#28a745'};">
-                    <span style="font-size:12px;color:#888;text-transform:uppercase;">Mentor Remarks</span>
-                    <div style="font-size:14px;color:#333;margin-top:4px;">${escapeHtml(approval.mentor_remarks)}</div>
-                </div>` : ''}
-                ${approval.subjects && approval.subjects.length > 0 ? `
-                <div style="margin-top:16px;">
-                    <span style="font-size:12px;color:#888;text-transform:uppercase;">Subjects (${approval.subject_count || approval.subjects.length})</span>
-                    <div style="margin-top:6px;max-height:120px;overflow-y:auto;">
-                        ${approval.subjects.map(s => `
-                            <div style="display:flex;justify-content:space-between;padding:6px 10px;background:#f8f9fa;border-radius:6px;margin-bottom:4px;font-size:13px;">
-                                <span>${escapeHtml(s.name)} (${escapeHtml(s.code)})</span>
-                                <span style="color:#888;">${s.credits} Credits</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>` : ''}
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(popup);
-    document.body.style.overflow = 'hidden';
-}
-
-function closeApprovalPopup() {
-    const popup = document.getElementById('approvalPopup');
-    if (popup) {
-        popup.remove();
-        document.body.style.overflow = '';
-    }
-}
-
 function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
 }
-
-// Close popup on Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') closeApprovalPopup();
-});
 </script>
 <div class="copyright-footer">
     &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.

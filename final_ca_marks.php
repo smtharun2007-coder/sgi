@@ -73,7 +73,7 @@ if (isset($_POST['save_ca'])) {
         }
         
         if (!$uploadError) {
-            // Create approval request
+            // Create approval request with documents for mentor verification
             $approvalData = [
                 'student_roll' => $roll,
                 'student_name' => $u['name'],
@@ -85,7 +85,9 @@ if (isset($_POST['save_ca'])) {
                 'status' => 'pending',
                 'ca_data' => [
                     'gpa' => $gpa,
-                    'cgpa' => $cgpa
+                    'cgpa' => $cgpa,
+                    'result_photo' => $resultPhotoData,
+                    'ca_photo' => $caPhotoData
                 ],
                 'ca_subjects' => $caSubjectsData,
                 'documents' => $documentsData,

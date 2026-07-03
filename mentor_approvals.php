@@ -1,4 +1,4 @@
-<?php
+in<?php
 include 'config.php';
 if (!isset($_SESSION['mentor'])) { header("Location: mentor_login.php"); exit; }
 
@@ -798,6 +798,188 @@ function showDetails(id) {
                     <div style="background:#fff3cd;padding:12px;border-radius:8px;text-align:center;">
                         <div style="font-size:12px;color:#888;">CGPA</div>
                         <div style="font-size:24px;font-weight:700;color:#856404;">${caData.cgpa || '—'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    // Handle SGI Calculation approval type
+    else if (approval.type === 'SGI Calculation') {
+        const sgiData = approval.sgi_data || {};
+        
+        subjectsHtml = `
+            <!-- SGI Score Summary -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span style="color:#28a745;">📊</span> SGI Calculation Summary
+                </h4>
+                <div style="background:#f8f9fa;padding:20px;border-radius:12px;">
+                    <div style="text-align:center;margin-bottom:16px;">
+                        <div style="font-size:14px;color:#888;margin-bottom:4px;">Calculated SGI</div>
+                        <div style="font-size:36px;font-weight:700;color:#1a1a2e;">${sgiData.sgi || '—'}</div>
+                    </div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Academic Score</div>
+                            <div style="font-size:18px;font-weight:600;color:#1a1a2e;">${sgiData.academic_score || '—'}</div>
+                        </div>
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Skills Score</div>
+                            <div style="font-size:18px;font-weight:600;color:#1a1a2e;">${sgiData.skills_score || '—'}</div>
+                        </div>
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Projects Score</div>
+                            <div style="font-size:18px;font-weight:600;color:#1a1a2e;">${sgiData.projects_score || '—'}</div>
+                        </div>
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Activities Score</div>
+                            <div style="font-size:18px;font-weight:600;color:#1a1a2e;">${sgiData.activities_score || '—'}</div>
+                        </div>
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Discipline Score</div>
+                            <div style="font-size:18px;font-weight:600;color:#1a1a2e;">${sgiData.discipline_score || '—'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Academic Details -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>📚</span> Academic Details
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">CAT 1 (10)</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.cat1_10 || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">CAT 2 (10)</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.cat2_10 || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">CAT 3 (10)</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.cat3_10 || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">GPA</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.gpa || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">CGPA</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.cgpa || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Attendance</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.attendance || '—'}%</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Skills Details -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>💡</span> Skills
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Credit Courses</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.credit_courses || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Coding Platforms</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.coding_platforms || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Normal Courses</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.normal_courses || 0}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Projects Details -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>🔧</span> Projects
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Mini Projects</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.mini_projects || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Main Projects</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.main_projects || 0}</div>
+                    </div>
+                </div>
+                ${sgiData.other_projects && sgiData.other_projects.length > 0 ? `
+                <div style="margin-top:12px;">
+                    <div style="font-size:12px;color:#888;margin-bottom:8px;">Other Projects:</div>
+                    <table class="subjects-table">
+                        <thead>
+                            <tr><th>Project Name</th><th>Count</th><th>Points</th><th>Evaluator ID</th></tr>
+                        </thead>
+                        <tbody>
+                            ${sgiData.other_projects.map(p => `
+                                <tr>
+                                    <td>${escapeHtml(p.name)}</td>
+                                    <td style="text-align:center;">${p.count}</td>
+                                    <td style="text-align:center;">${p.points}</td>
+                                    <td style="text-align:center;">${escapeHtml(p.evaluator_id || '—')}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+                ` : ''}
+            </div>
+            
+            <!-- Activities Details -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>🏆</span> Activities / Hackathons
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Leader Wins</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.leader_wins || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Member Wins</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.member_wins || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Leader Places</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.leader_places || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Member Places</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.member_places || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Participations</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.participations || 0}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Workshops</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.workshops || 0}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Discipline Details -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>📈</span> Discipline
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Attendance</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.attendance || '—'}%</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Previous GPA</div>
+                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.prev_gpa || '—'}</div>
                     </div>
                 </div>
             </div>

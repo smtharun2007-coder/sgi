@@ -271,8 +271,16 @@ if (isset($_POST['update_status']) && $isMentor) {
                     $sem_id = (string)$existingSem['_id'];
                     
                     // Handle additions - add new credit subjects
-                    if (!empty($approval['credit_subjects']) && is_array($approval['credit_subjects'])) {
-                        foreach ($approval['credit_subjects'] as $subject) {
+                    $creditSubjects = $approval['credit_subjects'] ?? [];
+                    if ($creditSubjects instanceof \MongoDB\Model\BSONArray) {
+                        $creditSubjects = $creditSubjects->getArrayCopy();
+                    }
+                    if (!empty($creditSubjects) && is_array($creditSubjects)) {
+                        foreach ($creditSubjects as $subject) {
+                            // Handle BSONDocument to array conversion
+                            if ($subject instanceof \MongoDB\Model\BSONDocument) {
+                                $subject = (array)$subject;
+                            }
                             // Handle both new format (with temp_id) and old format
                             $subjectName = $subject['subject_name'] ?? $subject['name'] ?? '';
                             $subjectCode = $subject['subject_code'] ?? $subject['code'] ?? '';
@@ -291,8 +299,16 @@ if (isset($_POST['update_status']) && $isMentor) {
                     }
                     
                     // Handle deletions - remove subjects that were marked for deletion
-                    if (!empty($approval['credit_deletions']) && is_array($approval['credit_deletions'])) {
-                        foreach ($approval['credit_deletions'] as $deletedSubject) {
+                    $creditDeletions = $approval['credit_deletions'] ?? [];
+                    if ($creditDeletions instanceof \MongoDB\Model\BSONArray) {
+                        $creditDeletions = $creditDeletions->getArrayCopy();
+                    }
+                    if (!empty($creditDeletions) && is_array($creditDeletions)) {
+                        foreach ($creditDeletions as $deletedSubject) {
+                            // Handle BSONDocument to array conversion
+                            if ($deletedSubject instanceof \MongoDB\Model\BSONDocument) {
+                                $deletedSubject = (array)$deletedSubject;
+                            }
                             // Handle both new format (with subject_id) and old format
                             $subjectId = $deletedSubject['subject_id'] ?? $deletedSubject['id'] ?? '';
                             if (!empty($subjectId)) {

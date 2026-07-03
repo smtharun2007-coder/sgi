@@ -95,7 +95,21 @@ if (isset($_POST['calculate'])) {
             // FINAL SGI
             $sgi = (($academic * 4) + ($skills * 2) + ($projects * 1) + ($activities * 2) + ($discipline * 1)) / 10;
 
-            // Create approval request
+            // Prepare other projects data if any
+            $otherProjects = [];
+            if (!empty($_POST['other_check']) && !empty($_POST['other_name'])) {
+                foreach ($_POST['other_name'] as $i => $name) {
+                    if (empty(trim($name))) continue;
+                    $otherProjects[] = [
+                        'name' => trim($name),
+                        'count' => (float)($_POST['other_count'][$i] ?? 0),
+                        'points' => (float)($_POST['other_points'][$i] ?? 0),
+                        'evaluator_id' => trim($_POST['other_eval_id'][$i] ?? '')
+                    ];
+                }
+            }
+
+            // Create approval request with all SGI calculation details
             $approvalData = [
                 'student_roll' => $roll,
                 'student_name' => $u['name'],
@@ -130,7 +144,8 @@ if (isset($_POST['calculate'])) {
                     'participations' => (float)$_POST['participation'],
                     'workshops' => (float)$_POST['workshop'],
                     'attendance' => $attendance,
-                    'prev_gpa' => $prev_gpa
+                    'prev_gpa' => $prev_gpa,
+                    'other_projects' => $otherProjects
                 ],
                 'subject_count' => count($subList),
                 'sem_id' => $id,
