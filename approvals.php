@@ -435,7 +435,7 @@ if (isset($_POST['update_status']) && $isMentor) {
                 
             case 'Project Evaluation':
                 // Handle project evaluation by evaluator
-                // When evaluator approves/rejects, notify the student's mentor and student
+                // When evaluator approves/rejects, update the SGI approval and notify mentor/student
                 if (!empty($approval['project_data'])) {
                     $projectData = $approval['project_data'];
                     if ($projectData instanceof \MongoDB\Model\BSONDocument) {
@@ -445,13 +445,72 @@ if (isset($_POST['update_status']) && $isMentor) {
                     $mentorId = $projectData['submitted_by_mentor'] ?? '';
                     $projectName = $projectData['project_name'] ?? '';
                     $studentName = $projectData['submitted_by'] ?? '';
+                    $semester = $approval['semester'] ?? null;
+                    
+                    // Find the related SGI Calculation approval for this student and semester
+                    $sgiApproval = $approvals->findOne([
+                        'student_roll' => $roll,
+                        'semester' => (int)$semester,
+                        'type' => 'SGI Calculation',
+                        'status' => 'pending'
+                    ]);
+                    
+                    if ($sgiApproval) {
+                        $sgiApprovalId = (string)$sgiApproval['_id'];
+                        $sgiData = $sgiApproval['sgi_data'] ?? [];
+                        if ($sgiData instanceof \MongoDB\Model\BSONDocument) {
+                            $sgiData = (array)$sgiData;
+                        }
+                        
+                        // Update the pending_evaluator_projects list
+                        $pendingProjects = $sgiData['pending_evaluator_projects'] ?? [];
+                        $otherProjects = $sgiData['other_projects'] ?? [];
+                        
+                        // Remove this project from pending list
+                        $pendingProjects = array_filter($pendingProjects, function($p) use ($projectName) {
+                            return ($p['project_name'] ?? '') !== $projectName;
+                        });
+                        $pendingProjects = array_values($pendingProjects);
+                        
+                        // Add to other_projects with status
+                        $foundProject = null;
+                        foreach ($otherProjects as &$proj) {
+                            if (($proj['name'] ?? '') === $projectName) {
+                                $proj['evaluator_status'] = $status;
+                                $proj['evaluator_remarks'] = $remarks ?? '';
+                                $foundProject = $proj;
+                                break;
+                            }
+                        }
+                        unset($proj);
+                        
+                        // Update the SGI approval with new status
+                        $approvals->updateOne(
+                            ['_id' => new MongoDB\BSON\ObjectId($sgiApprovalId)],
+                            ['$set' => [
+                                'sgi_data.pending_evaluator_projects' => $pendingProjects,
+                                'sgi_data.other_projects' => $otherProjects,
+                                'updated_at' => new MongoDB\BSON\UTCDateTime()
+                            ]]
+                        );
+                        
+                        // Check if all evaluator projects are now approved
+                        $allApproved = empty($pendingProjects);
+                        $hasRejections = false;
+                        foreach ($otherProjects as $proj) {
+                            if (isset($proj['evaluator_status']) && $proj['evaluator_status'] === 'rejected') {
+                                $hasRejections = true;
+                                break;
+                            }
+                        }
+                    }
                     
                     if (!empty($mentorId)) {
                         if ($status === 'approved') {
                             // Notify the student's mentor that evaluator has approved
                             $notifications->insertOne([
                                 'mentor_id' => $mentorId,
-                                'message' => '✅ Evaluator has approved the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). You can now proceed with SGI approval.',
+                                'message' => '✅ Evaluator has approved the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). You can now proceed with SGI approval if all projects are approved.',
                                 'read' => false,
                                 'created_at' => new MongoDB\BSON\UTCDateTime()
                             ]);
@@ -459,7 +518,7 @@ if (isset($_POST['update_status']) && $isMentor) {
                             // Notify the student's mentor that evaluator has rejected
                             $notifications->insertOne([
                                 'mentor_id' => $mentorId,
-                                'message' => '❌ Evaluator has REJECTED the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). Reason: ' . ($remarks ?: 'Not specified'),
+                                'message' => '❌ Evaluator has REJECTED the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). Reason: ' . ($remarks ?: 'Not specified'). '. You cannot approve SGI until this is resolved.',
                                 'read' => false,
                                 'created_at' => new MongoDB\BSON\UTCDateTime()
                             ]);
@@ -477,7 +536,7 @@ if (isset($_POST['update_status']) && $isMentor) {
                     } else {
                         $notifications->insertOne([
                             'roll' => $roll,
-                            'message' => '❌ Your other project "' . $projectName . '" has been REJECTED by the evaluator. Reason: ' . ($remarks ?: 'Not specified'),
+                            'message' => '❌ Your other project "' . $projectName . '" has been REJECTED by the evaluator. Reason: ' . ($remarks ?: 'Not specified'). '. Please contact your evaluator to resolve this.',
                             'read' => false,
                             'created_at' => new MongoDB\BSON\UTCDateTime()
                         ]);
