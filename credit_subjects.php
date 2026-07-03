@@ -445,6 +445,41 @@ if (isset($_POST['confirm_credits'])) {
     &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
 </div>
 <script>
+// Custom Toast Notification System
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `position:fixed;top:80px;right:20px;background:${type==='success'?'#28a745':type==='error'?'#dc3545':type==='warning'?'#ffc107':'#17a2b8'};color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:10000;box-shadow:0 8px 30px rgba(0,0,0,0.2);animation:toastSlideIn 0.3s ease;max-width:350px;display:flex;align-items:center;gap:10px;`;
+    const icons = {success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+    toast.innerHTML = `<span>${icons[type]||''}</span><span>${message}</span>`;
+    document.body.appendChild(toast);
+    if (!document.getElementById('toastStyles')) {
+        const style = document.createElement('style');
+        style.id = 'toastStyles';
+        style.textContent = `@keyframes toastSlideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes toastSlideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}`;
+        document.head.appendChild(style);
+    }
+    setTimeout(() => { toast.style.animation = 'toastSlideOut 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// Custom Confirm Dialog
+function customConfirm(message, onConfirm, onCancel) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalSlide 0.3s ease;';
+    modal.innerHTML = `<div style="text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🤔</div><h3 style="margin-bottom:12px;color:#1a1a2e;font-size:18px;">Confirm Action</h3><p style="color:#666;margin-bottom:24px;font-size:14px;line-height:1.5;">${message}</p><div style="display:flex;gap:12px;justify-content:center;"><button id="confirmCancel" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e9ecef;color:#555;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button><button id="confirmOk" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Confirm</button></div></div>`;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    if (!document.getElementById('modalStyles')) {
+        const style = document.createElement('style');
+        style.id = 'modalStyles';
+        style.textContent = `@keyframes modalSlide{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}`;
+        document.head.appendChild(style);
+    }
+    document.getElementById('confirmOk').onclick = () => { overlay.remove(); if(onConfirm) onConfirm(); };
+    document.getElementById('confirmCancel').onclick = () => { overlay.remove(); if(onCancel) onCancel(); };
+}
+
 function toggleNotif(){const d=document.getElementById('notifDrop');d.classList.toggle('open');if(d.classList.contains('open'))loadNotifs();}
 function loadNotifs(){fetch('notifications.php?fetch=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML=data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');});}
 function markAll(e){e.preventDefault();fetch('notifications.php?mark_all=1');document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));const b=document.querySelector('.notif-badge');if(b)b.remove();}

@@ -97,8 +97,6 @@ if (isset($_GET['action']) && isset($_GET['id'])) {
 }
 
 $myAnnouncements = iterator_to_array($announcements->find(['mentor_id'=>$m['mentor_id']],['sort'=>['created_at'=>-1]]));
-$pendingApprovals = iterator_to_array($approvals->find(['mentor_id'=>$m['mentor_id'],'status'=>'pending'],['sort'=>['created_at'=>-1]]));
-$pastApprovals    = iterator_to_array($approvals->find(['mentor_id'=>$m['mentor_id'],'status'=>['$in'=>['approved','rejected']]],['sort'=>['updated_at'=>-1],'limit'=>20]));
 
 // Fetch all previously used announcement types by this mentor (only custom types)
 $annTypes = [];
@@ -139,8 +137,8 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
-                <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
+                <div class="notif-list-scroll" id="notifList"><div class="notif-empty">Loading…</div></div>
             </div>
         </div>
         <a href="mentor_logout.php" class="btn-logout">Logout</a>
@@ -150,13 +148,6 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
 
     <div class="page-tabs">
         <a href="#post" class="page-tab active">📢 Post Announcement</a>
-        <a href="#pending" class="page-tab">
-            📋 Pending Requests
-            <?php if(count($pendingApprovals)>0): ?>
-                <span class="notif-badge" style="position:relative;top:0;right:0;margin-left:6px;"><?= count($pendingApprovals) ?></span>
-            <?php endif; ?>
-        </a>
-        <a href="#history" class="page-tab">✅ Past Requests</a>
         <a href="#my-announcements" class="page-tab">📄 My Announcements</a>
     </div>
 
@@ -211,64 +202,6 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
             </form>
         </div>
     </div>
-
-    <!-- PENDING APPROVALS -->
-    <div id="pending">
-        <h3 style="color:#1a1a2e;margin-bottom:16px;">Pending Approval Requests</h3>
-        <?php if(empty($pendingApprovals)): ?>
-            <p class="no-data">No pending requests.</p>
-        <?php else: ?>
-            <?php foreach($pendingApprovals as $ap): ?>
-            <div class="approval-card">
-                <div class="approval-info">
-                    <div class="a-title"><?= htmlspecialchars($ap['subject']) ?></div>
-                    <div class="a-sub">From: <?= htmlspecialchars($ap['name']) ?> (<?= htmlspecialchars($ap['roll']) ?>)</div>
-                    <div class="a-sub"><?= htmlspecialchars($ap['reason']) ?></div>
-                    <div class="a-sub" style="color:#aaa;"><?= date('d M Y, h:i A', $ap['created_at']->toDateTime()->getTimestamp()) ?></div>
-                </div>
-                <div class="approval-actions">
-                    <form method="GET" style="display:inline;">
-                        <input type="hidden" name="action" value="approved">
-                        <input type="hidden" name="id" value="<?= (string)$ap['_id'] ?>">
-                        <input type="text" name="remark" placeholder="Remark (optional)" style="width:160px;padding:8px 10px;font-size:12px;margin:0 8px 0 0;">
-                        <button type="submit" class="btn-approve">✅ Approve</button>
-                    </form>
-                    <form method="GET" style="display:inline;">
-                        <input type="hidden" name="action" value="rejected">
-                        <input type="hidden" name="id" value="<?= (string)$ap['_id'] ?>">
-                        <input type="text" name="remark" placeholder="Reason (optional)" style="width:160px;padding:8px 10px;font-size:12px;margin:0 8px 0 0;">
-                        <button type="submit" class="btn-reject">❌ Reject</button>
-                    </form>
-                </div>
-            </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-
-    <hr style="margin:32px 0;">
-
-    <!-- PAST APPROVALS -->
-    <div id="history">
-        <h3 style="color:#1a1a2e;margin-bottom:16px;">Past Requests</h3>
-        <?php if(empty($pastApprovals)): ?>
-            <p class="no-data">No past requests.</p>
-        <?php else: ?>
-            <?php foreach($pastApprovals as $ap): ?>
-            <div class="approval-card">
-                <div class="approval-info">
-                    <div class="a-title"><?= htmlspecialchars($ap['subject']) ?></div>
-                    <div class="a-sub">From: <?= htmlspecialchars($ap['name']) ?> (<?= htmlspecialchars($ap['roll']) ?>)</div>
-                    <?php if(!empty($ap['mentor_remark'])): ?>
-                        <div class="a-sub" style="margin-top:4px;">Remark: <?= htmlspecialchars($ap['mentor_remark']) ?></div>
-                    <?php endif; ?>
-                </div>
-                <span class="status-<?= $ap['status'] ?>"><?= ucfirst($ap['status']) ?></span>
-            </div>
-            <?php endforeach; ?>
-        <?php endif; ?>
-    </div>
-
-    <hr style="margin:32px 0;">
 
     <!-- MY ANNOUNCEMENTS -->
     <div id="my-announcements">
@@ -401,6 +334,42 @@ function mentorCloseDocModal() {
     document.getElementById('mentorDocModal').style.display = 'none';
     document.getElementById('mentorDocViewer').src = '';
 }
+
+// Custom Toast Notification System
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.style.cssText = `position:fixed;top:80px;right:20px;background:${type==='success'?'#28a745':type==='error'?'#dc3545':type==='warning'?'#ffc107':'#17a2b8'};color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:10000;box-shadow:0 8px 30px rgba(0,0,0,0.2);animation:toastSlideIn 0.3s ease;max-width:350px;display:flex;align-items:center;gap:10px;`;
+    const icons = {success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
+    toast.innerHTML = `<span>${icons[type]||''}</span><span>${message}</span>`;
+    document.body.appendChild(toast);
+    if (!document.getElementById('toastStyles')) {
+        const style = document.createElement('style');
+        style.id = 'toastStyles';
+        style.textContent = `@keyframes toastSlideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes toastSlideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}`;
+        document.head.appendChild(style);
+    }
+    setTimeout(() => { toast.style.animation = 'toastSlideOut 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 3000);
+}
+
+// Custom Confirm Dialog
+function customConfirm(message, onConfirm, onCancel) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalSlide 0.3s ease;';
+    modal.innerHTML = `<div style="text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🤔</div><h3 style="margin-bottom:12px;color:#1a1a2e;font-size:18px;">Confirm Action</h3><p style="color:#666;margin-bottom:24px;font-size:14px;line-height:1.5;">${message}</p><div style="display:flex;gap:12px;justify-content:center;"><button id="confirmCancel" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e9ecef;color:#555;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button><button id="confirmOk" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Confirm</button></div></div>`;
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    if (!document.getElementById('modalStyles')) {
+        const style = document.createElement('style');
+        style.id = 'modalStyles';
+        style.textContent = `@keyframes modalSlide{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}`;
+        document.head.appendChild(style);
+    }
+    document.getElementById('confirmOk').onclick = () => { overlay.remove(); if(onConfirm) onConfirm(); };
+    document.getElementById('confirmCancel').onclick = () => { overlay.remove(); if(onCancel) onCancel(); };
+}
+
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');
     drop.classList.toggle('open');
@@ -418,6 +387,13 @@ function markAll(e) {
     e.preventDefault();
     fetch('notifications.php?mark_all=1&mentor=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1&mentor=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }

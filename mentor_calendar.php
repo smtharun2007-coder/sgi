@@ -105,8 +105,8 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
                 🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
-                <div id="notifList"><div class="notif-empty">Loading…</div></div>
+                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
+                <div class="notif-list-scroll" id="notifList"><div class="notif-empty">Loading…</div></div>
             </div>
         </div>
         <a href="mentor_logout.php" class="btn-logout">Logout</a>
@@ -274,6 +274,13 @@ function markAll(e) {
     e.preventDefault();
     fetch('notifications.php?mark_all=1&mentor=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1&mentor=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }

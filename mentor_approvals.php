@@ -546,6 +546,89 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
 </div>
 
 <script>
+// Custom Toast Notification System
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `custom-toast toast-${type}`;
+    toast.style.cssText = `
+        position: fixed;
+        top: 80px;
+        right: 20px;
+        background: ${type === 'success' ? '#28a745' : type === 'error' ? '#dc3545' : type === 'warning' ? '#ffc107' : '#17a2b8'};
+        color: #fff;
+        padding: 14px 24px;
+        border-radius: 12px;
+        font-size: 14px;
+        font-weight: 600;
+        z-index: 10000;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        animation: toastSlideIn 0.3s ease;
+        max-width: 350px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    `;
+    
+    const icons = { success: '✅', error: '❌', warning: '⚠️', info: 'ℹ️' };
+    toast.innerHTML = `<span>${icons[type] || ''}</span><span>${message}</span>`;
+    
+    document.body.appendChild(toast);
+    
+    // Add animation styles if not already present
+    if (!document.getElementById('toastStyles')) {
+        const style = document.createElement('style');
+        style.id = 'toastStyles';
+        style.textContent = `
+            @keyframes toastSlideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+            @keyframes toastSlideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+            @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideOut 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// Custom Confirm Dialog
+function customConfirm(message, onConfirm, onCancel) {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalSlide 0.3s ease;';
+    modal.innerHTML = `
+        <div style="text-align:center;">
+            <div style="font-size:48px;margin-bottom:16px;">🤔</div>
+            <h3 style="margin-bottom:12px;color:#1a1a2e;font-size:18px;">Confirm Action</h3>
+            <p style="color:#666;margin-bottom:24px;font-size:14px;line-height:1.5;">${message}</p>
+            <div style="display:flex;gap:12px;justify-content:center;">
+                <button id="confirmCancel" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e9ecef;color:#555;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;">Cancel</button>
+                <button id="confirmOk" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.2s;">Confirm</button>
+            </div>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Add animation styles if not already present
+    if (!document.getElementById('modalStyles')) {
+        const style = document.createElement('style');
+        style.id = 'modalStyles';
+        style.textContent = `
+            @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+            @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.getElementById('confirmOk').onclick = () => { overlay.remove(); if(onConfirm) onConfirm(); };
+    document.getElementById('confirmCancel').onclick = () => { overlay.remove(); if(onCancel) onCancel(); };
+}
+
 let currentStatusFilter = 'all';
 let currentSemesterFilter = 'all';
 let approvals = [];
@@ -1367,6 +1450,7 @@ function openActionModal(id, action) {
         <div class="textarea-box">
             <label>${isApprove ? 'Approval Remarks (optional)' : 'Rejection Reason (required) *'}</label>
             <textarea id="remarksInput" placeholder="${isApprove ? 'Add any comments for the student...' : 'Please provide a reason for rejection...'}"></textarea>
+            ${!isApprove ? '<div id="remarksError" style="color:#dc3545;font-size:12px;margin-top:6px;display:none;">⚠️ Please provide a reason for rejection.</div>' : ''}
         </div>
         
         <div class="modal-actions">
@@ -1384,7 +1468,19 @@ function processApproval(id, action) {
     const status = action === 'approve' ? 'approved' : 'rejected';
     
     if (action === 'reject' && !remarks) {
-        showToast('Please provide a reason for rejection.', 'warning');
+        // Show error message inside the modal
+        const errorDiv = document.getElementById('remarksError');
+        if (errorDiv) {
+            errorDiv.style.display = 'block';
+            // Add shake animation
+            const textarea = document.getElementById('remarksInput');
+            textarea.style.borderColor = '#dc3545';
+            textarea.style.animation = 'shake 0.5s ease';
+            setTimeout(() => {
+                textarea.style.borderColor = '#e9ecef';
+                textarea.style.animation = '';
+            }, 500);
+        }
         return;
     }
     
@@ -1400,6 +1496,25 @@ function processApproval(id, action) {
             if (data.status === 'success') {
                 closeModal();
                 loadApprovals();
+                // Refresh notifications to show the new notification
+                loadNotifs();
+                // Update notification badge
+                fetch('notifications.php?fetch=1')
+                    .then(r => r.json())
+                    .then(notifs => {
+                        const unreadCount = notifs.filter(n => !n.read).length;
+                        let badge = document.querySelector('.notif-badge');
+                        if (unreadCount > 0) {
+                            if (!badge) {
+                                badge = document.createElement('span');
+                                badge.className = 'notif-badge';
+                                document.getElementById('bellBtn').appendChild(badge);
+                            }
+                            badge.textContent = unreadCount;
+                        } else if (badge) {
+                            badge.remove();
+                        }
+                    });
             } else {
                 showToast(data.message || 'Failed to process', 'error');
             }
@@ -1442,6 +1557,13 @@ function markAll(e) {
     e.preventDefault();
     fetch('notifications.php?mark_all=1&mentor=1');
     document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));
+    const badge = document.querySelector('.notif-badge');
+    if(badge) badge.remove();
+}
+function clearAll(e) {
+    e.preventDefault();
+    fetch('notifications.php?delete_all=1&mentor=1');
+    document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';
     const badge = document.querySelector('.notif-badge');
     if(badge) badge.remove();
 }
