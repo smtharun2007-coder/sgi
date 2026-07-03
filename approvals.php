@@ -363,6 +363,11 @@ if (isset($_POST['update_status']) && $isMentor) {
                     $sem_id = (string)$existingSem['_id'];
                     $caData = $approval['ca_data'];
                     
+                    // Handle BSONDocument conversion for caData
+                    if ($caData instanceof \MongoDB\Model\BSONDocument) {
+                        $caData = (array)$caData;
+                    }
+                    
                     // Update semester with CA data
                     $updateData = [
                         'gpa' => (float)($caData['gpa'] ?? 0),
@@ -381,8 +386,16 @@ if (isset($_POST['update_status']) && $isMentor) {
                     $semesters->updateOne(['_id' => $existingSem['_id']], ['$set' => $updateData]);
                     
                     // Update CA marks for subjects
-                    if (!empty($approval['ca_subjects']) && is_array($approval['ca_subjects'])) {
-                        foreach ($approval['ca_subjects'] as $caSub) {
+                    $caSubjects = $approval['ca_subjects'] ?? [];
+                    if ($caSubjects instanceof \MongoDB\Model\BSONArray) {
+                        $caSubjects = $caSubjects->getArrayCopy();
+                    }
+                    if (!empty($caSubjects) && is_array($caSubjects)) {
+                        foreach ($caSubjects as $caSub) {
+                            // Handle BSONDocument to array conversion
+                            if ($caSub instanceof \MongoDB\Model\BSONDocument) {
+                                $caSub = (array)$caSub;
+                            }
                             if (!empty($caSub['subject_id'])) {
                                 $subjects->updateOne(
                                     ['_id' => new MongoDB\BSON\ObjectId($caSub['subject_id'])],
