@@ -646,15 +646,193 @@ function showDetails(id) {
     const statusIcon = approval.status === 'approved' ? '✅' : approval.status === 'rejected' ? '❌' : '⏳';
     
     document.getElementById('modalTitle').textContent = `${statusIcon} ${approval.type || 'Semester Registration'} - Sem ${approval.semester}`;
+    
+    let subjectsHtml = '';
+    
+    // Handle Credit Subjects approval type with detailed comparison
+    if (approval.type === 'Credit Subjects') {
+        const creditSubjects = approval.credit_subjects || [];
+        const creditDeletions = approval.credit_deletions || [];
+        const existingSubjects = approval.existing_subjects || [];
+        const existingNonInternal = approval.existing_non_internal || [];
+        
+        subjectsHtml = `
+            <!-- Existing Internal Subjects (Unchanged) -->
+            ${existingSubjects.length > 0 ? `
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:8px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span style="color:#28a745;">✓</span> Existing Internal Subjects (No Changes)
+                </h4>
+                <table class="subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Name</th>
+                            <th>Code</th>
+                            <th>Credits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${existingSubjects.map(s => `
+                            <tr>
+                                <td><strong>${escapeHtml(s.name)}</strong></td>
+                                <td style="color:#888;">${escapeHtml(s.code)}</td>
+                                <td style="text-align:center;">${s.credits}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <!-- Existing Non-Internal Subjects -->
+            ${existingNonInternal.length > 0 ? `
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:8px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>📋</span> Existing Credit Subjects
+                </h4>
+                <table class="subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Name</th>
+                            <th>Code</th>
+                            <th>Credits</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${existingNonInternal.map(s => `
+                            <tr style="${s.marked_for_deletion ? 'background:#fff3f3;text-decoration:line-through;' : ''}">
+                                <td><strong>${escapeHtml(s.name)}</strong></td>
+                                <td style="color:#888;">${escapeHtml(s.code)}</td>
+                                <td style="text-align:center;">${s.credits}</td>
+                                <td style="text-align:center;">
+                                    ${s.marked_for_deletion ? 
+                                        '<span style="color:#dc3545;font-weight:600;font-size:12px;">⚠ Marked for Deletion</span>' : 
+                                        '<span style="color:#28a745;font-size:12px;">✓ Keeping</span>'
+                                    }
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <!-- Subjects to Add (New) -->
+            ${creditSubjects.length > 0 ? `
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:8px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span style="color:#28a745;">➕</span> New Credit Subjects to Add (${creditSubjects.length})
+                </h4>
+                <table class="subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Name</th>
+                            <th>Code</th>
+                            <th>Credits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${creditSubjects.map(s => {
+                            const name = s.subject_name || s.name || '';
+                            const code = s.subject_code || s.code || '';
+                            return `
+                            <tr style="background:#f3fff3;">
+                                <td><strong>${escapeHtml(name)}</strong></td>
+                                <td style="color:#888;">${escapeHtml(code)}</td>
+                                <td style="text-align:center;">${s.credits}</td>
+                            </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <!-- Subjects to Delete -->
+            ${creditDeletions.length > 0 ? `
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:8px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span style="color:#dc3545;">➖</span> Credit Subjects to Remove (${creditDeletions.length})
+                </h4>
+                <table class="subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Name</th>
+                            <th>Code</th>
+                            <th>Credits</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${creditDeletions.map(s => {
+                            const name = s.subject_name || s.name || '';
+                            const code = s.subject_code || s.code || '';
+                            return `
+                            <tr style="background:#fff3f3;">
+                                <td><strong>${escapeHtml(name)}</strong></td>
+                                <td style="color:#888;">${escapeHtml(code)}</td>
+                                <td style="text-align:center;">${s.credits}</td>
+                            </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <!-- Summary -->
+            <div style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:12px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;">📊 Summary</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="background:#d4edda;padding:12px;border-radius:8px;">
+                        <div style="font-size:12px;color:#888;">Subjects to Add</div>
+                        <div style="font-size:24px;font-weight:700;color:#28a745;">${creditSubjects.length}</div>
+                    </div>
+                    <div style="background:#f8d7da;padding:12px;border-radius:8px;">
+                        <div style="font-size:12px;color:#888;">Subjects to Remove</div>
+                        <div style="font-size:24px;font-weight:700;color:#dc3545;">${creditDeletions.length}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        // Default subjects display for other approval types
+        subjectsHtml = `
+            <h4 style="margin-top:20px;margin-bottom:8px;color:#1a1a2e;">📚 Registered Subjects (${approval.subject_count || 0})</h4>
+            <table class="subjects-table">
+                <thead>
+                    <tr>
+                        <th>Subject Name</th>
+                        <th>Code</th>
+                        <th>Credits</th>
+                        <th>Internal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${approval.subjects && approval.subjects.length > 0 ? approval.subjects.map(s => `
+                        <tr>
+                            <td><strong>${escapeHtml(s.name)}</strong></td>
+                            <td style="color:#888;">${escapeHtml(s.code)}</td>
+                            <td style="text-align:center;">${s.credits}</td>
+                            <td style="text-align:center;color:${s.internal === 'yes' ? '#28a745' : '#dc3545'};font-weight:600;">
+                                ${s.internal === 'yes' ? '✓ Yes' : '✗ No'}
+                            </td>
+                        </tr>
+                    `).join('') : '<tr><td colspan="4" style="text-align:center;color:#888;">No subjects found</td></tr>'}
+                </tbody>
+            </table>
+        `;
+    }
+    
     document.getElementById('modalBody').innerHTML = `
         <div class="info-grid">
             <div class="info-item">
                 <label>Student</label>
-                <span>${approval.student_name}</span>
+                <span>${escapeHtml(approval.student_name)}</span>
             </div>
             <div class="info-item">
                 <label>Roll Number</label>
-                <span>${approval.student_roll}</span>
+                <span>${escapeHtml(approval.student_roll)}</span>
             </div>
             <div class="info-item">
                 <label>Status</label>
@@ -680,29 +858,7 @@ function showDetails(id) {
             <p>${escapeHtml(approval.mentor_remarks)}</p>
         </div>` : ''}
         
-        <h4 style="margin-top:20px;margin-bottom:8px;color:#1a1a2e;">📚 Registered Subjects (${approval.subject_count || 0})</h4>
-        <table class="subjects-table">
-            <thead>
-                <tr>
-                    <th>Subject Name</th>
-                    <th>Code</th>
-                    <th>Credits</th>
-                    <th>Internal</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${approval.subjects && approval.subjects.length > 0 ? approval.subjects.map(s => `
-                    <tr>
-                        <td><strong>${escapeHtml(s.name)}</strong></td>
-                        <td style="color:#888;">${escapeHtml(s.code)}</td>
-                        <td style="text-align:center;">${s.credits}</td>
-                        <td style="text-align:center;color:${s.internal === 'yes' ? '#28a745' : '#dc3545'};font-weight:600;">
-                            ${s.internal === 'yes' ? '✓ Yes' : '✗ No'}
-                        </td>
-                    </tr>
-                `).join('') : '<tr><td colspan="4" style="text-align:center;color:#888;">No subjects found</td></tr>'}
-            </tbody>
-        </table>
+        ${subjectsHtml}
     `;
     document.getElementById('detailModal').classList.add('active');
 }

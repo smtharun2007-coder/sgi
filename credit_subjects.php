@@ -30,134 +30,183 @@ foreach ($subList as $sub) {
 $success = '';
 $error = '';
 
-// Handle adding new non-internal subject
+// Track pending changes in session (not saved to DB until mentor approves)
+if (!isset($_SESSION['credit_changes'])) {
+    $_SESSION['credit_changes'] = [
+        'additions' => [],
+        'deletions' => []
+    ];
+}
+
+// Handle adding new non-internal subject (stored as pending, not saved to DB)
 if (isset($_POST['add_subject'])) {
     $name    = trim($_POST['new_subject_name']);
     $code    = trim($_POST['new_subject_code']);
     $credits = (int)$_POST['new_credits'];
     
     if (!empty($name) && !empty($code) && $credits > 0) {
-        $subjects->insertOne([
-            'sem_id'        => $sem_id,
-            'roll'          => $roll,
-            'subject_name'  => $name,
-            'subject_code'  => $code,
-            'credits'       => $credits,
-            'internal'      => 'no',
-            'cat1'          => null,
-            'cat2'          => null,
-            'cat3'          => null,
-            'total'         => null,
-            'percentage'    => null
-        ]);
-        $success = "Non-internal subject '$name' added successfully.";
-        // Refresh subject list
-        $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll]);
-        $subList   = iterator_to_array($subCursor);
-        $nonInternalSubs = [];
-        foreach ($subList as $sub) {
-            if ($sub['internal'] !== 'yes') {
-                $nonInternalSubs[] = $sub;
-            }
-        }
+        // Generate a temporary ID for the pending subject
+        $tempId = 'pending_' . uniqid();
+        
+        // Add to pending additions in session
+        $_SESSION['credit_changes']['additions'][$tempId] = [
+            'temp_id' => $tempId,
+            'subject_name' => $name,
+            'subject_code' => $code,
+            'credits' => $credits
+        ];
+        
+        $success = "Subject '$name' added to pending changes. Will be saved after mentor approval.";
     } else {
         $error = "Please fill all fields correctly.";
     }
 }
 
-// Handle deleting a non-internal subject
-if (isset($_GET['delete']) && !empty($_GET['delete'])) {
-    $delete_id = $_GET['delete'];
-    $subjects->deleteOne(['_id' => new MongoDB\BSON\ObjectId($delete_id)]);
-    $success = "Subject deleted successfully.";
+// Handle removing a pending addition (from session)
+if (isset($_GET['remove_pending']) && !empty($_GET['remove_pending'])) {
+    $tempId = $_GET['remove_pending'];
+    if (isset($_SESSION['credit_changes']['additions'][$tempId])) {
+        unset($_SESSION['credit_changes']['additions'][$tempId]);
+        $success = "Pending subject removed.";
+    }
+    header("Location: credit_subjects.php?sem_id=$sem_id&success=1");
+    exit;
+}
+
+// Handle marking an existing subject for deletion (stored as pending deletion)
+if (isset($_GET['mark_delete']) && !empty($_GET['mark_delete'])) {
+    $deleteId = $_GET['mark_delete'];
+    // Check if this subject exists and is non-internal
+    $subject = $subjects->findOne(['_id' => new MongoDB\BSON\ObjectId($deleteId), 'roll' => $roll, 'internal' => 'no']);
+    if ($subject) {
+        $_SESSION['credit_changes']['deletions'][$deleteId] = [
+            'subject_id' => $deleteId,
+            'subject_name' => $subject['subject_name'],
+            'subject_code' => $subject['subject_code'],
+            'credits' => $subject['credits']
+        ];
+        $success = "Subject marked for deletion. Will be removed after mentor approval.";
+    }
+    header("Location: credit_subjects.php?sem_id=$sem_id&success=1");
+    exit;
+}
+
+// Handle removing a pending deletion
+if (isset($_GET['undo_delete']) && !empty($_GET['undo_delete'])) {
+    $deleteId = $_GET['undo_delete'];
+    if (isset($_SESSION['credit_changes']['deletions'][$deleteId])) {
+        unset($_SESSION['credit_changes']['deletions'][$deleteId]);
+        $success = "Deletion mark removed.";
+    }
     header("Location: credit_subjects.php?sem_id=$sem_id&success=1");
     exit;
 }
 
 // Handle confirming and creating approval request for credit subjects
 if (isset($_POST['confirm_credits'])) {
-    // Check if there are non-internal subjects to approve
-    if (empty($nonInternalSubs)) {
-        // No credit subjects, just mark as done and proceed
-        $semesters->updateOne(
-            ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-            ['$set' => ['credits_done' => true]]
-        );
-        header("Location: verify_marks.php?sem_id=$sem_id");
-        exit;
-    }
+    $hasAdditions = !empty($_SESSION['credit_changes']['additions']);
+    $hasDeletions = !empty($_SESSION['credit_changes']['deletions']);
     
-    // Check if there's already a pending approval for this
-    $existingApproval = $approvals->findOne([
-        'student_roll' => $roll,
-        'semester' => (int)$sem['sem'],
-        'type' => 'Credit Subjects',
-        'status' => 'pending'
-    ]);
-    
-    if ($existingApproval) {
-        $error = "You already have a pending Credit Subjects approval for this semester.";
+    // If no changes pending, just mark as done and proceed
+    if (!$hasAdditions && !$hasDeletions) {
+        // Check if there are existing non-internal subjects
+        if (empty($nonInternalSubs)) {
+            $semesters->updateOne(
+                ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
+                ['$set' => ['credits_done' => true]]
+            );
+            header("Location: verify_marks.php?sem_id=$sem_id");
+            exit;
+        } else {
+            $error = "No pending changes to submit. Add or mark subjects for deletion first, or proceed if existing subjects are correct.";
+        }
     } else {
-        // Prepare credit subjects data for approval
-        $creditSubjectsData = [];
-        foreach ($nonInternalSubs as $sub) {
-            $creditSubjectsData[] = [
-                'subject_id' => (string)$sub['_id'],
-                'name' => $sub['subject_name'],
-                'code' => $sub['subject_code'],
-                'credits' => (int)$sub['credits']
-            ];
-        }
-        
-        // Prepare existing internal subjects for display
-        $existingSubjectsData = [];
-        foreach ($internalSubs as $sub) {
-            $existingSubjectsData[] = [
-                'name' => $sub['subject_name'],
-                'code' => $sub['subject_code'],
-                'credits' => (int)$sub['credits'],
-                'internal' => $sub['internal']
-            ];
-        }
-        
-        // Create approval request
-        $approvalData = [
+        // Check if there's already a pending approval for this
+        $existingApproval = $approvals->findOne([
             'student_roll' => $roll,
-            'student_name' => $u['name'],
-            'type' => 'Credit Subjects',
             'semester' => (int)$sem['sem'],
-            'reg' => $u['reg'],
-            'mentor_id' => $u['mentor_id'] ?? '',
-            'message' => 'Request to confirm ' . count($nonInternalSubs) . ' credit subject(s) for Semester ' . $sem['sem'],
-            'status' => 'pending',
-            'credit_subjects' => $creditSubjectsData,
-            'existing_subjects' => $existingSubjectsData,
-            'subject_count' => count($nonInternalSubs),
-            'sem_id' => $sem_id,
-            'created_at' => new MongoDB\BSON\UTCDateTime()
-        ];
+            'type' => 'Credit Subjects',
+            'status' => 'pending'
+        ]);
         
-        $approvals->insertOne($approvalData);
-        
-        // Create notification for mentor
-        if (!empty($u['mentor_id'])) {
+        if ($existingApproval) {
+            $error = "You already have a pending Credit Subjects approval for this semester.";
+        } else {
+            // Prepare data for approval
+            $additionsData = array_values($_SESSION['credit_changes']['additions']);
+            $deletionsData = array_values($_SESSION['credit_changes']['deletions']);
+            
+            // Prepare existing internal subjects for display
+            $existingSubjectsData = [];
+            foreach ($internalSubs as $sub) {
+                $existingSubjectsData[] = [
+                    'name' => $sub['subject_name'],
+                    'code' => $sub['subject_code'],
+                    'credits' => (int)$sub['credits'],
+                    'internal' => $sub['internal']
+                ];
+            }
+            
+            // Prepare existing non-internal subjects (showing which are marked for deletion)
+            $existingNonInternalData = [];
+            foreach ($nonInternalSubs as $sub) {
+                $isMarkedForDeletion = isset($_SESSION['credit_changes']['deletions'][(string)$sub['_id']]);
+                $existingNonInternalData[] = [
+                    'subject_id' => (string)$sub['_id'],
+                    'name' => $sub['subject_name'],
+                    'code' => $sub['subject_code'],
+                    'credits' => (int)$sub['credits'],
+                    'marked_for_deletion' => $isMarkedForDeletion
+                ];
+            }
+            
+            // Create approval request
+            $approvalData = [
+                'student_roll' => $roll,
+                'student_name' => $u['name'],
+                'type' => 'Credit Subjects',
+                'semester' => (int)$sem['sem'],
+                'reg' => $u['reg'],
+                'mentor_id' => $u['mentor_id'] ?? '',
+                'message' => 'Request to confirm credit subject changes for Semester ' . $sem['sem'] . 
+                            ' (' . count($additionsData) . ' additions, ' . count($deletionsData) . ' deletions)',
+                'status' => 'pending',
+                'credit_subjects' => $additionsData,  // New subjects to add
+                'credit_deletions' => $deletionsData,  // Subjects to delete
+                'existing_subjects' => $existingSubjectsData,  // Internal subjects (unchanged)
+                'existing_non_internal' => $existingNonInternalData,  // Existing non-internal with deletion status
+                'subject_count' => count($additionsData),
+                'deletion_count' => count($deletionsData),
+                'sem_id' => $sem_id,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ];
+            
+            $approvals->insertOne($approvalData);
+            
+            // Create notification for mentor
+            if (!empty($u['mentor_id'])) {
+                $notifications->insertOne([
+                    'mentor_id' => $u['mentor_id'],
+                    'message' => '📝 Credit Subjects changes approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
+                    'read' => false,
+                    'created_at' => new MongoDB\BSON\UTCDateTime()
+                ]);
+            }
+            
+            // Create notification for student
             $notifications->insertOne([
-                'mentor_id' => $u['mentor_id'],
-                'message' => '📝 Credit Subjects approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
+                'roll' => $roll,
+                'message' => '✅ Your Credit Subjects changes request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
                 'read' => false,
                 'created_at' => new MongoDB\BSON\UTCDateTime()
             ]);
+            
+            // Clear the session changes since they're now in the approval
+            unset($_SESSION['credit_changes']);
+            $_SESSION['credit_changes'] = ['additions' => [], 'deletions' => []];
+            
+            $success = 'Your Credit Subjects changes request has been submitted for approval. You will be notified once your mentor reviews it.';
         }
-        
-        // Create notification for student
-        $notifications->insertOne([
-            'roll' => $roll,
-            'message' => '✅ Your Credit Subjects request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
-            'read' => false,
-            'created_at' => new MongoDB\BSON\UTCDateTime()
-        ]);
-        
-        $success = 'Your Credit Subjects request has been submitted for approval. You will be notified once your mentor reviews it.';
     }
 }
 ?>
@@ -196,12 +245,15 @@ if (isset($_POST['confirm_credits'])) {
 <div class="container">
 <div class="form-box">
     <h2>Credit Subjects – Semester <?= $sem['sem'] ?></h2>
+    <p style="color:#888;font-size:14px;margin-bottom:20px;">
+        Add or mark subjects for deletion. Changes will be submitted for mentor approval before being saved.
+    </p>
     <hr style="margin:16px 0;">
-    <?php if (isset($_GET['success'])): ?><p class="success">Subject added/deleted successfully.</p><?php endif; ?>
+    <?php if (isset($_GET['success'])): ?><p class="success">Change applied to pending list.</p><?php endif; ?>
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
     <?php if (!empty($error)): ?><p class="error"><?= $error ?></p><?php endif; ?>
     
-    <h3>Add Non-Internal Subject</h3>
+    <h3>Add New Credit Subject (Pending)</h3>
     <p style="color:#888;font-size:14px;margin-bottom:15px;">Add subjects that don't have CAT marks (e.g., Environmental Science, Audit Courses, etc.)</p>
     <form method="POST" style="margin-bottom:20px;">
         <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
@@ -218,13 +270,13 @@ if (isset($_POST['confirm_credits'])) {
                 <input type="number" name="new_credits" min="1" max="6" value="2" style="width:100%;" required>
             </div>
             <div>
-                <button type="submit" name="add_subject" class="btn-calc">+ Add Subject</button>
+                <button type="submit" name="add_subject" class="btn-calc">+ Add (Pending)</button>
             </div>
         </div>
     </form>
     
-    <?php if (!empty($nonInternalSubs)): ?>
-    <h3>Added Non-Internal Subjects</h3>
+    <?php if (!empty($_SESSION['credit_changes']['additions'])): ?>
+    <h3>Pending Additions (Will be added after approval)</h3>
     <div class="cat-table-wrap">
         <table class="cat-table">
             <thead>
@@ -236,15 +288,64 @@ if (isset($_POST['confirm_credits'])) {
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($nonInternalSubs as $sub): $sid = (string)$sub['_id']; ?>
+                <?php foreach ($_SESSION['credit_changes']['additions'] as $tempId => $sub): ?>
                 <tr>
                     <td><?= htmlspecialchars($sub['subject_name']) ?></td>
                     <td><?= htmlspecialchars($sub['subject_code']) ?></td>
                     <td><?= $sub['credits'] ?></td>
                     <td style="text-align:center;">
-                        <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&delete=<?= $sid ?>" 
-                           onclick="return confirm('Are you sure you want to delete this subject?')" 
-                           class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;">Delete</a>
+                        <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&remove_pending=<?= $tempId ?>" 
+                           onclick="return confirm('Remove this pending subject?')" 
+                           class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;">Remove</a>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+    <?php endif; ?>
+    
+    <hr style="margin:24px 0;">
+    
+    <h3>Existing Non-Internal Subjects</h3>
+    <p style="color:#888;font-size:14px;margin-bottom:15px;">Click "Mark for Deletion" on subjects you want to remove (requires mentor approval).</p>
+    <?php if (!empty($nonInternalSubs)): ?>
+    <div class="cat-table-wrap">
+        <table class="cat-table">
+            <thead>
+                <tr>
+                    <th>Subject Name</th>
+                    <th>Code</th>
+                    <th>Credits</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($nonInternalSubs as $sub): $sid = (string)$sub['_id']; 
+                    $isMarkedForDeletion = isset($_SESSION['credit_changes']['deletions'][$sid]);
+                ?>
+                <tr style="<?= $isMarkedForDeletion ? 'background:#fff3f3;text-decoration:line-through;' : '' ?>">
+                    <td><?= htmlspecialchars($sub['subject_name']) ?></td>
+                    <td><?= htmlspecialchars($sub['subject_code']) ?></td>
+                    <td><?= $sub['credits'] ?></td>
+                    <td>
+                        <?php if ($isMarkedForDeletion): ?>
+                            <span style="color:#dc3545;font-weight:600;font-size:12px;">⚠ Marked for Deletion</span>
+                        <?php else: ?>
+                            <span style="color:#28a745;font-size:12px;">✓ Active</span>
+                        <?php endif; ?>
+                    </td>
+                    <td style="text-align:center;">
+                        <?php if ($isMarkedForDeletion): ?>
+                            <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>" 
+                               onclick="return confirm('Undo deletion mark?')" 
+                               class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;background:#ffc107;color:#000;">Undo</a>
+                        <?php else: ?>
+                            <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&mark_delete=<?= $sid ?>" 
+                               onclick="return confirm('Mark this subject for deletion? It will be removed after mentor approval.')" 
+                               class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;background:#dc3545;">Mark Delete</a>
+                        <?php endif; ?>
                     </td>
                 </tr>
                 <?php endforeach; ?>
@@ -252,14 +353,24 @@ if (isset($_POST['confirm_credits'])) {
         </table>
     </div>
     <?php else: ?>
-    <p style="color:#888;text-align:center;padding:20px;">No non-internal subjects added yet.</p>
+    <p style="color:#888;text-align:center;padding:20px;">No existing non-internal subjects.</p>
+    <?php endif; ?>
+    
+    <?php if (!empty($_SESSION['credit_changes']['deletions'])): ?>
+    <div style="background:#fff3f3;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid #dc3545;">
+        <strong style="color:#dc3545;">⚠ Pending Deletions:</strong> 
+        <?= count($_SESSION['credit_changes']['deletions']) ?> subject(s) marked for deletion
+    </div>
     <?php endif; ?>
     
     <hr style="margin:24px 0;">
     
     <div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
         <form method="POST" style="display:inline;">
-            <button type="submit" name="confirm_credits" class="btn-primary">Confirm & Proceed to Verify</button>
+            <button type="submit" name="confirm_credits" class="btn-primary" 
+                    <?= (empty($_SESSION['credit_changes']['additions']) && empty($_SESSION['credit_changes']['deletions'])) ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '' ?>>
+                Submit Changes for Approval
+            </button>
         </form>
         <a href="semester_detail.php?id=<?= $sem_id ?>" class="btn-secondary">Back to Semester</a>
     </div>

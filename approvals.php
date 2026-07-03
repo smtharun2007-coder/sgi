@@ -70,7 +70,9 @@ if (isset($_GET['fetch'])) {
             'mentor_remarks' => $approval['mentor_remarks'] ?? '',
             // New approval types data
             'credit_subjects' => $approval['credit_subjects'] ?? [],
+            'credit_deletions' => $approval['credit_deletions'] ?? [],
             'existing_subjects' => $approval['existing_subjects'] ?? [],
+            'existing_non_internal' => $approval['existing_non_internal'] ?? [],
             'verification_data' => $approval['verification_data'] ?? [],
             'cat_marks' => $approval['cat_marks'] ?? [],
             'ca_data' => $approval['ca_data'] ?? [],
@@ -263,25 +265,44 @@ if (isset($_POST['update_status']) && $isMentor) {
                 break;
                 
             case 'Credit Subjects':
-                // Add credit subjects to existing semester
-                if (!empty($approval['credit_subjects']) && is_array($approval['credit_subjects'])) {
-                    $existingSem = $semesters->findOne(['roll' => $roll, 'sem' => (int)$sem]);
-                    if ($existingSem) {
-                        $sem_id = (string)$existingSem['_id'];
+                // Handle credit subject changes (additions and deletions)
+                $existingSem = $semesters->findOne(['roll' => $roll, 'sem' => (int)$sem]);
+                if ($existingSem) {
+                    $sem_id = (string)$existingSem['_id'];
+                    
+                    // Handle additions - add new credit subjects
+                    if (!empty($approval['credit_subjects']) && is_array($approval['credit_subjects'])) {
                         foreach ($approval['credit_subjects'] as $subject) {
+                            // Handle both new format (with temp_id) and old format
+                            $subjectName = $subject['subject_name'] ?? $subject['name'] ?? '';
+                            $subjectCode = $subject['subject_code'] ?? $subject['code'] ?? '';
+                            $credits = (int)($subject['credits'] ?? 0);
+                            
                             $subjects->insertOne([
                                 'sem_id' => $sem_id,
                                 'roll' => $roll,
-                                'subject_name' => $subject['name'],
-                                'subject_code' => $subject['code'],
-                                'credits' => (int)$subject['credits'],
+                                'subject_name' => $subjectName,
+                                'subject_code' => $subjectCode,
+                                'credits' => $credits,
                                 'internal' => 'no',
                                 'approved_from_approval' => true
                             ]);
                         }
-                        // Mark credits as done
-                        $semesters->updateOne(['_id' => $existingSem['_id']], ['$set' => ['credits_done' => true]]);
                     }
+                    
+                    // Handle deletions - remove subjects that were marked for deletion
+                    if (!empty($approval['credit_deletions']) && is_array($approval['credit_deletions'])) {
+                        foreach ($approval['credit_deletions'] as $deletedSubject) {
+                            // Handle both new format (with subject_id) and old format
+                            $subjectId = $deletedSubject['subject_id'] ?? $deletedSubject['id'] ?? '';
+                            if (!empty($subjectId)) {
+                                $subjects->deleteOne(['_id' => new MongoDB\BSON\ObjectId($subjectId)]);
+                            }
+                        }
+                    }
+                    
+                    // Mark credits as done
+                    $semesters->updateOne(['_id' => $existingSem['_id']], ['$set' => ['credits_done' => true]]);
                 }
                 break;
                 
