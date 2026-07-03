@@ -19,49 +19,103 @@ $subList   = iterator_to_array($subCursor);
 $success = '';
 $uploadError = '';
 if (isset($_POST['save_ca'])) {
-    foreach ($subList as $sub) {
-        $sub_id   = (string)$sub['_id'];
-        $scored   = (float)($_POST['scored'][$sub_id] ?? 0);
-        $max      = (float)($_POST['max'][$sub_id] ?? 0);
-        $ca_percent = $max > 0 ? round(($scored / $max) * 100, 2) : 0;
-        $subjects->updateOne(
-            ['_id' => new MongoDB\BSON\ObjectId($sub_id)],
-            ['$set' => ['ca_scored' => $scored, 'ca_max' => $max, 'ca_percent' => $ca_percent]]
-        );
-    }
-    $gpa        = (float)$_POST['gpa'];
-    $cgpa       = (float)$_POST['cgpa'];
+    // Check if there's already a pending approval for this
+    $existingApproval = $approvals->findOne([
+        'student_roll' => $roll,
+        'semester' => (int)$sem['sem'],
+        'type' => 'Final CA Marks',
+        'status' => 'pending'
+    ]);
     
-    // Handle file uploads
-    $updateData = ['gpa' => $gpa, 'cgpa' => $cgpa, 'ca_done' => true];
-    
-    if (!empty($_FILES['result_photo']['name'])) {
-        if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) {
-            $uploadError = "Semester result must be ≤ 5 MB.";
-        } else {
-            $result_photo = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'image');
-            $updateData['result_photo'] = $result_photo;
+    if ($existingApproval) {
+        $uploadError = "You already have a pending Final CA Marks approval for this semester.";
+    } else {
+        // Prepare CA subjects data
+        $caSubjectsData = [];
+        foreach ($subList as $sub) {
+            $sub_id = (string)$sub['_id'];
+            $scored = (float)($_POST['scored'][$sub_id] ?? 0);
+            $max = (float)($_POST['max'][$sub_id] ?? 0);
+            $caSubjectsData[] = [
+                'subject_id' => $sub_id,
+                'subject_name' => $sub['subject_name'],
+                'subject_code' => $sub['subject_code'],
+                'ca_scored' => $scored,
+                'ca_max' => $max,
+                'ca_percent' => $max > 0 ? round(($scored / $max) * 100, 2) : 0
+            ];
         }
-    }
-    
-    if (!$uploadError && !empty($_FILES['ca_photo']['name'])) {
-        if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) {
-            $uploadError = "CA mark sheet must be ≤ 5 MB.";
-        } else {
-            $ca_photo = uploadToCloudinary($_FILES['ca_photo']['tmp_name'], 'sgi/ca_marks');
-            $updateData['ca_photo'] = $ca_photo;
+        
+        $gpa = (float)$_POST['gpa'];
+        $cgpa = (float)$_POST['cgpa'];
+        
+        // Handle file uploads - store as base64 for approval
+        $documentsData = [];
+        $resultPhotoData = null;
+        $caPhotoData = null;
+        
+        if (!empty($_FILES['result_photo']['name'])) {
+            if ($_FILES['result_photo']['size'] > 5 * 1024 * 1024) {
+                $uploadError = "Semester result must be ≤ 5 MB.";
+            } else {
+                $resultPhotoData = uploadToCloudinary($_FILES['result_photo']['tmp_name'], 'sgi/results', 'image');
+                $documentsData['result_photo'] = $resultPhotoData;
+            }
         }
-    }
-    
-    if (!$uploadError) {
-        $semesters->updateOne(
-            ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-            ['$set' => $updateData]
-        );
-        $success = "Final CA marks, academic details, and documents saved successfully.";
-        $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll]);
-        $subList   = iterator_to_array($subCursor);
-        $sem = $semesters->findOne(['_id' => new MongoDB\BSON\ObjectId($sem_id), 'roll' => $roll]);
+        
+        if (!$uploadError && !empty($_FILES['ca_photo']['name'])) {
+            if ($_FILES['ca_photo']['size'] > 5 * 1024 * 1024) {
+                $uploadError = "CA mark sheet must be ≤ 5 MB.";
+            } else {
+                $caPhotoData = uploadToCloudinary($_FILES['ca_photo']['tmp_name'], 'sgi/ca_marks');
+                $documentsData['ca_photo'] = $caPhotoData;
+            }
+        }
+        
+        if (!$uploadError) {
+            // Create approval request
+            $approvalData = [
+                'student_roll' => $roll,
+                'student_name' => $u['name'],
+                'type' => 'Final CA Marks',
+                'semester' => (int)$sem['sem'],
+                'reg' => $u['reg'],
+                'mentor_id' => $u['mentor_id'] ?? '',
+                'message' => 'Request to confirm Final CA Marks for Semester ' . $sem['sem'],
+                'status' => 'pending',
+                'ca_data' => [
+                    'gpa' => $gpa,
+                    'cgpa' => $cgpa
+                ],
+                'ca_subjects' => $caSubjectsData,
+                'documents' => $documentsData,
+                'subject_count' => count($subList),
+                'sem_id' => $sem_id,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ];
+            
+            $approvals->insertOne($approvalData);
+            
+            // Create notification for mentor
+            if (!empty($u['mentor_id'])) {
+                $notifications->insertOne([
+                    'mentor_id' => $u['mentor_id'],
+                    'message' => '📝 Final CA Marks approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
+                    'read' => false,
+                    'created_at' => new MongoDB\BSON\UTCDateTime()
+                ]);
+            }
+            
+            // Create notification for student
+            $notifications->insertOne([
+                'roll' => $roll,
+                'message' => '✅ Your Final CA Marks request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
+                'read' => false,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ]);
+            
+            $success = 'Your Final CA Marks request has been submitted for approval. You will be notified once your mentor reviews it.';
+        }
     }
 }
 ?>

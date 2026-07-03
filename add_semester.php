@@ -132,7 +132,7 @@ if (isset($_POST['save'])) {
                         <option value="yes">Yes</option>
                         <option value="no">No</option>
                     </select>
-                    <button type="button" class="btn-remove" onclick="removeRow(this)">?</button>
+                    <button type="button" class="btn-remove" onclick="removeRow(this)">✕</button>
                 </div>
             </div>
             <button type="button" class="btn-add-subject" onclick="addRow()">+ Add Subject</button>
@@ -170,7 +170,7 @@ function addRow() {
             <option value="yes">Yes</option>
             <option value="no">No</option>
         </select>
-        <button type="button" class="btn-remove" onclick="removeRow(this)">?</button>
+        <button type="button" class="btn-remove" onclick="removeRow(this)">✕</button>
     `;
     list.appendChild(row);
 }

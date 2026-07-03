@@ -27,12 +27,75 @@ foreach ($subList as $sub) {
 if (isset($_POST['verify'])) {
     $prev_gpa   = (float)$_POST['prev_gpa'];
     $attendance = (float)$_POST['attendance'];
-    $semesters->updateOne(
-        ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-        ['$set' => ['prev_gpa' => $prev_gpa, 'attendance' => $attendance, 'verified' => true]]
-    );
-    header("Location: semester_detail.php?id=$sem_id");
-    exit;
+    
+    // Check if there's already a pending approval for this
+    $existingApproval = $approvals->findOne([
+        'student_roll' => $roll,
+        'semester' => (int)$sem['sem'],
+        'type' => 'Verification',
+        'status' => 'pending'
+    ]);
+    
+    if ($existingApproval) {
+        $error_verify = "You already have a pending Verification approval for this semester.";
+    } else {
+        // Prepare CAT marks data for all subjects
+        $catMarksData = [];
+        foreach ($subList as $sub) {
+            $catMarksData[] = [
+                'subject_id' => (string)$sub['_id'],
+                'subject_name' => $sub['subject_name'],
+                'subject_code' => $sub['subject_code'],
+                'cat1' => ($sub['cat1'] ?? null) === 'nil' ? 'nil' : ($sub['cat1'] ?? ''),
+                'cat2' => ($sub['cat2'] ?? null) === 'nil' ? 'nil' : ($sub['cat2'] ?? ''),
+                'cat3' => ($sub['cat3'] ?? null) === 'nil' ? 'nil' : ($sub['cat3'] ?? ''),
+                'total' => $sub['total'] ?? '',
+                'percentage' => $sub['percentage'] ?? ''
+            ];
+        }
+        
+        // Create approval request
+        $approvalData = [
+            'student_roll' => $roll,
+            'student_name' => $u['name'],
+            'type' => 'Verification',
+            'semester' => (int)$sem['sem'],
+            'reg' => $u['reg'],
+            'mentor_id' => $u['mentor_id'] ?? '',
+            'message' => 'Request to verify marks for Semester ' . $sem['sem'],
+            'status' => 'pending',
+            'verification_data' => [
+                'prev_gpa' => $prev_gpa,
+                'attendance' => $attendance
+            ],
+            'cat_marks' => $catMarksData,
+            'subject_count' => count($subList),
+            'sem_id' => $sem_id,
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ];
+        
+        $approvals->insertOne($approvalData);
+        
+        // Create notification for mentor
+        if (!empty($u['mentor_id'])) {
+            $notifications->insertOne([
+                'mentor_id' => $u['mentor_id'],
+                'message' => '📝 Verification approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
+                'read' => false,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ]);
+        }
+        
+        // Create notification for student
+        $notifications->insertOne([
+            'roll' => $roll,
+            'message' => '✅ Your Verification request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
+            'read' => false,
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ]);
+        
+        $success = 'Your Verification request has been submitted for approval. You will be notified once your mentor reviews it.';
+    }
 }
 ?>
 <!DOCTYPE html>

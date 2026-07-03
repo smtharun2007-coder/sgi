@@ -68,6 +68,15 @@ if (isset($_GET['fetch'])) {
             'message' => $approval['message'],
             'status' => $approval['status'],
             'mentor_remarks' => $approval['mentor_remarks'] ?? '',
+            // New approval types data
+            'credit_subjects' => $approval['credit_subjects'] ?? [],
+            'existing_subjects' => $approval['existing_subjects'] ?? [],
+            'verification_data' => $approval['verification_data'] ?? [],
+            'cat_marks' => $approval['cat_marks'] ?? [],
+            'ca_data' => $approval['ca_data'] ?? [],
+            'ca_subjects' => $approval['ca_subjects'] ?? [],
+            'sgi_data' => $approval['sgi_data'] ?? [],
+            'documents' => $approval['documents'] ?? [],
             'created_at' => date('d M, Y h:i A', $approval['created_at']->toDateTime()->getTimestamp()),
             'updated_at' => isset($approval['updated_at']) ? date('d M, Y h:i A', $approval['updated_at']->toDateTime()->getTimestamp()) : ''
         ];
@@ -180,8 +189,9 @@ if (isset($_POST['update_status']) && $isMentor) {
     }
     
     // Check if already processed
-    if ($approval['status'] !== 'pending') {
-        echo json_encode(['status' => 'error', 'message' => 'This request has already been processed']);
+    $currentStatus = $approval['status'] ?? '';
+    if ($currentStatus !== 'pending') {
+        echo json_encode(['status' => 'error', 'message' => 'This request has already been processed (current status: ' . $currentStatus . ')']);
         exit;
     }
     
@@ -191,6 +201,9 @@ if (isset($_POST['update_status']) && $isMentor) {
         echo json_encode(['status' => 'error', 'message' => 'Unauthorized - Not your student']);
         exit;
     }
+    
+    $roll = $approval['student_roll'];
+    $sem = $approval['semester'] ?? null;
     
     // Update approval status
     $approvals->updateOne(
@@ -205,52 +218,171 @@ if (isset($_POST['update_status']) && $isMentor) {
     );
     
     if ($status === 'approved') {
-        // If approved, save the semester and subjects to database
-        $roll = $approval['student_roll'];
-        $reg = $approval['reg'] ?? $student['reg'];
-        $sem = $approval['semester'];
-        $mentorId = $approval['mentor_id'] ?? '';
+        $approvalType = $approval['type'] ?? '';
         
-        // Insert semester record
-        $result = $semesters->insertOne([
-            'roll' => $roll,
-            'reg' => $reg,
-            'sem' => (int)$sem,
-            'mentor_id' => $mentorId,
-            'approved_from_approval' => true,
-            'approval_id' => (string)$approvalId
-        ]);
-        $sem_id = (string)$result->getInsertedId();
-        
-        // Insert subjects if available
-        if (!empty($approval['subjects']) && is_array($approval['subjects'])) {
-            foreach ($approval['subjects'] as $subject) {
-                $subjects->insertOne([
-                    'sem_id'       => $sem_id,
-                    'roll'         => $roll,
-                    'subject_name' => $subject['name'],
-                    'subject_code' => $subject['code'],
-                    'credits'      => (int)$subject['credits'],
-                    'internal'     => $subject['internal'],
-                    'approved_from_approval' => true
+        // Handle different approval types
+        switch ($approvalType) {
+            case 'Semester Registration':
+                // Save semester and subjects
+                $reg = $approval['reg'] ?? $student['reg'];
+                $mentorId = $approval['mentor_id'] ?? '';
+                
+                $result = $semesters->insertOne([
+                    'roll' => $roll,
+                    'reg' => $reg,
+                    'sem' => (int)$sem,
+                    'mentor_id' => $mentorId,
+                    'approved_from_approval' => true,
+                    'approval_id' => (string)$approvalId
                 ]);
-            }
+                $sem_id = (string)$result->getInsertedId();
+                
+                if (!empty($approval['subjects']) && is_array($approval['subjects'])) {
+                    foreach ($approval['subjects'] as $subject) {
+                        $subjects->insertOne([
+                            'sem_id' => $sem_id,
+                            'roll' => $roll,
+                            'subject_name' => $subject['name'],
+                            'subject_code' => $subject['code'],
+                            'credits' => (int)$subject['credits'],
+                            'internal' => $subject['internal'],
+                            'approved_from_approval' => true
+                        ]);
+                    }
+                }
+                break;
+                
+            case 'Credit Subjects':
+                // Add credit subjects to existing semester
+                if (!empty($approval['credit_subjects']) && is_array($approval['credit_subjects'])) {
+                    $existingSem = $semesters->findOne(['roll' => $roll, 'sem' => (int)$sem]);
+                    if ($existingSem) {
+                        $sem_id = (string)$existingSem['_id'];
+                        foreach ($approval['credit_subjects'] as $subject) {
+                            $subjects->insertOne([
+                                'sem_id' => $sem_id,
+                                'roll' => $roll,
+                                'subject_name' => $subject['name'],
+                                'subject_code' => $subject['code'],
+                                'credits' => (int)$subject['credits'],
+                                'internal' => 'no',
+                                'approved_from_approval' => true
+                            ]);
+                        }
+                        // Mark credits as done
+                        $semesters->updateOne(['_id' => $existingSem['_id']], ['$set' => ['credits_done' => true]]);
+                    }
+                }
+                break;
+                
+            case 'Verification':
+                // Save verified marks
+                $existingSem = $semesters->findOne(['roll' => $roll, 'sem' => (int)$sem]);
+                if ($existingSem && !empty($approval['verification_data'])) {
+                    $sem_id = (string)$existingSem['_id'];
+                    $vData = $approval['verification_data'];
+                    
+                    // Update semester with verified data
+                    $semesters->updateOne(['_id' => $existingSem['_id']], [
+                        '$set' => [
+                            'prev_gpa' => (float)($vData['prev_gpa'] ?? 0),
+                            'attendance' => (float)($vData['attendance'] ?? 0),
+                            'verified' => true
+                        ]
+                    ]);
+                    
+                    // Update CAT marks if provided
+                    if (!empty($approval['cat_marks']) && is_array($approval['cat_marks'])) {
+                        foreach ($approval['cat_marks'] as $catMark) {
+                            if (!empty($catMark['subject_id'])) {
+                                $subjects->updateOne(
+                                    ['_id' => new MongoDB\BSON\ObjectId($catMark['subject_id'])],
+                                    ['$set' => [
+                                        'cat1' => isset($catMark['cat1']) ? ($catMark['cat1'] === 'nil' ? 'nil' : (float)$catMark['cat1']) : null,
+                                        'cat2' => isset($catMark['cat2']) ? ($catMark['cat2'] === 'nil' ? 'nil' : (float)$catMark['cat2']) : null,
+                                        'cat3' => isset($catMark['cat3']) ? ($catMark['cat3'] === 'nil' ? 'nil' : (float)$catMark['cat3']) : null
+                                    ]]
+                                );
+                            }
+                        }
+                    }
+                }
+                break;
+                
+            case 'Final CA Marks':
+                // Save final CA marks and documents
+                $existingSem = $semesters->findOne(['roll' => $roll, 'sem' => (int)$sem]);
+                if ($existingSem && !empty($approval['ca_data'])) {
+                    $sem_id = (string)$existingSem['_id'];
+                    $caData = $approval['ca_data'];
+                    
+                    // Update semester with CA data
+                    $updateData = [
+                        'gpa' => (float)($caData['gpa'] ?? 0),
+                        'cgpa' => (float)($caData['cgpa'] ?? 0),
+                        'ca_done' => true
+                    ];
+                    
+                    // Handle document uploads (stored as base64 or URLs in approval)
+                    if (!empty($caData['result_photo'])) {
+                        $updateData['result_photo'] = $caData['result_photo'];
+                    }
+                    if (!empty($caData['ca_photo'])) {
+                        $updateData['ca_photo'] = $caData['ca_photo'];
+                    }
+                    
+                    $semesters->updateOne(['_id' => $existingSem['_id']], ['$set' => $updateData]);
+                    
+                    // Update CA marks for subjects
+                    if (!empty($approval['ca_subjects']) && is_array($approval['ca_subjects'])) {
+                        foreach ($approval['ca_subjects'] as $caSub) {
+                            if (!empty($caSub['subject_id'])) {
+                                $subjects->updateOne(
+                                    ['_id' => new MongoDB\BSON\ObjectId($caSub['subject_id'])],
+                                    ['$set' => [
+                                        'ca_scored' => (float)($caSub['ca_scored'] ?? 0),
+                                        'ca_max' => (float)($caSub['ca_max'] ?? 0),
+                                        'ca_percent' => (float)($caSub['ca_percent'] ?? 0)
+                                    ]]
+                                );
+                            }
+                        }
+                    }
+                }
+                break;
+                
+            case 'SGI Calculation':
+                // Save SGI calculation results
+                $existingSem = $semesters->findOne(['roll' => $roll, 'sem' => (int)$sem]);
+                if ($existingSem && !empty($approval['sgi_data'])) {
+                    $sgiData = $approval['sgi_data'];
+                    
+                    $semesters->updateOne(['_id' => $existingSem['_id']], ['$set' => [
+                        'sgi' => (float)($sgiData['sgi'] ?? 0),
+                        'academic_score' => (float)($sgiData['academic_score'] ?? 0),
+                        'skills_score' => (float)($sgiData['skills_score'] ?? 0),
+                        'projects_score' => (float)($sgiData['projects_score'] ?? 0),
+                        'activities_score' => (float)($sgiData['activities_score'] ?? 0),
+                        'discipline_score' => (float)($sgiData['discipline_score'] ?? 0)
+                    ]]);
+                }
+                break;
         }
         
         // Create notification for student
         createNotification(
             $db, $notifications,
-            $approval['student_roll'],
+            $roll,
             'roll',
-            '✅ Your semester ' . $sem . ' registration has been APPROVED by your mentor!' . ($remarks ? ' Remarks: ' . $remarks : '')
+            '✅ Your ' . $approvalType . ' request for Semester ' . $sem . ' has been APPROVED!' . ($remarks ? ' Remarks: ' . $remarks : '')
         );
     } else {
         // If rejected, create notification for student
         createNotification(
             $db, $notifications,
-            $approval['student_roll'],
+            $roll,
             'roll',
-            '❌ Your semester ' . ($approval['semester'] ?? '') . ' registration has been REJECTED by your mentor.' . ($remarks ? ' Reason: ' . $remarks : '')
+            '❌ Your ' . ($approval['type'] ?? 'Request') . ' for Semester ' . $sem . ' has been REJECTED.' . ($remarks ? ' Reason: ' . $remarks : '')
         );
     }
     

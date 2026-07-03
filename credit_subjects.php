@@ -74,14 +74,91 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
     exit;
 }
 
-// Handle confirming and moving to verify step
+// Handle confirming and creating approval request for credit subjects
 if (isset($_POST['confirm_credits'])) {
-    $semesters->updateOne(
-        ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-        ['$set' => ['credits_done' => true]]
-    );
-    header("Location: verify_marks.php?sem_id=$sem_id");
-    exit;
+    // Check if there are non-internal subjects to approve
+    if (empty($nonInternalSubs)) {
+        // No credit subjects, just mark as done and proceed
+        $semesters->updateOne(
+            ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
+            ['$set' => ['credits_done' => true]]
+        );
+        header("Location: verify_marks.php?sem_id=$sem_id");
+        exit;
+    }
+    
+    // Check if there's already a pending approval for this
+    $existingApproval = $approvals->findOne([
+        'student_roll' => $roll,
+        'semester' => (int)$sem['sem'],
+        'type' => 'Credit Subjects',
+        'status' => 'pending'
+    ]);
+    
+    if ($existingApproval) {
+        $error = "You already have a pending Credit Subjects approval for this semester.";
+    } else {
+        // Prepare credit subjects data for approval
+        $creditSubjectsData = [];
+        foreach ($nonInternalSubs as $sub) {
+            $creditSubjectsData[] = [
+                'subject_id' => (string)$sub['_id'],
+                'name' => $sub['subject_name'],
+                'code' => $sub['subject_code'],
+                'credits' => (int)$sub['credits']
+            ];
+        }
+        
+        // Prepare existing internal subjects for display
+        $existingSubjectsData = [];
+        foreach ($internalSubs as $sub) {
+            $existingSubjectsData[] = [
+                'name' => $sub['subject_name'],
+                'code' => $sub['subject_code'],
+                'credits' => (int)$sub['credits'],
+                'internal' => $sub['internal']
+            ];
+        }
+        
+        // Create approval request
+        $approvalData = [
+            'student_roll' => $roll,
+            'student_name' => $u['name'],
+            'type' => 'Credit Subjects',
+            'semester' => (int)$sem['sem'],
+            'reg' => $u['reg'],
+            'mentor_id' => $u['mentor_id'] ?? '',
+            'message' => 'Request to confirm ' . count($nonInternalSubs) . ' credit subject(s) for Semester ' . $sem['sem'],
+            'status' => 'pending',
+            'credit_subjects' => $creditSubjectsData,
+            'existing_subjects' => $existingSubjectsData,
+            'subject_count' => count($nonInternalSubs),
+            'sem_id' => $sem_id,
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ];
+        
+        $approvals->insertOne($approvalData);
+        
+        // Create notification for mentor
+        if (!empty($u['mentor_id'])) {
+            $notifications->insertOne([
+                'mentor_id' => $u['mentor_id'],
+                'message' => '📝 Credit Subjects approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
+                'read' => false,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ]);
+        }
+        
+        // Create notification for student
+        $notifications->insertOne([
+            'roll' => $roll,
+            'message' => '✅ Your Credit Subjects request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
+            'read' => false,
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ]);
+        
+        $success = 'Your Credit Subjects request has been submitted for approval. You will be notified once your mentor reviews it.';
+    }
 }
 ?>
 <!DOCTYPE html>

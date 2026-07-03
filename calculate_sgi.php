@@ -44,63 +44,121 @@ if (isset($_POST['calculate'])) {
     if ($_POST['reg'] !== $sem['reg']) {
         $error = "Integrated Number does not match. Please try again.";
     } else {
-        // Documents are now uploaded in Final CA Marks step
-        // ACADEMIC from auto-fetched values
-        $academic = 0.15*$cat1_10 + 0.15*$cat2_10 + 0.2*$cat3_10
-                  + 0.25*$gpa + 0.25*$cgpa;
+        // Check if there's already a pending approval for this
+        $existingApproval = $approvals->findOne([
+            'student_roll' => $roll,
+            'semester' => (int)$sem['sem'],
+            'type' => 'SGI Calculation',
+            'status' => 'pending'
+        ]);
+        
+        if ($existingApproval) {
+            $error = "You already have a pending SGI Calculation approval for this semester.";
+        } else {
+            // Documents are now uploaded in Final CA Marks step
+            // ACADEMIC from auto-fetched values
+            $academic = 0.15*$cat1_10 + 0.15*$cat2_10 + 0.2*$cat3_10
+                      + 0.25*$gpa + 0.25*$cgpa;
 
-        // SKILLS
-        $skills = 3*(float)$_POST['credit'] + 3*(float)$_POST['coding'] + 1*(float)$_POST['normal'];
-        $skills = min($skills, 10);
+            // SKILLS
+            $skills = 3*(float)$_POST['credit'] + 3*(float)$_POST['coding'] + 1*(float)$_POST['normal'];
+            $skills = min($skills, 10);
 
-        // PROJECTS
-        $projects = 2*(float)$_POST['mini'] + 3*(float)$_POST['main'];
-        if (!empty($_POST['other_check']) && !empty($_POST['other_name'])) {
-            foreach ($_POST['other_name'] as $i => $name) {
-                if (empty(trim($name))) continue;
-                $count  = (float)($_POST['other_count'][$i] ?? 0);
-                $points = (float)($_POST['other_points'][$i] ?? 0);
-                $projects += $count * $points;
+            // PROJECTS
+            $projects = 2*(float)$_POST['mini'] + 3*(float)$_POST['main'];
+            if (!empty($_POST['other_check']) && !empty($_POST['other_name'])) {
+                foreach ($_POST['other_name'] as $i => $name) {
+                    if (empty(trim($name))) continue;
+                    $count  = (float)($_POST['other_count'][$i] ?? 0);
+                    $points = (float)($_POST['other_points'][$i] ?? 0);
+                    $projects += $count * $points;
+                }
             }
-        }
-        $projects = min($projects, 10);
+            $projects = min($projects, 10);
 
-        // ACTIVITIES
-        $activities = 3*(float)$_POST['leader_win']
-                    + 2.5*(float)$_POST['member_win']
-                    + 2.5*(float)$_POST['leader_place']
-                    + 2.0*(float)$_POST['member_place']
-                    + 1*(float)$_POST['participation']
-                    + 1*(float)$_POST['workshop'];
-        $activities = min($activities, 10);
+            // ACTIVITIES
+            $activities = 3*(float)$_POST['leader_win']
+                        + 2.5*(float)$_POST['member_win']
+                        + 2.5*(float)$_POST['leader_place']
+                        + 2.0*(float)$_POST['member_place']
+                        + 1*(float)$_POST['participation']
+                        + 1*(float)$_POST['workshop'];
+            $activities = min($activities, 10);
 
-        // DISCIPLINE
-        $att_score = $attendance / 20;
-        if ($gpa > $prev_gpa)      $gpa_score = 5;
-        elseif ($gpa == $prev_gpa) $gpa_score = 3;
-        else                       $gpa_score = 1;
-        $discipline = $att_score + $gpa_score;
+            // DISCIPLINE
+            $att_score = $attendance / 20;
+            if ($gpa > $prev_gpa)      $gpa_score = 5;
+            elseif ($gpa == $prev_gpa) $gpa_score = 3;
+            else                       $gpa_score = 1;
+            $discipline = $att_score + $gpa_score;
 
-        // FINAL SGI
-        $sgi = (($academic * 4) + ($skills * 2) + ($projects * 1) + ($activities * 2) + ($discipline * 1)) / 10;
+            // FINAL SGI
+            $sgi = (($academic * 4) + ($skills * 2) + ($projects * 1) + ($activities * 2) + ($discipline * 1)) / 10;
 
-        $updateData = [
-                'sgi'              => round($sgi, 2),
-                'academic_score'   => round($academic, 2),
-                'skills_score'     => round($skills, 2),
-                'projects_score'   => round($projects, 2),
-                'activities_score' => round($activities, 2),
-                'discipline_score' => round($discipline, 2),
+            // Create approval request
+            $approvalData = [
+                'student_roll' => $roll,
+                'student_name' => $u['name'],
+                'type' => 'SGI Calculation',
+                'semester' => (int)$sem['sem'],
+                'reg' => $u['reg'],
+                'mentor_id' => $u['mentor_id'] ?? '',
+                'message' => 'Request to confirm SGI for Semester ' . $sem['sem'],
+                'status' => 'pending',
+                'sgi_data' => [
+                    'sgi' => round($sgi, 2),
+                    'academic_score' => round($academic, 2),
+                    'skills_score' => round($skills, 2),
+                    'projects_score' => round($projects, 2),
+                    'activities_score' => round($activities, 2),
+                    'discipline_score' => round($discipline, 2),
+                    // Input values for verification
+                    'cat1_10' => round($cat1_10, 2),
+                    'cat2_10' => round($cat2_10, 2),
+                    'cat3_10' => round($cat3_10, 2),
+                    'gpa' => $gpa,
+                    'cgpa' => $cgpa,
+                    'credit_courses' => (float)$_POST['credit'],
+                    'coding_platforms' => (float)$_POST['coding'],
+                    'normal_courses' => (float)$_POST['normal'],
+                    'mini_projects' => (float)$_POST['mini'],
+                    'main_projects' => (float)$_POST['main'],
+                    'leader_wins' => (float)$_POST['leader_win'],
+                    'member_wins' => (float)$_POST['member_win'],
+                    'leader_places' => (float)$_POST['leader_place'],
+                    'member_places' => (float)$_POST['member_place'],
+                    'participations' => (float)$_POST['participation'],
+                    'workshops' => (float)$_POST['workshop'],
+                    'attendance' => $attendance,
+                    'prev_gpa' => $prev_gpa
+                ],
+                'subject_count' => count($subList),
+                'sem_id' => $id,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
             ];
-        // Documents are uploaded in Final CA Marks step
-
-        $semesters->updateOne(
-            ['_id' => new MongoDB\BSON\ObjectId($id)],
-            ['$set' => $updateData]
-        );
-
-        header("Location: semester_detail.php?id=$id");
-        exit;
+            
+            $approvals->insertOne($approvalData);
+            
+            // Create notification for mentor
+            if (!empty($u['mentor_id'])) {
+                $notifications->insertOne([
+                    'mentor_id' => $u['mentor_id'],
+                    'message' => '📝 SGI Calculation approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
+                    'read' => false,
+                    'created_at' => new MongoDB\BSON\UTCDateTime()
+                ]);
+            }
+            
+            // Create notification for student
+            $notifications->insertOne([
+                'roll' => $roll,
+                'message' => '✅ Your SGI Calculation request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
+                'read' => false,
+                'created_at' => new MongoDB\BSON\UTCDateTime()
+            ]);
+            
+            $success = 'Your SGI Calculation request has been submitted for approval. You will be notified once your mentor reviews it.';
+        }
     }
 }
 ?>

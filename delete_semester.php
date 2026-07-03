@@ -22,7 +22,7 @@ foreach ($internalSubs as $sub) {
 if (isset($_POST['confirm_delete'])) {
     $subjects->deleteMany(['sem_id' => $id, 'roll' => $roll]);
     $semesters->deleteOne(['_id' => new MongoDB\BSON\ObjectId($id), 'roll' => $roll]);
-    header("Location: dashboard.php");
+    header("Location: academics.php");
     exit;
 }
 ?>
@@ -56,7 +56,7 @@ if (isset($_POST['confirm_delete'])) {
     <form method="POST">
         <button type="submit" name="confirm_delete" class="btn-primary" style="background:#e94560;">Yes, Delete</button>
     </form>
-    <a href="dashboard.php" class="btn-secondary">Cancel</a>
+    <a href="academics.php" class="btn-secondary">Cancel</a>
 </div>
 </div>
 </body>
