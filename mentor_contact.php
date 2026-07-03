@@ -57,7 +57,11 @@ if (isset($_POST['send'])) {
 </a>
     <div class="nav-links">
         <a href="mentor_dashboard.php">Home</a>
+        <a href="mentor_approvals.php">Approvals</a>
+        <a href="mentor_calendar.php">Calendar</a>
+        <a href="mentor_announcements.php">Announcements</a>
         <a href="mentor_update_profile.php">Profile</a>
+        <a href="mentor_about.php">About</a>
         <a href="mentor_contact.php">Contact</a>
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">

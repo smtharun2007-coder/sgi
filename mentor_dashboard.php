@@ -92,6 +92,8 @@ $studentList   = iterator_to_array($studentCursor);
         <a href="mentor_calendar.php">Calendar</a>
         <a href="mentor_announcements.php">Announcements</a>
         <a href="mentor_update_profile.php">Profile</a>
+        <a href="mentor_about.php">About</a>
+        <a href="mentor_contact.php">Contact</a>
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
                 &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
