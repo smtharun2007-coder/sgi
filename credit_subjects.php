@@ -1,4 +1,4 @@
-<?php
+e<?php
 include 'config.php';
 requireLogin();
 
@@ -26,6 +26,17 @@ foreach ($subList as $sub) {
         $nonInternalSubs[] = $sub;
     }
 }
+
+// Check for existing pending approval to display pending subjects
+$pendingApproval = $approvals->findOne([
+    'student_roll' => $roll,
+    'semester' => (int)$sem['sem'],
+    'type' => 'Credit Subjects',
+    'status' => 'pending'
+]);
+$pendingApprovalAdditions = $pendingApproval['credit_subjects'] ?? [];
+$pendingApprovalDeletions = $pendingApproval['credit_deletions'] ?? [];
+$pendingApprovalDeletionIds = array_column($pendingApprovalDeletions, 'subject_id');
 
 $success = '';
 $error = '';
@@ -360,6 +371,56 @@ if (isset($_POST['confirm_credits'])) {
     <div style="background:#fff3f3;padding:15px;border-radius:8px;margin:15px 0;border-left:4px solid #dc3545;">
         <strong style="color:#dc3545;">⚠ Pending Deletions:</strong> 
         <?= count($_SESSION['credit_changes']['deletions']) ?> subject(s) marked for deletion
+    </div>
+    <?php endif; ?>
+    
+    <!-- Display pending approval subjects (from submitted approval request) -->
+    <?php if (!empty($pendingApproval)): ?>
+    <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:16px;border-radius:8px;margin:20px 0;">
+        <h3 style="margin:0 0 12px 0;color:#856404;">⏳ Pending Approval - Changes Submitted</h3>
+        <p style="margin:0 0 12px 0;color:#856404;font-size:13px;">Your credit subject changes are awaiting mentor approval.</p>
+        
+        <?php if (!empty($pendingApprovalAdditions)): ?>
+        <h4 style="color:#28a745;margin:12px 0 8px 0;font-size:14px;">➕ Subjects to be Added (<?= count($pendingApprovalAdditions) ?>)</h4>
+        <table class="cat-table" style="margin-bottom:12px;">
+            <thead><tr><th>Subject Name</th><th>Code</th><th>Credits</th><th>Status</th></tr></thead>
+            <tbody>
+                <?php foreach ($pendingApprovalAdditions as $sub): 
+                    $name = $sub['subject_name'] ?? $sub['name'] ?? '';
+                    $code = $sub['subject_code'] ?? $sub['code'] ?? '';
+                    $credits = $sub['credits'] ?? 0;
+                ?>
+                <tr style="background:#f3fff3;">
+                    <td><?= htmlspecialchars($name) ?></td>
+                    <td><?= htmlspecialchars($code) ?></td>
+                    <td><?= $credits ?></td>
+                    <td><span style="color:#ffc107;font-weight:600;font-size:12px;">⏳ Pending</span></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php endif; ?>
+        
+        <?php if (!empty($pendingApprovalDeletions)): ?>
+        <h4 style="color:#dc3545;margin:12px 0 8px 0;font-size:14px;">➖ Subjects to be Removed (<?= count($pendingApprovalDeletions) ?>)</h4>
+        <table class="cat-table">
+            <thead><tr><th>Subject Name</th><th>Code</th><th>Credits</th><th>Status</th></tr></thead>
+            <tbody>
+                <?php foreach ($pendingApprovalDeletions as $sub): 
+                    $name = $sub['subject_name'] ?? $sub['name'] ?? '';
+                    $code = $sub['subject_code'] ?? $sub['code'] ?? '';
+                    $credits = $sub['credits'] ?? 0;
+                ?>
+                <tr style="background:#fff3f3;">
+                    <td><?= htmlspecialchars($name) ?></td>
+                    <td><?= htmlspecialchars($code) ?></td>
+                    <td><?= $credits ?></td>
+                    <td><span style="color:#ffc107;font-weight:600;font-size:12px;">⏳ Pending</span></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        <?php endif; ?>
     </div>
     <?php endif; ?>
     

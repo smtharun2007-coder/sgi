@@ -15,8 +15,12 @@ $subCursor = $subjects->find(['sem_id' => $sem_id, 'roll' => $roll, 'internal' =
 $subList   = iterator_to_array($subCursor);
 $maxTotal  = count(array_filter($subList, fn($s) => (int)($s['credits'] ?? 0) > 0)) * 100;
 
+// Check if credits are done - if so, freeze CAT marks entry
+$creditsDone = !empty($sem['credits_done']);
+$isReadOnly = $creditsDone;
+
 $success = '';
-if (isset($_POST['save_marks'])) {
+if (isset($_POST['save_marks']) && !$isReadOnly) {
     foreach ($subList as $sub) {
         $sub_id = (string)$sub['_id'];
         $raw    = strtoupper(trim($_POST['cat'][$sub_id] ?? ''));
@@ -96,6 +100,12 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
 <div class="container">
 <div class="form-box">
     <h2>CAT 3 Marks - Semester <?= $sem['sem'] ?></h2>
+    <?php if ($creditsDone): ?>
+    <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
+        <strong style="color:#856404;">🔒 CAT Marks Locked:</strong> 
+        <span style="color:#856404;">CAT marks entry is frozen because the Credit Subjects step has been completed.</span>
+    </div>
+    <?php endif; ?>
     <?php if ($success): ?><p class="success"><?= $success ?></p><?php endif; ?>
     <div style="display:flex;gap:12px;margin-bottom:16px;">
         <span style="background:#f5a623;color:#fff;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;">AB = Absent for Exam</span>
@@ -112,7 +122,8 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
                 <div class="cat-grid-name"><?= htmlspecialchars($sub['subject_name']) ?></div>
                 <div class="cat-grid-code"><?= htmlspecialchars($sub['subject_code']) ?></div>
                 <input type="text" name="cat[<?= $sid ?>]" placeholder="0 / AB / NIL"
-                    value="<?= isset($sub['cat3']) ? (($sub['cat3'] === 'nil') ? 'NIL' : $sub['cat3']) : '' ?>" oninput="calcTotal()">
+                    value="<?= isset($sub['cat3']) ? (($sub['cat3'] === 'nil') ? 'NIL' : $sub['cat3']) : '' ?>" 
+                    oninput="calcTotal()" <?= $isReadOnly ? 'readonly class="locked"' : '' ?>>
                 <div class="cat-grid-label">out of 100</div>
             </div>
             <?php endforeach; ?>
@@ -121,7 +132,11 @@ $percent = $maxTotal > 0 ? round(($t / $maxTotal) * 100, 2) : 0;
             <span>CAT 3 Total: <strong id="cat-total"><?= $t ?></strong> / <?= $maxTotal ?></span>
             <span>Percentage: <strong id="cat-percent"><?= $percent ?>%</strong></span>
         </div>
+        <?php if (!$isReadOnly): ?>
         <button type="submit" name="save_marks" class="btn-primary">Save CAT 3 Marks</button>
+        <?php else: ?>
+        <span class="btn-primary btn-disabled" style="display:inline-block;width:auto;padding:14px 20px;">🔒 CAT Marks Locked</span>
+        <?php endif; ?>
     </form>
     <?php endif; ?>
     <a href="semester_detail.php?id=<?= $sem_id ?>" class="btn-secondary" style="margin-top:12px;">Back to Semester</a>

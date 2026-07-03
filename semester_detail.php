@@ -15,6 +15,17 @@ $subCursor    = $subjects->find(['sem_id' => $id, 'roll' => $roll]);
 $subList      = iterator_to_array($subCursor);
 $internalSubs = array_filter($subList, fn($sub) => $sub['internal'] === 'yes');
 
+// Fetch pending credit subject approval to show pending changes
+$pendingCreditApproval = $approvals->findOne([
+    'student_roll' => $roll,
+    'semester' => (int)$s['sem'],
+    'type' => 'Credit Subjects',
+    'status' => 'pending'
+]);
+$pendingAdditions = $pendingCreditApproval['credit_subjects'] ?? [];
+$pendingDeletions = $pendingCreditApproval['credit_deletions'] ?? [];
+$pendingDeletionIds = array_column($pendingDeletions, 'subject_id');
+
 $cat1Total = 0; $cat1Max = 0;
 $cat2Total = 0; $cat2Max = 0;
 $cat3Total = 0; $cat3Max = 0;
@@ -107,7 +118,15 @@ function grade($sgi) {
         <hr style="margin:16px 0;">
 
         <h3>Subjects <?php if (!$cat1Submitted): ?><a href="edit_subjects.php?sem_id=<?= $id ?>" class="btn-calc" style="font-size:12px;padding:5px 12px;margin-left:10px;">✏️ Edit Subjects</a><?php endif; ?></h3>
-        <?php if (!empty($subList)): ?>
+        
+        <?php if (!empty($pendingCreditApproval)): ?>
+        <div style="background:#fff3cd;border-left:4px solid #ffc107;padding:12px 16px;border-radius:8px;margin-bottom:16px;">
+            <strong style="color:#856404;">⏳ Pending Approval:</strong> 
+            <span style="color:#856404;">Credit subject changes are pending mentor approval.</span>
+        </div>
+        <?php endif; ?>
+        
+        <?php if (!empty($subList) || !empty($pendingAdditions)): ?>
         <div class="cat-table-wrap">
             <table class="cat-table">
                 <thead>
@@ -121,11 +140,14 @@ function grade($sgi) {
                         <th>CAT 3</th>
                         <th>Total</th>
                         <th>%</th>
+                        <?php if (!empty($pendingCreditApproval)): ?><th>Status</th><?php endif; ?>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($subList as $sub): ?>
-                    <tr>
+                    <?php foreach ($subList as $sub): 
+                        $isPendingDeletion = in_array((string)$sub['_id'], $pendingDeletionIds);
+                    ?>
+                    <tr style="<?= $isPendingDeletion ? 'background:#fff3f3;text-decoration:line-through;opacity:0.7;' : '' ?>">
                         <td><?= htmlspecialchars($sub['subject_name']) ?></td>
                         <td><?= htmlspecialchars($sub['subject_code']) ?></td>
                         <td><?= $sub['credits'] ?></td>
@@ -139,8 +161,38 @@ function grade($sgi) {
                         <?php else: ?>
                             <td colspan="5" style="text-align:center;color:#aaa;">No Internal</td>
                         <?php endif; ?>
+                        <?php if (!empty($pendingCreditApproval)): ?>
+                            <td style="text-align:center;">
+                                <?php if ($isPendingDeletion): ?>
+                                    <span style="color:#dc3545;font-weight:600;font-size:12px;">⚠ Pending Deletion</span>
+                                <?php else: ?>
+                                    <span style="color:#28a745;font-size:12px;">✓</span>
+                                <?php endif; ?>
+                            </td>
+                        <?php endif; ?>
                     </tr>
                     <?php endforeach; ?>
+                    
+                    <?php if (!empty($pendingAdditions)): ?>
+                        <?php foreach ($pendingAdditions as $pendingSub): 
+                            $name = $pendingSub['subject_name'] ?? $pendingSub['name'] ?? '';
+                            $code = $pendingSub['subject_code'] ?? $pendingSub['code'] ?? '';
+                            $credits = $pendingSub['credits'] ?? 0;
+                        ?>
+                        <tr style="background:#f3fff3;">
+                            <td><?= htmlspecialchars($name) ?> <span style="color:#28a745;font-size:11px;">(New)</span></td>
+                            <td><?= htmlspecialchars($code) ?></td>
+                            <td><?= $credits ?></td>
+                            <td>No</td>
+                            <td colspan="5" style="text-align:center;color:#aaa;">Pending Approval</td>
+                            <?php if (!empty($pendingCreditApproval)): ?>
+                                <td style="text-align:center;">
+                                    <span style="color:#ffc107;font-weight:600;font-size:12px;">⏳ Pending</span>
+                                </td>
+                            <?php endif; ?>
+                        </tr>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>
@@ -404,10 +456,14 @@ subLabels.forEach((label, i) => {
 
 <?php if (!$sgiDone): ?>
 <div class="cat-fixed-bar">
-    <?php if (!$verified): ?>
+    <?php if (!$verified && !$creditsDone): ?>
         <a href="cat1_marks.php?sem_id=<?= $id ?>" class="btn-calc">CAT 1 Marks</a>
         <a href="cat2_marks.php?sem_id=<?= $id ?>" class="btn-calc">CAT 2 Marks</a>
         <a href="cat3_marks.php?sem_id=<?= $id ?>" class="btn-calc">CAT 3 Marks</a>
+    <?php elseif ($creditsDone && !$verified): ?>
+        <span class="btn-calc btn-disabled">🔒 CAT 1</span>
+        <span class="btn-calc btn-disabled">🔒 CAT 2</span>
+        <span class="btn-calc btn-disabled">🔒 CAT 3</span>
     <?php else: ?>
         <span class="btn-calc btn-disabled">CAT 1 Marks</span>
         <span class="btn-calc btn-disabled">CAT 2 Marks</span>
