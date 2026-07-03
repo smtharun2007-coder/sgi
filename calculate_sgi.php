@@ -109,6 +109,57 @@ if (isset($_POST['calculate'])) {
                 }
             }
 
+            // Check if there are other projects that need evaluator approval
+            $needsEvaluatorApproval = false;
+            $pendingEvaluatorProjects = [];
+            
+            if (!empty($otherProjects)) {
+                foreach ($otherProjects as $proj) {
+                    if (!empty($proj['evaluator_id'])) {
+                        // Check if evaluator exists
+                        $evaluator = $users->findOne(['mentor_id' => trim($proj['evaluator_id'])]);
+                        if ($evaluator) {
+                            $needsEvaluatorApproval = true;
+                            $pendingEvaluatorProjects[] = [
+                                'project_name' => $proj['name'],
+                                'count' => $proj['count'],
+                                'points' => $proj['points'],
+                                'evaluator_id' => $proj['evaluator_id'],
+                                'evaluator_name' => $evaluator['name'] ?? 'Unknown'
+                            ];
+                            
+                            // Create evaluator approval request
+                            $evalApproval = [
+                                'student_roll' => $roll,
+                                'student_name' => $u['name'],
+                                'evaluator_id' => trim($proj['evaluator_id']),
+                                'type' => 'Project Evaluation',
+                                'semester' => (int)$sem['sem'],
+                                'message' => 'Please verify and approve the other project: ' . $proj['name'],
+                                'status' => 'pending',
+                                'project_data' => [
+                                    'project_name' => $proj['name'],
+                                    'count' => $proj['count'],
+                                    'points' => $proj['points'],
+                                    'submitted_by' => $u['name'],
+                                    'submitted_by_mentor' => $u['mentor_id'] ?? ''
+                                ],
+                                'created_at' => new MongoDB\BSON\UTCDateTime()
+                            ];
+                            $approvals->insertOne($evalApproval);
+                            
+                            // Notify evaluator
+                            $notifications->insertOne([
+                                'mentor_id' => trim($proj['evaluator_id']),
+                                'message' => '📝 Project evaluation request from ' . $u['name'] . ' (' . $roll . ') for project: ' . $proj['name'],
+                                'read' => false,
+                                'created_at' => new MongoDB\BSON\UTCDateTime()
+                            ]);
+                        }
+                    }
+                }
+            }
+            
             // Create approval request with all SGI calculation details
             $approvalData = [
                 'student_roll' => $roll,
@@ -118,7 +169,7 @@ if (isset($_POST['calculate'])) {
                 'reg' => $u['reg'],
                 'mentor_id' => $u['mentor_id'] ?? '',
                 'message' => 'Request to confirm SGI for Semester ' . $sem['sem'],
-                'status' => 'pending',
+                'status' => $needsEvaluatorApproval ? 'pending_evaluator' : 'pending',
                 'sgi_data' => [
                     'sgi' => round($sgi, 2),
                     'academic_score' => round($academic, 2),
@@ -145,7 +196,8 @@ if (isset($_POST['calculate'])) {
                     'workshops' => (float)$_POST['workshop'],
                     'attendance' => $attendance,
                     'prev_gpa' => $prev_gpa,
-                    'other_projects' => $otherProjects
+                    'other_projects' => $otherProjects,
+                    'pending_evaluator_projects' => $pendingEvaluatorProjects
                 ],
                 'subject_count' => count($subList),
                 'sem_id' => $id,

@@ -417,6 +417,11 @@ if (isset($_POST['update_status']) && $isMentor) {
                 if ($existingSem && !empty($approval['sgi_data'])) {
                     $sgiData = $approval['sgi_data'];
                     
+                    // Handle BSONDocument conversion
+                    if ($sgiData instanceof \MongoDB\Model\BSONDocument) {
+                        $sgiData = (array)$sgiData;
+                    }
+                    
                     $semesters->updateOne(['_id' => $existingSem['_id']], ['$set' => [
                         'sgi' => (float)($sgiData['sgi'] ?? 0),
                         'academic_score' => (float)($sgiData['academic_score'] ?? 0),
@@ -425,6 +430,36 @@ if (isset($_POST['update_status']) && $isMentor) {
                         'activities_score' => (float)($sgiData['activities_score'] ?? 0),
                         'discipline_score' => (float)($sgiData['discipline_score'] ?? 0)
                     ]]);
+                }
+                break;
+                
+            case 'Project Evaluation':
+                // Handle project evaluation by evaluator
+                // When evaluator approves, notify the student's mentor
+                if (!empty($approval['project_data'])) {
+                    $projectData = $approval['project_data'];
+                    if ($projectData instanceof \MongoDB\Model\BSONDocument) {
+                        $projectData = (array)$projectData;
+                    }
+                    
+                    $mentorId = $projectData['submitted_by_mentor'] ?? '';
+                    if (!empty($mentorId)) {
+                        // Notify the student's mentor that evaluator has approved
+                        $notifications->insertOne([
+                            'mentor_id' => $mentorId,
+                            'message' => '✅ Evaluator has approved the other project "' . ($projectData['project_name'] ?? '') . '" for student ' . ($projectData['submitted_by'] ?? '') . ' (' . $roll . '). You can now proceed with SGI approval.',
+                            'read' => false,
+                            'created_at' => new MongoDB\BSON\UTCDateTime()
+                        ]);
+                    }
+                    
+                    // Also notify the student
+                    $notifications->insertOne([
+                        'roll' => $roll,
+                        'message' => '✅ Your other project "' . ($projectData['project_name'] ?? '') . '" has been approved by the evaluator.',
+                        'read' => false,
+                        'created_at' => new MongoDB\BSON\UTCDateTime()
+                    ]);
                 }
                 break;
         }

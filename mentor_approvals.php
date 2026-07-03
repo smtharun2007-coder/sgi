@@ -837,6 +837,10 @@ function showDetails(id) {
     else if (approval.type === 'SGI Calculation') {
         const sgiData = approval.sgi_data || {};
         
+        // Check for pending evaluator projects
+        const pendingEvalProjects = sgiData.pending_evaluator_projects || [];
+        const otherProjects = sgiData.other_projects || [];
+        
         subjectsHtml = `
             <!-- SGI Score Summary -->
             <div style="margin-top:16px;">
@@ -942,24 +946,48 @@ function showDetails(id) {
                         <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.main_projects || 0}</div>
                     </div>
                 </div>
-                ${sgiData.other_projects && sgiData.other_projects.length > 0 ? `
+                
+                ${otherProjects.length > 0 ? `
                 <div style="margin-top:12px;">
-                    <div style="font-size:12px;color:#888;margin-bottom:8px;">Other Projects:</div>
+                    <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                        🔧 Other Projects (Need Evaluator Approval)
+                    </div>
                     <table class="subjects-table">
                         <thead>
-                            <tr><th>Project Name</th><th>Count</th><th>Points</th><th>Evaluator ID</th></tr>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Count</th>
+                                <th>Points</th>
+                                <th>Evaluator ID</th>
+                                <th>Status</th>
+                            </tr>
                         </thead>
                         <tbody>
-                            ${sgiData.other_projects.map(p => `
+                            ${otherProjects.map(p => {
+                                const pendingProj = pendingEvalProjects.find(ep => ep.project_name === p.name);
+                                const status = pendingProj ? '⏳ Pending' : '✅ Approved';
+                                const statusColor = pendingProj ? '#ffc107' : '#28a745';
+                                return `
                                 <tr>
-                                    <td>${escapeHtml(p.name)}</td>
+                                    <td><strong>${escapeHtml(p.name)}</strong></td>
                                     <td style="text-align:center;">${p.count}</td>
                                     <td style="text-align:center;">${p.points}</td>
-                                    <td style="text-align:center;">${escapeHtml(p.evaluator_id || '—')}</td>
+                                    <td style="text-align:center;color:#888;">${escapeHtml(p.evaluator_id || '—')}</td>
+                                    <td style="text-align:center;font-weight:600;color:${statusColor};">${status}</td>
                                 </tr>
-                            `).join('')}
+                                `;
+                            }).join('')}
                         </tbody>
                     </table>
+                    ${pendingEvalProjects.length > 0 ? `
+                    <div style="margin-top:10px;padding:10px 14px;background:#fff3cd;border-radius:8px;font-size:12px;color:#856404;">
+                        ⚠️ ${pendingEvalProjects.length} project(s) pending evaluator approval. Once all evaluators approve, you can proceed with SGI approval.
+                    </div>
+                    ` : `
+                    <div style="margin-top:10px;padding:10px 14px;background:#d4edda;border-radius:8px;font-size:12px;color:#155724;">
+                        ✅ All other projects have been approved by evaluators.
+                    </div>
+                    `}
                 </div>
                 ` : ''}
             </div>
