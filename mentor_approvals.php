@@ -1043,6 +1043,86 @@ function showDetails(id) {
             </div>
         `;
     }
+    // Handle Project Evaluation approval type (for evaluators)
+    else if (approval.type === 'Project Evaluation') {
+        const projectData = approval.project_data || {};
+        
+        subjectsHtml = `
+            <!-- Project Evaluation Details -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span style="color:#28a745;">🔧</span> Project Evaluation Request
+                </h4>
+                <div style="background:#f8f9fa;padding:20px;border-radius:12px;">
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;">
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Student Name</div>
+                            <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${approval.student_name || '—'}</div>
+                        </div>
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Student Roll</div>
+                            <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${approval.student_roll || '—'}</div>
+                        </div>
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Submitted By Mentor</div>
+                            <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${projectData.submitted_by_mentor || '—'}</div>
+                        </div>
+                        <div style="background:#fff;padding:12px;border-radius:8px;">
+                            <div style="font-size:11px;color:#888;">Semester</div>
+                            <div style="font-size:16px;font-weight:600;color:#1a1a2e;">Semester ${approval.semester || '—'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Project Details -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>📋</span> Project Details
+                </h4>
+                <div style="background:#f8f9fa;padding:20px;border-radius:12px;">
+                    <table class="subjects-table">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>No. of Projects</th>
+                                <th>Points / Project</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>${escapeHtml(projectData.project_name || '—')}</strong></td>
+                                <td style="text-align:center;">${projectData.count || 0}</td>
+                                <td style="text-align:center;">${projectData.points || 0}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div style="margin-top:12px;padding:12px;background:#e7f3ff;border-radius:8px;font-size:13px;color:#0066cc;">
+                        ℹ️ Please verify that the student has completed the project(s) as described. If approved, the points will be added to the student's SGI calculation.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Summary -->
+            <div style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:12px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;">📊 Evaluation Summary</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                    <div style="background:#d4edda;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">Projects</div>
+                        <div style="font-size:24px;font-weight:700;color:#28a745;">${projectData.count || 0}</div>
+                    </div>
+                    <div style="background:#e7f3ff;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">Points Each</div>
+                        <div style="font-size:24px;font-weight:700;color:#0066cc;">${projectData.points || 0}</div>
+                    </div>
+                    <div style="background:#fff3cd;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">Total Points</div>
+                        <div style="font-size:24px;font-weight:700;color:#856404;">${(projectData.count || 0) * (projectData.points || 0)}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     // Handle Credit Subjects approval type with detailed comparison
     else if (approval.type === 'Credit Subjects') {
         const creditSubjects = approval.credit_subjects || [];

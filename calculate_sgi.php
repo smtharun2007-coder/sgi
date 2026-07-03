@@ -316,7 +316,7 @@ if (isset($_POST['calculate'])) {
                             <td><input type="number" name="other_count[]"   placeholder="Count" min="0" value="1" style="width:100%;margin:0;"></td>
                             <td><input type="number" step="0.01" name="other_points[]" placeholder="Points" min="0" value="0" style="width:100%;margin:0;"></td>
                             <td><input type="text"   name="other_eval_id[]" placeholder="Evaluator ID" style="width:100%;margin:0;"></td>
-                            <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">?</button></td>
+                        <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">×</button></td>
                         </tr>
                     </tbody>
                 </table>
@@ -361,7 +361,7 @@ function addOtherRow() {
         <td><input type="number" name="other_count[]"   placeholder="Count" min="0" value="1" style="width:100%;margin:0;"></td>
         <td><input type="number" step="0.01" name="other_points[]" placeholder="Points" min="0" value="0" style="width:100%;margin:0;"></td>
         <td><input type="text"   name="other_eval_id[]" placeholder="Evaluator ID" style="width:100%;margin:0;"></td>
-        <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">?</button></td>
+        <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">×</button></td>
     `;
     list.appendChild(row);
 }
