@@ -1046,19 +1046,16 @@ function showDetails(id) {
     // Handle Project Evaluation approval type (for evaluators)
     else if (approval.type === 'Project Evaluation') {
         let projectData = approval.project_data || {};
-        // Handle BSONDocument conversion - if projectData has $numberInt or similar, it's a BSON doc
-        if (typeof projectData === 'object' && projectData !== null && !Array.isArray(projectData)) {
-            // Check if it's a BSON-like object with weird keys
-            if (projectData.project_name === undefined && Object.keys(projectData).length > 0) {
-                // Try to extract values from BSON-like structure
-                projectData = {
-                    project_name: projectData.project_name || projectData.name || '',
-                    count: projectData.count || projectData.no || 0,
-                    points: projectData.points || projectData.point || 0,
-                    submitted_by: projectData.submitted_by || projectData.student || '',
-                    submitted_by_mentor: projectData.submitted_by_mentor || projectData.mentor_id || ''
-                };
-            }
+        // Handle BSONDocument conversion - ensure proper object
+        if (projectData && typeof projectData === 'object') {
+            // Extract values safely
+            projectData = {
+                project_name: projectData.project_name || projectData.name || '',
+                count: projectData.count || projectData.no || 0,
+                points: projectData.points || projectData.point || 0,
+                submitted_by: projectData.submitted_by || projectData.student || approval.student_name || '',
+                submitted_by_mentor: projectData.submitted_by_mentor || projectData.mentor_id || ''
+            };
         }
         
         subjectsHtml = `
