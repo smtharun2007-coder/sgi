@@ -727,6 +727,82 @@ function showDetails(id) {
             </div>
         `;
     }
+    // Handle Final CA Marks approval type
+    else if (approval.type === 'Final CA Marks') {
+        const caSubjects = approval.ca_subjects || [];
+        const caData = approval.ca_data || {};
+        
+        subjectsHtml = `
+            <!-- CA Data -->
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span style="color:#28a745;">📊</span> Final CA Details
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div style="background:#f8f9fa;padding:16px;border-radius:10px;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">GPA</div>
+                        <div style="font-size:24px;font-weight:700;color:#1a1a2e;">${caData.gpa || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:16px;border-radius:10px;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">CGPA</div>
+                        <div style="font-size:24px;font-weight:700;color:#1a1a2e;">${caData.cgpa || '—'}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- CA Marks for all subjects -->
+            ${caSubjects.length > 0 ? `
+            <div style="margin-top:16px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>📋</span> CA Marks (${caSubjects.length} Subjects)
+                </h4>
+                <table class="subjects-table">
+                    <thead>
+                        <tr>
+                            <th>Subject Name</th>
+                            <th>Code</th>
+                            <th>Credits</th>
+                            <th>Scored</th>
+                            <th>Max</th>
+                            <th>%</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${caSubjects.map(s => `
+                            <tr>
+                                <td><strong>${escapeHtml(s.subject_name)}</strong></td>
+                                <td style="color:#888;">${escapeHtml(s.subject_code)}</td>
+                                <td style="text-align:center;">${s.credits || '—'}</td>
+                                <td style="text-align:center;font-weight:600;">${s.ca_scored !== undefined ? s.ca_scored : '—'}</td>
+                                <td style="text-align:center;">${s.ca_max !== undefined ? s.ca_max : '—'}</td>
+                                <td style="text-align:center;color:${parseFloat(s.ca_percent) >= 80 ? '#28a745' : parseFloat(s.ca_percent) >= 60 ? '#f5a623' : '#dc3545'};font-weight:600;">${s.ca_percent !== undefined ? s.ca_percent + '%' : '—'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            ` : ''}
+            
+            <!-- Summary -->
+            <div style="margin-top:20px;padding:16px;background:#f8f9fa;border-radius:12px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;">📊 Summary</h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+                    <div style="background:#d4edda;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">Subjects</div>
+                        <div style="font-size:24px;font-weight:700;color:#28a745;">${caSubjects.length}</div>
+                    </div>
+                    <div style="background:#e7f3ff;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">GPA</div>
+                        <div style="font-size:24px;font-weight:700;color:#0066cc;">${caData.gpa || '—'}</div>
+                    </div>
+                    <div style="background:#fff3cd;padding:12px;border-radius:8px;text-align:center;">
+                        <div style="font-size:12px;color:#888;">CGPA</div>
+                        <div style="font-size:24px;font-weight:700;color:#856404;">${caData.cgpa || '—'}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
     // Handle Credit Subjects approval type with detailed comparison
     else if (approval.type === 'Credit Subjects') {
         const creditSubjects = approval.credit_subjects || [];

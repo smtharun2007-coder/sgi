@@ -197,7 +197,8 @@ if (isset($_POST['calculate'])) {
 <div class="container">
 <div class="form-box">
     <h2>Calculate SGI – Semester <?= $sem['sem'] ?></h2>
-    <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
+    <?php if (isset($error) && $error): ?><p class="error"><?= $error ?></p><?php endif; ?>
+    <?php if (isset($success) && $success): ?><p class="success"><?= $success ?></p><?php endif; ?>
     <form method="POST" enctype="multipart/form-data">
 
         <h3>Verification</h3>

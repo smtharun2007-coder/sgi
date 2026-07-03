@@ -134,6 +134,8 @@ if (isset($_POST['verify'])) {
 <div class="form-box">
     <h2>Verify & Confirm – Semester <?= $sem['sem'] ?></h2>
     <hr style="margin:16px 0;">
+    <?php if (isset($success)): ?><p class="success"><?= $success ?></p><?php endif; ?>
+    <?php if (isset($error_verify)): ?><p class="error"><?= $error_verify ?></p><?php endif; ?>
     <h3>CAT Marks Summary</h3>
     <div class="cat-table-wrap">
         <table class="cat-table">

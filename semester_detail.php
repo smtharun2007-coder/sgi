@@ -353,35 +353,23 @@ function grade($sgi) {
 
         <hr style="margin:24px 0;">
 
-        <!-- UPLOADED DOCUMENTS -->
-        <?php if ($sgiDone): ?>
+        <!-- UPLOADED DOCUMENTS (View only - documents are uploaded in Final CA Marks step) -->
+        <?php if ($sgiDone && (!empty($s['result_photo']) || !empty($s['ca_photo']))): ?>
         <h3>Documents</h3>
-        <?php if (!empty($docError)): ?><p class="error"><?= $docError ?></p><?php endif; ?>
-        <form method="POST" enctype="multipart/form-data" style="margin-top:12px;">
-            <div style="display:flex;flex-direction:column;gap:16px;">
-                <!-- Semester Result -->
-                <div>
-                    <?php if (!empty($s['result_photo'])): ?>
-                        <a href="#" onclick="showDoc('<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>','Semester Result');return false;" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📄 View Semester Result</a>
-                    <?php else: ?>
-                        <label>Upload Semester Result</label>
-                        <input type="file" name="result_photo" accept="image/*">
-                    <?php endif; ?>
-                </div>
-                <!-- CA Mark Sheet -->
-                <div>
-                    <?php if (!empty($s['ca_photo'])): ?>
-                        <a href="#" onclick="showDoc('<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>','CA Mark Sheet');return false;" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📋 View CA Mark Sheet</a>
-                    <?php else: ?>
-                        <label>Upload CA Mark Sheet Photo</label>
-                        <input type="file" name="ca_photo" accept="image/*">
-                    <?php endif; ?>
-                </div>
+        <div style="display:flex;flex-direction:column;gap:16px;">
+            <!-- Semester Result -->
+            <?php if (!empty($s['result_photo'])): ?>
+            <div>
+                <a href="#" onclick="showDoc('<?= htmlspecialchars(imgUrl($s['result_photo'])) ?>','Semester Result');return false;" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📄 View Semester Result</a>
             </div>
-            <?php if (empty($s['result_photo']) || empty($s['ca_photo'])): ?>
-            <button type="submit" name="upload_docs" class="btn-primary" style="margin-top:16px;">Save Documents</button>
             <?php endif; ?>
-        </form>
+            <!-- CA Mark Sheet -->
+            <?php if (!empty($s['ca_photo'])): ?>
+            <div>
+                <a href="#" onclick="showDoc('<?= htmlspecialchars(imgUrl($s['ca_photo'])) ?>','CA Mark Sheet');return false;" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:10px 18px;font-size:14px;">📋 View CA Mark Sheet</a>
+            </div>
+            <?php endif; ?>
+        </div>
         <hr style="margin:24px 0;">
         <?php endif; ?>
 
