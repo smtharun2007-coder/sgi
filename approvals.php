@@ -237,15 +237,25 @@ if (isset($_POST['update_status']) && $isMentor) {
                 ]);
                 $sem_id = (string)$result->getInsertedId();
                 
-                if (!empty($approval['subjects']) && is_array($approval['subjects'])) {
-                    foreach ($approval['subjects'] as $subject) {
+                // Save subjects - handle both array and MongoDB BSON array
+                $subjectsData = $approval['subjects'] ?? [];
+                if (!empty($subjectsData)) {
+                    // Convert MongoDB BSON array to PHP array if needed
+                    if ($subjectsData instanceof \MongoDB\Model\BSONArray) {
+                        $subjectsData = $subjectsData->getArrayCopy();
+                    }
+                    foreach ($subjectsData as $subject) {
+                        // Convert BSONDocument to array if needed
+                        if ($subject instanceof \MongoDB\Model\BSONDocument) {
+                            $subject = (array)$subject;
+                        }
                         $subjects->insertOne([
                             'sem_id' => $sem_id,
                             'roll' => $roll,
-                            'subject_name' => $subject['name'],
-                            'subject_code' => $subject['code'],
-                            'credits' => (int)$subject['credits'],
-                            'internal' => $subject['internal'],
+                            'subject_name' => $subject['name'] ?? '',
+                            'subject_code' => $subject['code'] ?? '',
+                            'credits' => (int)($subject['credits'] ?? 0),
+                            'internal' => $subject['internal'] ?? 'no',
                             'approved_from_approval' => true
                         ]);
                     }
