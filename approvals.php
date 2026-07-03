@@ -55,6 +55,84 @@ if (isset($_GET['fetch'])) {
     
     $result = [];
     foreach ($cursor as $approval) {
+        // Convert sgi_data BSONDocument to array
+        $sgiData = $approval['sgi_data'] ?? [];
+        if ($sgiData instanceof \MongoDB\Model\BSONDocument) {
+            $sgiData = (array)$sgiData;
+            // Convert nested BSONArrays to PHP arrays
+            if (isset($sgiData['pending_evaluator_projects']) && $sgiData['pending_evaluator_projects'] instanceof \MongoDB\Model\BSONArray) {
+                $sgiData['pending_evaluator_projects'] = $sgiData['pending_evaluator_projects']->getArrayCopy();
+            }
+            if (isset($sgiData['other_projects']) && $sgiData['other_projects'] instanceof \MongoDB\Model\BSONArray) {
+                $sgiData['other_projects'] = $sgiData['other_projects']->getArrayCopy();
+            }
+        }
+        
+        // Convert project_data BSONDocument to array
+        $projectData = $approval['project_data'] ?? [];
+        if ($projectData instanceof \MongoDB\Model\BSONDocument) {
+            $projectData = (array)$projectData;
+        }
+        
+        // Convert other BSONDocument fields to arrays
+        $verificationData = $approval['verification_data'] ?? [];
+        if ($verificationData instanceof \MongoDB\Model\BSONDocument) {
+            $verificationData = (array)$verificationData;
+        }
+        
+        $caData = $approval['ca_data'] ?? [];
+        if ($caData instanceof \MongoDB\Model\BSONDocument) {
+            $caData = (array)$caData;
+        }
+        
+        $documents = $approval['documents'] ?? [];
+        if ($documents instanceof \MongoDB\Model\BSONDocument) {
+            $documents = (array)$documents;
+        }
+        
+        // Convert credit_subjects and credit_deletions BSONArrays
+        $creditSubjects = $approval['credit_subjects'] ?? [];
+        if ($creditSubjects instanceof \MongoDB\Model\BSONArray) {
+            $creditSubjects = $creditSubjects->getArrayCopy();
+        }
+        
+        $creditDeletions = $approval['credit_deletions'] ?? [];
+        if ($creditDeletions instanceof \MongoDB\Model\BSONArray) {
+            $creditDeletions = $creditDeletions->getArrayCopy();
+        }
+        
+        $existingSubjects = $approval['existing_subjects'] ?? [];
+        if ($existingSubjects instanceof \MongoDB\Model\BSONArray) {
+            $existingSubjects = $existingSubjects->getArrayCopy();
+        }
+        
+        $existingNonInternal = $approval['existing_non_internal'] ?? [];
+        if ($existingNonInternal instanceof \MongoDB\Model\BSONArray) {
+            $existingNonInternal = $existingNonInternal->getArrayCopy();
+        }
+        
+        $catMarks = $approval['cat_marks'] ?? [];
+        if ($catMarks instanceof \MongoDB\Model\BSONArray) {
+            $catMarks = $catMarks->getArrayCopy();
+        }
+        
+        $caSubjects = $approval['ca_subjects'] ?? [];
+        if ($caSubjects instanceof \MongoDB\Model\BSONArray) {
+            $caSubjects = $caSubjects->getArrayCopy();
+        }
+        
+        // Convert IST timestamp
+        $createdAt = $approval['created_at']->toDateTime();
+        $createdAt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+        $createdAtStr = $createdAt->format('d M, Y h:i A');
+        
+        $updatedAtStr = '';
+        if (isset($approval['updated_at'])) {
+            $updatedAt = $approval['updated_at']->toDateTime();
+            $updatedAt->setTimezone(new DateTimeZone('Asia/Kolkata'));
+            $updatedAtStr = $updatedAt->format('d M, Y h:i A');
+        }
+        
         $result[] = [
             '_id' => (string)$approval['_id'],
             'student_roll' => $approval['student_roll'],
@@ -68,19 +146,20 @@ if (isset($_GET['fetch'])) {
             'message' => $approval['message'],
             'status' => $approval['status'],
             'mentor_remarks' => $approval['mentor_remarks'] ?? '',
-            // New approval types data
-            'credit_subjects' => $approval['credit_subjects'] ?? [],
-            'credit_deletions' => $approval['credit_deletions'] ?? [],
-            'existing_subjects' => $approval['existing_subjects'] ?? [],
-            'existing_non_internal' => $approval['existing_non_internal'] ?? [],
-            'verification_data' => $approval['verification_data'] ?? [],
-            'cat_marks' => $approval['cat_marks'] ?? [],
-            'ca_data' => $approval['ca_data'] ?? [],
-            'ca_subjects' => $approval['ca_subjects'] ?? [],
-            'sgi_data' => $approval['sgi_data'] ?? [],
-            'documents' => $approval['documents'] ?? [],
-            'created_at' => date('d M, Y h:i A', $approval['created_at']->toDateTime()->getTimestamp()),
-            'updated_at' => isset($approval['updated_at']) ? date('d M, Y h:i A', $approval['updated_at']->toDateTime()->getTimestamp()) : ''
+            // New approval types data (properly converted from BSON)
+            'credit_subjects' => $creditSubjects,
+            'credit_deletions' => $creditDeletions,
+            'existing_subjects' => $existingSubjects,
+            'existing_non_internal' => $existingNonInternal,
+            'verification_data' => $verificationData,
+            'cat_marks' => $catMarks,
+            'ca_data' => $caData,
+            'ca_subjects' => $caSubjects,
+            'sgi_data' => $sgiData,
+            'project_data' => $projectData,
+            'documents' => $documents,
+            'created_at' => $createdAtStr,
+            'updated_at' => $updatedAtStr
         ];
     }
     

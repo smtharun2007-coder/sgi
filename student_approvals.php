@@ -509,7 +509,8 @@ function getFilteredApprovals() {
         const statusMatch = currentStatusFilter === 'all' || a.status === currentStatusFilter;
         let semMatch = true;
         if (currentSemesterFilter === 'current' && currentSemester) {
-            semMatch = a.semester == currentSemester;
+            // Match current semester or approvals without a semester (general requests)
+            semMatch = (a.semester == currentSemester) || (a.semester === null) || (a.semester === undefined) || (a.semester === '');
         } else if (currentSemesterFilter !== 'all' && currentSemesterFilter !== 'current') {
             semMatch = a.semester == currentSemesterFilter;
         }

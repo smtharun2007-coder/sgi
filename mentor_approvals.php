@@ -464,8 +464,8 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
                 &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <a href="#" onclick="markAll(event)">Mark all read</a></div>
-                <div id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
+                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
+                <div class="notif-list-scroll" id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
             </div>
         </div>
         <a href="mentor_logout.php" class="btn-logout">Logout</a>
@@ -1156,17 +1156,25 @@ function showDetails(id) {
     // Handle Project Evaluation approval type (for evaluators)
     else if (approval.type === 'Project Evaluation') {
         let projectData = approval.project_data || {};
-        // Handle BSONDocument conversion - ensure proper object
+        // Handle BSONDocument conversion - check for nested structure
         if (projectData && typeof projectData === 'object') {
-            // Extract values safely
-            projectData = {
-                project_name: projectData.project_name || projectData.name || '',
-                count: projectData.count || projectData.no || 0,
-                points: projectData.points || projectData.point || 0,
-                submitted_by: projectData.submitted_by || projectData.student || approval.student_name || '',
-                submitted_by_mentor: projectData.submitted_by_mentor || projectData.mentor_id || ''
-            };
+            // Check if it's a BSON-like object with $numberInt or similar
+            if (projectData.project_name === undefined && Object.keys(projectData).length > 0) {
+                // Try to extract from BSON-like structure
+                projectData = {
+                    project_name: projectData.project_name || projectData.name || '',
+                    count: projectData.count ? (projectData.count.$numberInt || projectData.count) : 0,
+                    points: projectData.points ? (projectData.points.$numberInt || projectData.points) : 0,
+                    submitted_by: projectData.submitted_by || projectData.student || approval.student_name || '',
+                    submitted_by_mentor: projectData.submitted_by_mentor || projectData.mentor_id || ''
+                };
+            }
         }
+        
+        // Ensure numeric values are properly parsed
+        const projectCount = parseInt(projectData.count) || 0;
+        const projectPoints = parseInt(projectData.points) || 0;
+        const totalPoints = projectCount * projectPoints;
         
         subjectsHtml = `
             <!-- Project Evaluation Details -->
@@ -1213,8 +1221,8 @@ function showDetails(id) {
                         <tbody>
                             <tr>
                                 <td><strong>${escapeHtml(projectData.project_name || '—')}</strong></td>
-                                <td style="text-align:center;">${projectData.count || 0}</td>
-                                <td style="text-align:center;">${projectData.points || 0}</td>
+                                <td style="text-align:center;">${projectCount}</td>
+                                <td style="text-align:center;">${projectPoints}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -1238,7 +1246,7 @@ function showDetails(id) {
                     </div>
                     <div style="background:#fff3cd;padding:12px;border-radius:8px;text-align:center;">
                         <div style="font-size:12px;color:#888;">Total Points</div>
-                        <div style="font-size:24px;font-weight:700;color:#856404;">${(projectData.count || 0) * (projectData.points || 0)}</div>
+                        <div style="font-size:24px;font-weight:700;color:#856404;">${totalPoints}</div>
                     </div>
                 </div>
             </div>
