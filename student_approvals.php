@@ -4,136 +4,74 @@ requireLogin();
 
 $u = $_SESSION['user'];
 $unreadCount = $notifications->countDocuments(['roll' => $u['roll'], 'read' => false]);
+
+// Get current semester (latest semester without SGI)
+$currentSemCursor = $semesters->find(
+    ['roll' => $u['roll']],
+    ['sort' => ['sem' => -1]]
+);
+$semList = iterator_to_array($currentSemCursor);
+$currentSem = null;
+foreach ($semList as $s) {
+    if (empty($s['sgi'])) {
+        $currentSem = $s;
+        break;
+    }
+}
+$currentSemNum = $currentSem['sem'] ?? null;
 ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SGI – Semester Approval Requests</title>
+    <title>SGI – My Approval Requests</title>
     <link rel="stylesheet" href="/css/style.css?v=3">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
-        .approval-card {
-            background: #fff;
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
-            margin-top: 24px;
-        }
-        .approval-header {
+        .approval-hero {
             background: linear-gradient(135deg, #1a1a2e, #e94560);
-            padding: 16px 24px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .approval-row {
-            padding: 16px 24px;
-            border-bottom: 1px solid #f0f2f5;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            transition: background 0.2s;
-            cursor: pointer;
-        }
-        .approval-row:hover { background: #fafafa; }
-        .approval-row:last-child { border-bottom: none; }
-        .approval-info { flex: 1; }
-        .approval-type {
-            font-size: 15px;
-            font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 4px;
-        }
-        .approval-meta {
-            font-size: 12px;
-            color: #888;
-            display: flex;
-            gap: 12px;
-            margin-top: 4px;
-        }
-        .approval-subject {
-            font-size: 13px;
-            color: #555;
-            margin-top: 6px;
-            background: #f8f9fa;
-            padding: 8px 12px;
-            border-radius: 6px;
-            display: inline-block;
-        }
-        .status-badge {
-            padding: 4px 12px;
+            padding: 40px 24px;
             border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            flex-shrink: 0;
-        }
-        .status-pending {
-            background: #fff3cd;
-            color: #856404;
-        }
-        .status-approved {
-            background: #d4edda;
-            color: #155724;
-        }
-        .status-rejected {
-            background: #f8d7da;
-            color: #721c24;
-        }
-        .mentor-remarks {
-            background: #fff3f3;
-            border-radius: 8px;
-            padding: 10px 14px;
-            margin-top: 8px;
-            font-size: 12px;
-            color: #555;
-            border-left: 3px solid #dc3545;
-            display: none;
-        }
-        .mentor-remarks strong {
-            color: #dc3545;
-            display: block;
-            margin-bottom: 4px;
-            font-size: 11px;
-            text-transform: uppercase;
-        }
-        .btn-delete {
-            background: #dc3545;
+            margin-top: 24px;
+            text-align: center;
             color: #fff;
-            border: none;
-            padding: 6px 14px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: background 0.2s;
-            margin-left: 8px;
         }
-        .btn-delete:hover { background: #c82333; }
-        
+        .approval-hero h1 {
+            margin: 0 0 8px;
+            font-size: 28px;
+        }
+        .approval-hero p {
+            margin: 0;
+            opacity: 0.9;
+            font-size: 15px;
+        }
+
         .stats-row {
             display: flex;
             gap: 16px;
-            margin-top: 20px;
+            margin-top: 24px;
         }
         .stat-card {
             flex: 1;
             background: #fff;
-            border-radius: 12px;
-            padding: 16px;
+            border-radius: 16px;
+            padding: 20px;
             text-align: center;
             box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-top: 4px solid transparent;
         }
-        .stat-card.pending { border-top: 4px solid #ffc107; }
-        .stat-card.approved { border-top: 4px solid #28a745; }
-        .stat-card.rejected { border-top: 4px solid #dc3545; }
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+        }
+        .stat-card.pending { border-top-color: #ffc107; }
+        .stat-card.approved { border-top-color: #28a745; }
+        .stat-card.rejected { border-top-color: #dc3545; }
         .stat-card .stat-number {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             color: #1a1a2e;
         }
@@ -142,55 +80,178 @@ $unreadCount = $notifications->countDocuments(['roll' => $u['roll'], 'read' => f
             color: #888;
             text-transform: uppercase;
             letter-spacing: 0.5px;
-            margin-top: 4px;
+            margin-top: 6px;
         }
-        .empty-state {
-            text-align: center;
-            padding: 48px 24px;
-            color: #888;
-        }
-        .empty-state .empty-icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-        }
-        .filter-tabs {
+
+        .filters-bar {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-top: 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
             display: flex;
-            gap: 8px;
-            padding: 16px 24px 0;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
         }
-        .filter-tab {
-            padding: 6px 16px;
-            border: none;
-            background: #f0f2f5;
-            border-radius: 20px;
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .filter-group label {
             font-size: 13px;
+            font-weight: 600;
+            color: #555;
+        }
+        .filter-group select {
+            padding: 8px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 13px;
+            background: #f8f9fa;
             cursor: pointer;
             transition: all 0.2s;
-            font-weight: 500;
         }
-        .filter-tab.active {
+        .filter-group select:focus {
+            outline: none;
+            border-color: #e94560;
+            background: #fff;
+        }
+
+        .status-tabs {
+            display: flex;
+            gap: 6px;
+        }
+        .status-tab {
+            padding: 8px 18px;
+            border: none;
+            background: #f0f2f5;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #666;
+        }
+        .status-tab.active {
             background: linear-gradient(135deg, #1a1a2e, #e94560);
             color: #fff;
+            box-shadow: 0 4px 12px rgba(233,69,96,0.3);
         }
-        .filter-tab:hover:not(.active) {
+        .status-tab:hover:not(.active) {
             background: #e0e0e0;
         }
-        .semester-badge {
-            background: linear-gradient(135deg, #1a1a2e, #e94560);
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            margin-left: 6px;
+
+        .approval-list {
+            margin-top: 20px;
         }
-        .subjects-preview {
-            font-size: 11px;
+        .approval-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border-left: 4px solid transparent;
+        }
+        .approval-card:hover {
+            transform: translateX(4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        }
+        .approval-card.pending { border-left-color: #ffc107; }
+        .approval-card.approved { border-left-color: #28a745; }
+        .approval-card.rejected { border-left-color: #dc3545; }
+
+        .approval-icon {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+        .approval-card.pending .approval-icon { background: #fff3cd; }
+        .approval-card.approved .approval-icon { background: #d4edda; }
+        .approval-card.rejected .approval-icon { background: #f8d7da; }
+
+        .approval-content { flex: 1; }
+        .approval-type {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+        .approval-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
             color: #888;
-            margin-top: 4px;
-            font-style: italic;
         }
-        /* Modal styles */
+        .approval-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .approval-status {
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+        .approval-card.pending .approval-status {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .approval-card.approved .approval-status {
+            background: #d4edda;
+            color: #155724;
+        }
+        .approval-card.rejected .approval-status {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-cancel {
+            background: #dc3545;
+            color: #fff;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+        .btn-cancel:hover { background: #c82333; }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 24px;
+            color: #888;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+        .empty-state .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -199,28 +260,35 @@ $unreadCount = $notifications->countDocuments(['roll' => $u['roll'], 'read' => f
             z-index: 1000;
             align-items: center;
             justify-content: center;
+            backdrop-filter: blur(4px);
         }
         .modal-overlay.active {
             display: flex;
         }
         .modal-content {
             background: #fff;
-            border-radius: 16px;
-            max-width: 500px;
+            border-radius: 20px;
+            max-width: 600px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlide 0.3s ease;
+        }
+        @keyframes modalSlide {
+            from { transform: translateY(-20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
         }
         .modal-header {
             background: linear-gradient(135deg, #1a1a2e, #e94560);
-            padding: 20px 24px;
+            padding: 24px;
             color: #fff;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            border-radius: 20px 20px 0 0;
         }
-        .modal-header h3 { margin: 0; }
+        .modal-header h3 { margin: 0; font-size: 18px; }
         .modal-close {
             background: none;
             border: none;
@@ -229,31 +297,77 @@ $unreadCount = $notifications->countDocuments(['roll' => $u['roll'], 'read' => f
             cursor: pointer;
         }
         .modal-body { padding: 24px; }
-        .detail-row {
-            display: flex;
-            margin-bottom: 12px;
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
         }
-        .detail-label {
-            font-weight: 600;
+        .detail-item {
+            background: #f8f9fa;
+            padding: 14px 18px;
+            border-radius: 12px;
+        }
+        .detail-item label {
+            font-size: 11px;
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .detail-item span {
+            font-size: 15px;
             color: #333;
-            width: 120px;
-            flex-shrink: 0;
+            font-weight: 600;
         }
-        .detail-value { color: #555; }
+
+        .remarks-box {
+            background: #fff3f3;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-top: 16px;
+            border-left: 4px solid #dc3545;
+        }
+        .remarks-box.approved {
+            background: #f3fff3;
+            border-left-color: #28a745;
+        }
+        .remarks-box label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .remarks-box p {
+            margin: 0;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.6;
+        }
+
         .subjects-list {
             background: #f8f9fa;
-            border-radius: 8px;
-            padding: 12px;
-            margin-top: 8px;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 16px;
         }
         .subject-item {
             display: flex;
             justify-content: space-between;
-            padding: 6px 0;
+            padding: 10px 0;
             border-bottom: 1px solid #eee;
-            font-size: 13px;
         }
         .subject-item:last-child { border-bottom: none; }
+        .subject-item span:first-child {
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+        .subject-item span:last-child {
+            color: #888;
+            font-size: 13px;
+        }
     </style>
 </head>
 <body>
@@ -279,41 +393,53 @@ $unreadCount = $notifications->countDocuments(['roll' => $u['roll'], 'read' => f
 </nav>
 
 <div class="container">
+    <!-- Hero Section -->
+    <div class="approval-hero">
+        <h1>📋 My Approval Requests</h1>
+        <p>Track and manage your semester registration, credit subjects, verification, CA marks, and SGI calculation requests</p>
+    </div>
+
     <!-- Stats -->
-    <div class="stats-row" id="statsRow">
-        <div class="stat-card pending">
+    <div class="stats-row">
+        <div class="stat-card pending" onclick="setStatusFilter('pending')">
             <div class="stat-number" id="pendingCount">0</div>
-            <div class="stat-label">Pending</div>
+            <div class="stat-label">⏳ Pending</div>
         </div>
-        <div class="stat-card approved">
+        <div class="stat-card approved" onclick="setStatusFilter('approved')">
             <div class="stat-number" id="approvedCount">0</div>
-            <div class="stat-label">Approved</div>
+            <div class="stat-label">✅ Approved</div>
         </div>
-        <div class="stat-card rejected">
+        <div class="stat-card rejected" onclick="setStatusFilter('rejected')">
             <div class="stat-number" id="rejectedCount">0</div>
-            <div class="stat-label">Rejected</div>
+            <div class="stat-label">❌ Rejected</div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label>📚 Semester:</label>
+            <select id="semesterFilter" onchange="applyFilters()">
+                <option value="current">Current Semester</option>
+                <?php foreach ($semList as $s): ?>
+                    <option value="<?= $s['sem'] ?>">Semester <?= $s['sem'] ?></option>
+                <?php endforeach; ?>
+                <option value="all">All Semesters</option>
+            </select>
+        </div>
+        <div class="status-tabs" id="statusTabs">
+            <button class="status-tab active" data-status="all" onclick="setStatusFilter('all')">All</button>
+            <button class="status-tab" data-status="pending" onclick="setStatusFilter('pending')">Pending</button>
+            <button class="status-tab" data-status="approved" onclick="setStatusFilter('approved')">Approved</button>
+            <button class="status-tab" data-status="rejected" onclick="setStatusFilter('rejected')">Rejected</button>
         </div>
     </div>
 
     <!-- Approval List -->
-    <div class="approval-card">
-        <div class="approval-header">
-            <span>📋 Semester Registration Requests</span>
-        </div>
-        
-        <!-- Filter Tabs -->
-        <div class="filter-tabs">
-            <button class="filter-tab active" data-filter="all">All</button>
-            <button class="filter-tab" data-filter="pending">Pending</button>
-            <button class="filter-tab" data-filter="approved">Approved</button>
-            <button class="filter-tab" data-filter="rejected">Rejected</button>
-        </div>
-        
-        <div id="approvalList">
-            <div class="empty-state">
-                <div class="empty-icon">📝</div>
-                <p>Loading approval requests...</p>
-            </div>
+    <div class="approval-list" id="approvalList">
+        <div class="empty-state">
+            <div class="empty-icon">📋</div>
+            <p>Loading approval requests...</p>
         </div>
     </div>
 </div>
@@ -332,10 +458,11 @@ $unreadCount = $notifications->countDocuments(['roll' => $u['roll'], 'read' => f
 </div>
 
 <script>
-let currentFilter = 'all';
+const currentSemester = <?= $currentSemNum ? $currentSemNum : 'null' ?>;
+let currentStatusFilter = 'all';
+let currentSemesterFilter = 'current';
 let approvals = [];
 
-// Load approvals on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadApprovals();
 });
@@ -362,87 +489,126 @@ function updateStats() {
     document.getElementById('rejectedCount').textContent = rejected;
 }
 
+function setStatusFilter(status) {
+    currentStatusFilter = status;
+    document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
+    const tab = document.querySelector(`[data-status="${status}"]`);
+    if (tab) tab.classList.add('active');
+    renderApprovals();
+}
+
+function applyFilters() {
+    currentSemesterFilter = document.getElementById('semesterFilter').value;
+    renderApprovals();
+}
+
+function getFilteredApprovals() {
+    return approvals.filter(a => {
+        const statusMatch = currentStatusFilter === 'all' || a.status === currentStatusFilter;
+        let semMatch = true;
+        if (currentSemesterFilter === 'current' && currentSemester) {
+            semMatch = a.semester == currentSemester;
+        } else if (currentSemesterFilter !== 'all' && currentSemesterFilter !== 'current') {
+            semMatch = a.semester == currentSemesterFilter;
+        }
+        return statusMatch && semMatch;
+    });
+}
+
 function renderApprovals() {
     const list = document.getElementById('approvalList');
-    const filtered = currentFilter === 'all' 
-        ? approvals 
-        : approvals.filter(a => a.status === currentFilter);
-    
+    const filtered = getFilteredApprovals();
+
     if (filtered.length === 0) {
         list.innerHTML = `
             <div class="empty-state">
                 <div class="empty-icon">📋</div>
-                <p>No ${currentFilter === 'all' ? '' : currentFilter} approval requests found.</p>
+                <p>No ${currentStatusFilter === 'all' ? '' : currentStatusFilter} approval requests found${currentSemesterFilter === 'current' ? ' for current semester' : ''}.</p>
             </div>
         `;
         return;
     }
-    
-    list.innerHTML = filtered.map(a => `
-        <div class="approval-row" onclick="showDetails('${a._id}')">
-            <div class="approval-info">
-                <div class="approval-type">
-                    📚 Semester ${a.semester || a.type}
-                    <span class="semester-badge">Sem ${a.semester || '?'}</span>
-                </div>
+
+    list.innerHTML = filtered.map(a => {
+        const typeIcons = {
+            'Semester Registration': '📚',
+            'Credit Subjects': '➕',
+            'Verification': '✅',
+            'Final CA Marks': '📊',
+            'SGI Calculation': '📈'
+        };
+        const icon = typeIcons[a.type] || '📋';
+
+        return `
+        <div class="approval-card ${a.status}" onclick="showDetails('${a._id}')">
+            <div class="approval-icon">${icon}</div>
+            <div class="approval-content">
+                <div class="approval-type">${a.type || 'Semester Registration'}</div>
                 <div class="approval-meta">
                     <span>📅 ${a.created_at}</span>
-                    <span>👤 ${a.student_name}</span>
+                    <span>📚 Sem ${a.semester || '?'}</span>
+                    ${a.subject_count ? `<span>📝 ${a.subject_count} subjects</span>` : ''}
                 </div>
-                <div class="subjects-preview">${a.subject_count || 0} subjects registered</div>
-                ${a.status === 'rejected' && a.mentor_remarks ? 
-                    `<div class="mentor-remarks" style="display:block">
-                        <strong>⚠️ Rejection Reason:</strong>
-                        ${escapeHtml(a.mentor_remarks)}
-                    </div>` : ''}
             </div>
-            <div style="display:flex;align-items:center;">
-                <span class="status-badge status-${a.status}">${a.status}</span>
-                ${a.status === 'pending' ? 
-                    `<button class="btn-delete" onclick="event.stopPropagation();deleteApproval('${a._id}')">Cancel</button>` 
-                    : ''}
-            </div>
+            <span class="approval-status">${a.status}</span>
+            ${a.status === 'pending' ? `
+                <button class="btn-cancel" onclick="event.stopPropagation();deleteApproval('${a._id}')">Cancel</button>
+            ` : ''}
         </div>
-    `).join('');
+    `}).join('');
 }
 
 function showDetails(id) {
     const approval = approvals.find(a => a._id === id);
     if (!approval) return;
-    
-    document.getElementById('modalTitle').textContent = `Semester ${approval.semester || approval.type} Registration`;
+
+    const statusIcon = approval.status === 'approved' ? '✅' : approval.status === 'rejected' ? '❌' : '⏳';
+
+    document.getElementById('modalTitle').textContent = `${statusIcon} ${approval.type} - Semester ${approval.semester}`;
     document.getElementById('modalBody').innerHTML = `
-        <div class="detail-row">
-            <div class="detail-label">Status:</div>
-            <div class="detail-value"><span class="status-badge status-${approval.status}">${approval.status}</span></div>
+        <div class="detail-grid">
+            <div class="detail-item">
+                <label>Status</label>
+                <span><span class="badge badge-${approval.status}" style="padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;background:${approval.status === 'pending' ? '#fff3cd' : approval.status === 'approved' ? '#d4edda' : '#f8d7da'};color:${approval.status === 'pending' ? '#856404' : approval.status === 'approved' ? '#155724' : '#721c24'};">${approval.status}</span></span>
+            </div>
+            <div class="detail-item">
+                <label>Semester</label>
+                <span>Semester ${approval.semester}</span>
+            </div>
+            <div class="detail-item">
+                <label>Submitted On</label>
+                <span>${approval.created_at}</span>
+            </div>
+            <div class="detail-item">
+                <label>${approval.updated_at ? 'Processed On' : 'Last Updated'}</label>
+                <span>${approval.updated_at || '—'}</span>
+            </div>
         </div>
-        <div class="detail-row">
-            <div class="detail-label">Semester:</div>
-            <div class="detail-value">${approval.semester || 'N/A'}</div>
-        </div>
-        <div class="detail-row">
-            <div class="detail-label">Submitted:</div>
-            <div class="detail-value">${approval.created_at}</div>
-        </div>
-        ${approval.updated_at ? `
-        <div class="detail-row">
-            <div class="detail-label">Updated:</div>
-            <div class="detail-value">${approval.updated_at}</div>
-        </div>` : ''}
+
         ${approval.mentor_remarks ? `
-        <div class="detail-row">
-            <div class="detail-label">Mentor Remarks:</div>
-            <div class="detail-value">${escapeHtml(approval.mentor_remarks)}</div>
+        <div class="remarks-box ${approval.status === 'approved' ? 'approved' : ''}">
+            <label>${approval.status === 'approved' ? '✅ Approval Remarks' : '❌ Rejection Reason'}</label>
+            <p>${escapeHtml(approval.mentor_remarks)}</p>
         </div>` : ''}
-        <div style="margin-top:16px;">
-            <div class="detail-label" style="margin-bottom:8px;">Subjects:</div>
-            <div class="subjects-list">
-                ${approval.subjects ? approval.subjects.map(s => `
-                    <div class="subject-item">
-                        <span>${escapeHtml(s.name)} (${escapeHtml(s.code)})</span>
-                        <span>Credits: ${s.credits}</span>
-                    </div>
-                `).join('') : '<div style="color:#888;font-size:13px;">No subject details available</div>'}
+
+        <div class="subjects-list">
+            <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:12px;">📋 Request Details</div>
+            <div class="subject-item">
+                <span>Type</span>
+                <span>${approval.type}</span>
+            </div>
+            <div class="subject-item">
+                <span>Student</span>
+                <span>${approval.student_name} (${approval.student_roll})</span>
+            </div>
+            ${approval.subject_count ? `
+            <div class="subject-item">
+                <span>Subjects</span>
+                <span>${approval.subject_count} subjects</span>
+            </div>` : ''}
+            <div class="subject-item">
+                <span>Message</span>
+                <span>${approval.message || '—'}</span>
             </div>
         </div>
     `;
@@ -455,11 +621,11 @@ function closeModal() {
 
 function deleteApproval(id) {
     if (!confirm('Are you sure you want to cancel this pending request?')) return;
-    
+
     const formData = new FormData();
     formData.append('approval_id', id);
     formData.append('delete', '1');
-    
+
     fetch('approvals.php', { method: 'POST', body: formData })
         .then(r => r.json())
         .then(data => {
@@ -478,11 +644,11 @@ function escapeHtml(text) {
 }
 
 // Filter tabs
-document.querySelectorAll('.filter-tab').forEach(tab => {
+document.querySelectorAll('.status-tab').forEach(tab => {
     tab.addEventListener('click', function() {
-        document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
         this.classList.add('active');
-        currentFilter = this.dataset.filter;
+        currentStatusFilter = this.dataset.filter;
         renderApprovals();
     });
 });

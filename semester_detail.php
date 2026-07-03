@@ -375,11 +375,13 @@ function grade($sgi) {
 
         <!-- APPROVAL HISTORY LINK -->
         <hr style="margin:24px 0;">
-        <div style="text-align:center;padding:20px;">
-            <a href="student_approvals.php" class="btn-calc" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;font-size:14px;">
-                📋 View All Approval Requests
+        <div style="background:linear-gradient(135deg,#f8f9fa,#e9ecef);border-radius:16px;padding:28px;text-align:center;box-shadow:0 4px 14px rgba(0,0,0,0.06);">
+            <div style="font-size:36px;margin-bottom:12px;">📋</div>
+            <h3 style="margin-bottom:8px;color:#1a1a2e;font-size:18px;">Approval Requests</h3>
+            <p style="color:#666;font-size:13px;margin-bottom:20px;max-width:400px;margin-left:auto;margin-right:auto;">Track the status of your semester registration, credit subjects, verification, CA marks, and SGI calculation requests</p>
+            <a href="student_approvals.php" style="display:inline-flex;align-items:center;gap:8px;padding:14px 32px;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;border-radius:12px;font-size:15px;font-weight:600;text-decoration:none;transition:all 0.3s;box-shadow:0 4px 14px rgba(26,26,46,0.3);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(26,26,46,0.4)';" onmouseleave="this.style.transform='translateY(0)';this.style.boxShadow='0 4px 14px rgba(26,26,46,0.3)';">
+                View All Requests <span style="font-size:16px;">→</span>
             </a>
-            <p style="color:#888;font-size:13px;margin-top:8px;">Track the status of your semester registration, credit subjects, and verification requests</p>
         </div>
 
         <div style="text-align:center;margin-top:30px;">

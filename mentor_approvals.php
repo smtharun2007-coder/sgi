@@ -1,4 +1,4 @@
-in<?php
+<?php
 include 'config.php';
 if (!isset($_SESSION['mentor'])) { header("Location: mentor_login.php"); exit; }
 
@@ -731,6 +731,7 @@ function showDetails(id) {
     else if (approval.type === 'Final CA Marks') {
         const caSubjects = approval.ca_subjects || [];
         const caData = approval.ca_data || {};
+        const documents = approval.documents || {};
         
         subjectsHtml = `
             <!-- CA Data -->
@@ -780,6 +781,35 @@ function showDetails(id) {
                         `).join('')}
                     </tbody>
                 </table>
+            </div>
+            ` : ''}
+            
+            <!-- Uploaded Documents -->
+            ${(documents.result_photo || documents.ca_photo || caData.result_photo || caData.ca_photo) ? `
+            <div style="margin-top:20px;">
+                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>📎</span> Uploaded Documents
+                </h4>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    ${(documents.result_photo || caData.result_photo) ? `
+                    <div style="background:#f8f9fa;padding:16px;border-radius:10px;text-align:center;">
+                        <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:8px;">📄 Semester Result</div>
+                        <div style="font-size:12px;color:#28a745;">✓ Document uploaded</div>
+                        <div style="margin-top:8px;">
+                            <a href="${documents.result_photo || caData.result_photo}" target="_blank" style="font-size:13px;color:#0066cc;text-decoration:none;">View Document →</a>
+                        </div>
+                    </div>
+                    ` : ''}
+                    ${(documents.ca_photo || caData.ca_photo) ? `
+                    <div style="background:#f8f9fa;padding:16px;border-radius:10px;text-align:center;">
+                        <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:8px;">📋 CA Mark Sheet</div>
+                        <div style="font-size:12px;color:#28a745;">✓ Document uploaded</div>
+                        <div style="margin-top:8px;">
+                            <a href="${documents.ca_photo || caData.ca_photo}" target="_blank" style="font-size:13px;color:#0066cc;text-decoration:none;">View Document →</a>
+                        </div>
+                    </div>
+                    ` : ''}
+                </div>
             </div>
             ` : ''}
             
