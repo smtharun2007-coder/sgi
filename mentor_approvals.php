@@ -694,7 +694,27 @@ function renderApprovals() {
         return;
     }
     
-    list.innerHTML = filtered.map(a => `
+    list.innerHTML = filtered.map(a => {
+        // Check if this is an SGI Calculation with pending evaluator projects
+        let hasPendingEvaluator = false;
+        let allEvaluatorApproved = false;
+        
+        if (a.type === 'SGI Calculation' && a.status === 'pending') {
+            const sgiData = a.sgi_data || {};
+            const pendingEvalProjects = sgiData.pending_evaluator_projects || [];
+            const otherProjects = sgiData.other_projects || [];
+            
+            hasPendingEvaluator = pendingEvalProjects.length > 0;
+            
+            // Check if all other projects have been approved by evaluators
+            if (otherProjects.length > 0) {
+                allEvaluatorApproved = otherProjects.every(p => p.evaluator_status === 'approved');
+            } else {
+                allEvaluatorApproved = true; // No other projects means all approved
+            }
+        }
+        
+        return `
         <div class="approval-item" onclick="showDetails('${a._id}')">
             <div class="approval-avatar">${a.student_name.charAt(0).toUpperCase()}</div>
             <div class="approval-content">
@@ -707,18 +727,25 @@ function renderApprovals() {
                     <span>📅 ${a.created_at}</span>
                     <span>📚 Sem ${a.semester || '?'}</span>
                     <span>📝 ${a.subject_count || 0} subjects</span>
+                    ${hasPendingEvaluator ? '<span style="color:#ffc107;">⏳ Pending Evaluator</span>' : ''}
                 </div>
             </div>
             <div class="approval-actions">
                 ${a.status === 'pending' ? `
-                    <button class="btn-sm btn-approve-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'approve')" title="Approve">✓</button>
-                    <button class="btn-sm btn-reject-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'reject')" title="Reject">✗</button>
+                    ${a.type === 'SGI Calculation' && hasPendingEvaluator ? `
+                        <button class="btn-sm btn-view-sm" onclick="event.stopPropagation();showDetails('${a._id}')" title="View Details">👁</button>
+                        ${!allEvaluatorApproved ? '<span style="font-size:11px;color:#ffc107;">⏳ Waiting</span>' : ''}
+                    ` : `
+                        <button class="btn-sm btn-approve-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'approve')" title="Approve">✓</button>
+                        <button class="btn-sm btn-reject-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'reject')" title="Reject">✗</button>
+                    `}
                 ` : `
                     <button class="btn-sm btn-view-sm" onclick="event.stopPropagation();showDetails('${a._id}')" title="View">👁</button>
                 `}
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
 }
 
 function showDetails(id) {
