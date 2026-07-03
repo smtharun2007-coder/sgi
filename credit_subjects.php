@@ -36,6 +36,10 @@ $pendingApproval = $approvals->findOne([
 ]);
 $pendingApprovalAdditions = $pendingApproval['credit_subjects'] ?? [];
 $pendingApprovalDeletions = $pendingApproval['credit_deletions'] ?? [];
+// Convert BSONArray to PHP array if needed
+if ($pendingApprovalDeletions instanceof \MongoDB\Model\BSONArray) {
+    $pendingApprovalDeletions = $pendingApprovalDeletions->getArrayCopy();
+}
 $pendingApprovalDeletionIds = array_column($pendingApprovalDeletions, 'subject_id');
 
 $success = '';

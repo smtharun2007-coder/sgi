@@ -24,6 +24,10 @@ $pendingCreditApproval = $approvals->findOne([
 ]);
 $pendingAdditions = $pendingCreditApproval['credit_subjects'] ?? [];
 $pendingDeletions = $pendingCreditApproval['credit_deletions'] ?? [];
+// Convert BSONArray to PHP array if needed
+if ($pendingDeletions instanceof \MongoDB\Model\BSONArray) {
+    $pendingDeletions = $pendingDeletions->getArrayCopy();
+}
 $pendingDeletionIds = array_column($pendingDeletions, 'subject_id');
 
 $cat1Total = 0; $cat1Max = 0;
