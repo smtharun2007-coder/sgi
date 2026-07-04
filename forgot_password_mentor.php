@@ -292,9 +292,9 @@ if (isset($_POST['resend_otp'])) {
         </a>
     </div>
     <?php endif; ?>
-    <div class="copyright-footer" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(0,0,0,0.1);color:rgba(0,0,0,0.5);font-size:11px;">
-        &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
-    </div>
+</div>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
 </div>
 </body>
 </html>

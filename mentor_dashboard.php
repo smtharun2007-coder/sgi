@@ -603,12 +603,12 @@ function showSemesterDetail(sem, semData) {
         let tableHTML = '';
         subjects.forEach(sub => {
             const isInternal = sub.internal === 'yes';
-            // CAT marks in black color
-            const cat1 = sub.cat1 !== null ? (sub.cat1 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat1}</span>`) : '—';
-            const cat2 = sub.cat2 !== null ? (sub.cat2 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat2}</span>`) : '—';
-            const cat3 = sub.cat3 !== null ? (sub.cat3 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat3}</span>`) : '—';
-            const catTotal = isInternal ? (sub.cat_total || '—') : '—';
-            const catPercent = isInternal ? ((sub.cat_percentage || 0).toFixed(1) + '%') : '—';
+            // CAT marks in black color - only for internal subjects
+            const cat1 = isInternal ? (sub.cat1 !== null && sub.cat1 !== undefined ? (sub.cat1 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat1}</span>`) : '—') : '—';
+            const cat2 = isInternal ? (sub.cat2 !== null && sub.cat2 !== undefined ? (sub.cat2 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat2}</span>`) : '—') : '—';
+            const cat3 = isInternal ? (sub.cat3 !== null && sub.cat3 !== undefined ? (sub.cat3 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat3}</span>`) : '—') : '—';
+            const catTotal = isInternal ? (sub.cat_total !== null && sub.cat_total !== undefined ? sub.cat_total : '—') : '—';
+            const catPercent = isInternal ? ((sub.cat_percentage !== null && sub.cat_percentage !== undefined ? sub.cat_percentage : 0).toFixed(1) + '%') : '—';
             // Display CA marks out of 100 (converted) - show only the number, not "/100"
             const finalCA = (sub.ca_out_of_100 !== null && sub.ca_out_of_100 !== undefined) ? `${sub.ca_out_of_100}` : (sub.ca_scored !== null && sub.ca_scored !== undefined ? `${sub.ca_scored}/${sub.ca_max}` : '—');
             // Color CA marks red if less than 50

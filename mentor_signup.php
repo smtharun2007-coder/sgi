@@ -78,9 +78,6 @@ if (isset($_POST['signup'])) {
             <span>Switch to Student Portal</span>
         </a>
     </div>
-    <div class="copyright-footer" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(0,0,0,0.1);color:rgba(0,0,0,0.5);font-size:11px;">
-        &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
-    </div>
 </div>
 <div id="popup" class="popup" style="display:none;">
     <div class="popup-box">
@@ -107,5 +104,8 @@ window.onload = function() { showPopup('<?= addslashes($error) ?>'); };
 window.onload = function() { showPopup('<?= addslashes($success) ?>', true); };
 <?php endif; ?>
 </script>
+<div class="copyright-footer">
+    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+</div>
 </body>
 </html>
