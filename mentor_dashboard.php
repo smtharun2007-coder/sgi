@@ -187,7 +187,7 @@ async function showStudentSemesters(roll) {
             window._semesterDataMap[s.sem] = s;
         });
 
-        // Create semester cards HTML
+        // Create semester cards HTML - all with same color
         const semesterCards = semesters.map(s => {
             const sgi = s.sgi !== null ? s.sgi.toFixed(2) : '—';
             const grade = (function(g){
@@ -199,7 +199,7 @@ async function showStudentSemesters(roll) {
                 return 'D';
             })(s.sgi);
 
-            const statusBadge = `<span style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${s.status_color};color:#fff;">${s.status}</span>`;
+            const statusBadge = `<span style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#1a1a2e;color:#fff;">${s.status}</span>`;
 
             return `
                 <div class="semester-card" onclick="showSemesterDetailBySem('${s.sem}')" style="cursor:pointer;">
@@ -599,8 +599,10 @@ function showSemesterDetail(sem, semData) {
             const cat3 = sub.cat3 !== null ? (sub.cat3 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat3) : '—';
             const catTotal = isInternal ? (sub.cat_total || '—') : '—';
             const catPercent = isInternal ? ((sub.cat_percentage || 0).toFixed(1) + '%') : '—';
-            // Display CA marks out of 100 (converted)
-            const finalCA = (sub.ca_out_of_100 !== null && sub.ca_out_of_100 !== undefined) ? `${sub.ca_out_of_100}/100` : (sub.ca_scored !== null && sub.ca_scored !== undefined ? `${sub.ca_scored}/${sub.ca_max}` : '—');
+            // Display CA marks out of 100 (converted) - show only the number, not "/100"
+            const finalCA = (sub.ca_out_of_100 !== null && sub.ca_out_of_100 !== undefined) ? `${sub.ca_out_of_100}` : (sub.ca_scored !== null && sub.ca_scored !== undefined ? `${sub.ca_scored}/${sub.ca_max}` : '—');
+            // Color CA marks red if less than 50
+            const caColor = (sub.ca_out_of_100 !== null && sub.ca_out_of_100 !== undefined && sub.ca_out_of_100 < 50) ? '#e94560' : '#27ae60';
             
             tableHTML += `<tr>
                 <td style="padding:10px;font-weight:600;color:#1a1a2e;">${sub.subject_name || '—'}</td>
@@ -612,7 +614,7 @@ function showSemesterDetail(sem, semData) {
                 <td style="padding:10px;text-align:center;font-weight:600;color:${isInternal ? '#f5a623' : '#ccc'};">${cat3}</td>
                 <td style="padding:10px;text-align:center;font-weight:700;color:#1a1a2e;">${catTotal}</td>
                 <td style="padding:10px;text-align:center;font-weight:700;color:${catPercent !== '—' && parseFloat(catPercent) >= 80 ? '#28a745' : catPercent !== '—' && parseFloat(catPercent) >= 60 ? '#f5a623' : catPercent !== '—' ? '#e94560' : '#ccc'};">${catPercent}</td>
-                <td style="padding:10px;text-align:center;font-weight:600;color:#27ae60;">${finalCA}</td>
+                <td style="padding:10px;text-align:center;font-weight:600;color:${caColor};">${finalCA}</td>
             </tr>`;
         });
         catMarksBody.innerHTML = tableHTML;
