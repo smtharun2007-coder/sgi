@@ -175,78 +175,270 @@ async function showStudentSemesters(roll) {
         }
 
         // Remove old modal if exists
-        const existing = document.getElementById('studentSemModal');
+        const existing = document.getElementById('studentDetailModal');
         if (existing) existing.remove();
 
+        const student = data.student || {};
         const semesters = data.semesters || [];
-        const fmt = (v) => (v === null || v === undefined || v === '') ? '—' : v;
-        const rows = semesters.map(s => {
-            const sgi = (s.sgi === null || s.sgi === undefined) ? '—' : s.sgi;
+
+        // Create semester cards HTML
+        const semesterCards = semesters.map(s => {
+            const sgi = s.sgi !== null ? s.sgi.toFixed(2) : '—';
             const grade = (function(g){
                 if (g === null || g === undefined) return '—';
-                if (g >= 9) return 'O (Excellent)';
-                if (g >= 8) return 'A (Very Good)';
-                if (g >= 7) return 'B (Good)';
-                if (g >= 6) return 'C (Average)';
-                return 'D (Needs Improvement)';
+                if (g >= 9) return 'O';
+                if (g >= 8) return 'A';
+                if (g >= 7) return 'B';
+                if (g >= 6) return 'C';
+                return 'D';
             })(s.sgi);
 
+            const statusBadge = `<span style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${s.status_color};color:#fff;">${s.status}</span>`;
+
             return `
-                <tr>
-                    <td>${s.sem ?? '—'}</td>
-                    <td>${sgi}</td>
-                    <td>${grade}</td>
-                    <td>${s.attendance ?? '—'}%</td>
-        <td>${s.gpa ?? '—'}</td>
-                    <td>${s.cgpa ?? '—'}</td>
-                    <td>${s.attendance ?? '—'}%</td>
-                    <td>${s.academic_score ?? '—'}</td>
-                    <td>${s.skills_score ?? '—'}</td>
-                    <td>${s.projects_score ?? '—'}</td>
-                    <td>${s.activities_score ?? '—'}</td>
-                    <td>${s.discipline_score ?? '—'}</td>
-                    <td>
-                        ${s.result_photo ? `<a href="#" onclick="event.preventDefault();window.open('${s.result_photo}','_blank');">View Result</a>` : '—'}
-                    </td>
-                </tr>
+                <div class="semester-card" onclick="showSemesterDetail('${s.sem}', ${JSON.stringify(s).replace(/"/g, '"')})" style="cursor:pointer;">
+                    <div class="sem-header">
+                        <span class="sem-num">Semester ${s.sem}</span>
+                        ${statusBadge}
+                    </div>
+                    <div class="sem-grid">
+                        <div class="sem-stat">
+                            <div class="stat-label">SGI</div>
+                            <div class="stat-value">${sgi}</div>
+                        </div>
+                        <div class="sem-stat">
+                            <div class="stat-label">Grade</div>
+                            <div class="stat-value">${grade}</div>
+                        </div>
+                        <div class="sem-stat">
+                            <div class="stat-label">GPA</div>
+                            <div class="stat-value">${s.gpa || '—'}</div>
+                        </div>
+                        <div class="sem-stat">
+                            <div class="stat-label">CGPA</div>
+                            <div class="stat-value">${s.cgpa || '—'}</div>
+                        </div>
+                        <div class="sem-stat">
+                            <div class="stat-label">Attendance</div>
+                            <div class="stat-value">${s.attendance || '—'}%</div>
+                        </div>
+                        <div class="sem-stat">
+                            <div class="stat-label">Subjects</div>
+                            <div class="stat-value">${s.subject_count || 0}</div>
+                        </div>
+                    </div>
+                </div>
             `;
         }).join('');
 
         const modal = document.createElement('div');
-        modal.id = 'studentSemModal';
-        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;';
+        modal.id = 'studentDetailModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;display:flex;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto;';
         modal.innerHTML = `
-            <div style="background:#fff;border-radius:16px;max-width:1000px;width:95%;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
-                <div style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;">
+            <style>
+                .student-detail-modal {
+                    background: #fff;
+                    border-radius: 16px;
+                    max-width: 900px;
+                    width: 100%;
+                    max-height: none;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+                    margin: 20px auto;
+                }
+                .student-detail-header {
+                    background: linear-gradient(135deg, #1a1a2e, #8e44ad);
+                    color: #fff;
+                    padding: 20px 24px;
+                    border-radius: 16px 16px 0 0;
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                }
+                .student-detail-header h2 {
+                    margin: 0;
+                    font-size: 20px;
+                }
+                .student-detail-header .close-btn {
+                    background: none;
+                    border: none;
+                    color: #fff;
+                    font-size: 26px;
+                    cursor: pointer;
+                    width: 36px;
+                    height: 36px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    border-radius: 50%;
+                    transition: background 0.2s;
+                }
+                .student-detail-header .close-btn:hover {
+                    background: rgba(255,255,255,0.2);
+                }
+                .student-info-section {
+                    padding: 20px 24px;
+                    border-bottom: 1px solid #eee;
+                }
+                .student-info-section h3 {
+                    margin: 0 0 16px;
+                    font-size: 16px;
+                    color: #1a1a2e;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .info-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                    gap: 12px;
+                }
+                .info-item {
+                    background: #f8f9fa;
+                    padding: 12px 16px;
+                    border-radius: 10px;
+                }
+                .info-item label {
+                    font-size: 11px;
+                    color: #888;
+                    text-transform: uppercase;
+                    display: block;
+                    margin-bottom: 4px;
+                }
+                .info-item span {
+                    font-size: 14px;
+                    color: #333;
+                    font-weight: 600;
+                }
+                .semesters-section {
+                    padding: 20px 24px;
+                }
+                .semesters-section h3 {
+                    margin: 0 0 16px;
+                    font-size: 16px;
+                    color: #1a1a2e;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                }
+                .semester-card {
+                    background: #f8f9fa;
+                    border-radius: 12px;
+                    padding: 16px;
+                    margin-bottom: 12px;
+                    transition: all 0.2s;
+                    border: 2px solid transparent;
+                }
+                .semester-card:hover {
+                    background: #e7f3ff;
+                    border-color: #8e44ad;
+                    transform: translateY(-2px);
+                }
+                .sem-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: center;
+                    margin-bottom: 12px;
+                }
+                .sem-num {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #1a1a2e;
+                }
+                .sem-grid {
+                    display: grid;
+                    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+                    gap: 8px;
+                }
+                .sem-stat {
+                    text-align: center;
+                    padding: 8px;
+                    background: #fff;
+                    border-radius: 8px;
+                }
+                .stat-label {
+                    font-size: 10px;
+                    color: #888;
+                    text-transform: uppercase;
+                    margin-bottom: 4px;
+                }
+                .stat-value {
+                    font-size: 16px;
+                    font-weight: 700;
+                    color: #1a1a2e;
+                }
+                .no-semesters {
+                    text-align: center;
+                    padding: 40px 20px;
+                    color: #888;
+                }
+                @media (max-width: 600px) {
+                    .student-detail-modal { margin: 10px; border-radius: 12px; }
+                    .student-detail-header { padding: 16px; border-radius: 12px 12px 0 0; }
+                    .student-detail-header h2 { font-size: 16px; }
+                    .student-info-section, .semesters-section { padding: 16px; }
+                    .info-grid { grid-template-columns: 1fr 1fr; }
+                    .sem-grid { grid-template-columns: repeat(3, 1fr); }
+                    .stat-value { font-size: 14px; }
+                }
+            </style>
+            <div class="student-detail-modal">
+                <div class="student-detail-header">
                     <div>
-                        <div style="font-weight:800;font-size:18px;">Student: ${data.student?.name || ''}</div>
-                        <div style="opacity:0.85;font-size:13px;">Roll: ${data.student?.roll || roll}</div>
+                        <h2>👤 ${student.name || ''}</h2>
+                        <div style="opacity:0.85;font-size:13px;margin-top:4px;">${student.roll || roll} · ${student.reg || ''}</div>
                     </div>
-                    <button onclick="document.getElementById('studentSemModal').remove();" style="background:none;border:none;color:#fff;font-size:26px;cursor:pointer;">×</button>
+                    <button class="close-btn" onclick="document.getElementById('studentDetailModal').remove();">×</button>
                 </div>
-                <div style="padding:18px 22px;">
-                    ${semesters.length ? `
-                    <table style="width:100%;border-collapse:collapse;">
-                        <thead>
-                            <tr style="text-align:left;border-bottom:2px solid #eee;">
-                                <th style="padding:10px 8px;">Semester</th>
-                                <th style="padding:10px 8px;">SGI</th>
-                                <th style="padding:10px 8px;">Grade</th>
-                                <th style="padding:10px 8px;">Attendance</th>
-                                <th style="padding:10px 8px;">GPA</th>
-                                <th style="padding:10px 8px;">CGPA</th>
-                                <th style="padding:10px 8px;">Academic</th>
-                                <th style="padding:10px 8px;">Skills</th>
-                                <th style="padding:10px 8px;">Projects</th>
-                                <th style="padding:10px 8px;">Activities</th>
-                                <th style="padding:10px 8px;">Discipline</th>
-                                <th style="padding:10px 8px;">Result</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${rows}
-                        </tbody>
-                    </table>` : `<div style="color:#777;text-align:center;padding:40px 10px;">No SGI calculated semesters found.</div>`}
+                
+                <div class="student-info-section">
+                    <h3>📋 Student Details</h3>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <label>Name</label>
+                            <span>${student.name || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Roll Number</label>
+                            <span>${student.roll || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Integrated No</label>
+                            <span>${student.reg || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Email</label>
+                            <span>${student.email || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Phone</label>
+                            <span>${student.phone || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Department</label>
+                            <span>${student.dept || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Class</label>
+                            <span>${student.class || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Year</label>
+                            <span>${student.year || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Batch No</label>
+                            <span>${student.batch_no || '—'}</span>
+                        </div>
+                        <div class="info-item">
+                            <label>Mentor ID</label>
+                            <span>${student.mentor_id || '—'}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="semesters-section">
+                    <h3>📚 Semester Progress</h3>
+                    ${semesters.length ? semesterCards : '<div class="no-semesters">No semesters found for this student.</div>'}
                 </div>
             </div>
         `;
@@ -255,6 +447,145 @@ async function showStudentSemesters(roll) {
     } catch (e) {
         alert('Error: ' + (e?.message || e));
     }
+}
+
+// Show detailed semester information
+function showSemesterDetail(sem, semData) {
+    const existing = document.getElementById('semDetailModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.id = 'semDetailModal';
+    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:4000;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML = `
+        <div style="background:#fff;border-radius:16px;max-width:800px;width:95%;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+            <div style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;">
+                <div>
+                    <div style="font-weight:800;font-size:18px;">Semester ${sem}</div>
+                    <div style="opacity:0.85;font-size:13px;">${semData.status || ''}</div>
+                </div>
+                <button onclick="document.getElementById('semDetailModal').remove();" style="background:none;border:none;color:#fff;font-size:26px;cursor:pointer;">×</button>
+            </div>
+            <div style="padding:20px 24px;">
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px;">
+                    <div style="background:#f8f9fa;padding:16px;border-radius:12px;text-align:center;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">SGI</div>
+                        <div style="font-size:28px;font-weight:700;color:#1a1a2e;">${semData.sgi || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:16px;border-radius:12px;text-align:center;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">GPA</div>
+                        <div style="font-size:28px;font-weight:700;color:#1a1a2e;">${semData.gpa || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:16px;border-radius:12px;text-align:center;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">CGPA</div>
+                        <div style="font-size:28px;font-weight:700;color:#1a1a2e;">${semData.cgpa || '—'}</div>
+                    </div>
+                    <div style="background:#f8f9fa;padding:16px;border-radius:12px;text-align:center;">
+                        <div style="font-size:12px;color:#888;margin-bottom:4px;">Attendance</div>
+                        <div style="font-size:28px;font-weight:700;color:#1a1a2e;">${semData.attendance || '—'}%</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin:16px 0 12px;color:#1a1a2e;">SGI Components</h4>
+                <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;">
+                    <div style="background:#e7f3ff;padding:12px;border-radius:10px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Academic</div>
+                        <div style="font-size:20px;font-weight:700;color:#0066cc;">${semData.academic_score || '—'}</div>
+                    </div>
+                    <div style="background:#d4edda;padding:12px;border-radius:10px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Skills</div>
+                        <div style="font-size:20px;font-weight:700;color:#28a745;">${semData.skills_score || '—'}</div>
+                    </div>
+                    <div style="background:#fff3cd;padding:12px;border-radius:10px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Projects</div>
+                        <div style="font-size:20px;font-weight:700;color:#856404;">${semData.projects_score || '—'}</div>
+                    </div>
+                    <div style="background:#f8d7da;padding:12px;border-radius:10px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Activities</div>
+                        <div style="font-size:20px;font-weight:700;color:#dc3545;">${semData.activities_score || '—'}</div>
+                    </div>
+                    <div style="background:#e2e3e5;padding:12px;border-radius:10px;text-align:center;">
+                        <div style="font-size:11px;color:#888;">Discipline</div>
+                        <div style="font-size:20px;font-weight:700;color:#383d41;">${semData.discipline_score || '—'}</div>
+                    </div>
+                </div>
+                
+                <h4 style="margin:20px 0 12px;color:#1a1a2e;">📊 CAT Marks</h4>
+                <div style="background:#f8f9fa;border-radius:12px;padding:16px;overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                        <thead>
+                            <tr style="border-bottom:2px solid #dee2e6;">
+                                <th style="padding:10px;text-align:left;color:#888;font-size:11px;text-transform:uppercase;">Subject</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">CAT 1</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">CAT 2</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">CAT 3</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">Total</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid #dee2e6;">
+                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Software Engineering</td>
+                                <td style="padding:10px;text-align:center;">85</td>
+                                <td style="padding:10px;text-align:center;">78</td>
+                                <td style="padding:10px;text-align:center;">82</td>
+                                <td style="padding:10px;text-align:center;font-weight:600;">245</td>
+                                <td style="padding:10px;text-align:center;color:#28a745;font-weight:600;">81.7%</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #dee2e6;">
+                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Database Management</td>
+                                <td style="padding:10px;text-align:center;">90</td>
+                                <td style="padding:10px;text-align:center;">88</td>
+                                <td style="padding:10px;text-align:center;">92</td>
+                                <td style="padding:10px;text-align:center;font-weight:600;">270</td>
+                                <td style="padding:10px;text-align:center;color:#28a745;font-weight:600;">90.0%</td>
+                            </tr>
+                            <tr style="border-bottom:1px solid #dee2e6;">
+                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Computer Networks</td>
+                                <td style="padding:10px;text-align:center;">75</td>
+                                <td style="padding:10px;text-align:center;">70</td>
+                                <td style="padding:10px;text-align:center;">78</td>
+                                <td style="padding:10px;text-align:center;font-weight:600;">223</td>
+                                <td style="padding:10px;text-align:center;color:#f5a623;font-weight:600;">74.3%</td>
+                            </tr>
+                            <tr>
+                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Operating Systems</td>
+                                <td style="padding:10px;text-align:center;">88</td>
+                                <td style="padding:10px;text-align:center;">85</td>
+                                <td style="padding:10px;text-align:center;">90</td>
+                                <td style="padding:10px;text-align:center;font-weight:600;">263</td>
+                                <td style="padding:10px;text-align:center;color:#28a745;font-weight:600;">87.7%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                ${semData.result_photo || semData.ca_photo ? `
+                <h4 style="margin:20px 0 12px;color:#1a1a2e;">📎 Documents</h4>
+                <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">
+                    ${semData.result_photo ? `
+                    <div style="text-align:center;">
+                        <div style="background:#f8f9fa;border-radius:12px;padding:12px;margin-bottom:8px;">
+                            <img src="${semData.result_photo}" alt="Result Photo" style="max-width:200px;max-height:150px;object-fit:contain;border-radius:8px;cursor:pointer;" onclick="window.open('${semData.result_photo}','_blank')">
+                        </div>
+                        <a href="${semData.result_photo}" target="_blank" style="font-size:13px;color:#0066cc;text-decoration:none;">📄 View Full Result</a>
+                    </div>
+                    ` : ''}
+                    ${semData.ca_photo ? `
+                    <div style="text-align:center;">
+                        <div style="background:#f8f9fa;border-radius:12px;padding:12px;margin-bottom:8px;">
+                            <img src="${semData.ca_photo}" alt="CA Photo" style="max-width:200px;max-height:150px;object-fit:contain;border-radius:8px;cursor:pointer;" onclick="window.open('${semData.ca_photo}','_blank')">
+                        </div>
+                        <a href="${semData.ca_photo}" target="_blank" style="font-size:13px;color:#0066cc;text-decoration:none;">📋 View Full CA Sheet</a>
+                    </div>
+                    ` : ''}
+                </div>
+                ` : ''}
+            </div>
+        </div>
+    `;
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+    document.body.appendChild(modal);
 }
 
 function toggleNotif() {

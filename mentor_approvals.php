@@ -1026,24 +1026,36 @@ function showDetails(id) {
                 </div>
             </div>
             
-            <!-- Projects Details -->
-            <div style="margin-top:16px;">
-                <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
-                    <span>🔧</span> Projects
-                </h4>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
-                        <div style="font-size:11px;color:#888;">Mini Projects</div>
-                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.mini_projects || 0}</div>
+                <!-- Projects Details -->
+                <div style="margin-top:16px;">
+                    <h4 style="margin-bottom:12px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                        <span>🔧</span> Projects
+                    </h4>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                        <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                            <div style="font-size:11px;color:#888;">Mini Projects</div>
+                            <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.mini_projects || 0}</div>
+                        </div>
+                        <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
+                            <div style="font-size:11px;color:#888;">Main Projects</div>
+                            <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.main_projects || 0}</div>
+                        </div>
                     </div>
-                    <div style="background:#f8f9fa;padding:12px;border-radius:8px;text-align:center;">
-                        <div style="font-size:11px;color:#888;">Main Projects</div>
-                        <div style="font-size:16px;font-weight:600;color:#1a1a2e;">${sgiData.main_projects || 0}</div>
+                    
+                    ${sgiData.other_projects && sgiData.other_projects.length > 0 ? `
+                    <div style="margin-top:12px;">
+                        <div style="font-size:13px;font-weight:600;color:#1a1a2e;margin-bottom:8px;">Other Projects:</div>
+                        <div style="background:#f8f9fa;border-radius:8px;overflow:hidden;">
+                            ${sgiData.other_projects.map((proj, idx) => `
+                                <div style="display:flex;justify-content:space-between;padding:10px 12px;${idx < sgiData.other_projects.length - 1 ? 'border-bottom:1px solid #eee' : ''}">
+                                    <span style="font-weight:600;color:#1a1a2e;">${proj.name || 'Unnamed'}</span>
+                                    <span style="color:#888;">Count: ${proj.count || 0} × Points: ${proj.points || 0}</span>
+                                </div>
+                            `).join('')}
+                        </div>
                     </div>
+                    ` : ''}
                 </div>
-                
-
-            </div>
             
             <!-- Activities Details -->
             <div style="margin-top:16px;">
