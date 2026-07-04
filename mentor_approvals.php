@@ -755,13 +755,16 @@ function renderApprovals() {
 function showDetails(id) {
     const approval = approvals.find(a => a._id === id);
     if (!approval) return;
-    
-    const statusColor = approval.status === 'approved' ? '#28a745' : approval.status === 'rejected' ? '#dc3545' : '#ffc107';
+
     const statusIcon = approval.status === 'approved' ? '✅' : approval.status === 'rejected' ? '❌' : '⏳';
-    
     document.getElementById('modalTitle').textContent = `${statusIcon} ${approval.type || 'Semester Registration'} - Sem ${approval.semester}`;
-    
+
+    // If mentor clicks on student name, open semester details across all SGI semesters.
+    // This is called from render HTML via openStudentSemesterDetails(roll).
+    // (No change in this function body besides cleanup.)
+
     let subjectsHtml = '';
+
     
     // Handle Verification approval type
     if (approval.type === 'Verification') {
