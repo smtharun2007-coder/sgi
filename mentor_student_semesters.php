@@ -91,11 +91,18 @@ foreach ($semCursor as $s) {
             $subjectEntry['cat_percentage'] = $catMax > 0 ? round(($catTotal / $catMax) * 100, 2) : 0;
         }
         
-        // Add Final CA marks if available
-        if (isset($sub['ca_scored'])) {
+        // Add Final CA marks if available - convert to scale of 100
+        if (isset($sub['ca_scored']) && $sub['ca_max'] > 0) {
             $subjectEntry['ca_scored'] = $sub['ca_scored'] ?? null;
             $subjectEntry['ca_max'] = $sub['ca_max'] ?? null;
             $subjectEntry['ca_percent'] = $sub['ca_percent'] ?? null;
+            // Convert CA marks to scale of 100
+            $subjectEntry['ca_out_of_100'] = round(($sub['ca_scored'] / $sub['ca_max']) * 100, 2);
+        } else if (isset($sub['ca_scored'])) {
+            $subjectEntry['ca_scored'] = $sub['ca_scored'] ?? null;
+            $subjectEntry['ca_max'] = $sub['ca_max'] ?? null;
+            $subjectEntry['ca_percent'] = $sub['ca_percent'] ?? null;
+            $subjectEntry['ca_out_of_100'] = 0;
         }
         
         $subjectsData[] = $subjectEntry;

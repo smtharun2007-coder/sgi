@@ -431,10 +431,6 @@ async function showStudentSemesters(roll) {
                             <label>Batch No</label>
                             <span>${student.batch_no || '—'}</span>
                         </div>
-                        <div class="info-item">
-                            <label>Mentor ID</label>
-                            <span>${student.mentor_id || '—'}</span>
-                        </div>
                     </div>
                 </div>
                 
@@ -603,7 +599,8 @@ function showSemesterDetail(sem, semData) {
             const cat3 = sub.cat3 !== null ? (sub.cat3 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat3) : '—';
             const catTotal = isInternal ? (sub.cat_total || '—') : '—';
             const catPercent = isInternal ? ((sub.cat_percentage || 0).toFixed(1) + '%') : '—';
-            const finalCA = sub.ca_scored !== null && sub.ca_scored !== undefined ? `${sub.ca_scored}/${sub.ca_max}` : '—';
+            // Display CA marks out of 100 (converted)
+            const finalCA = (sub.ca_out_of_100 !== null && sub.ca_out_of_100 !== undefined) ? `${sub.ca_out_of_100}/100` : (sub.ca_scored !== null && sub.ca_scored !== undefined ? `${sub.ca_scored}/${sub.ca_max}` : '—');
             
             tableHTML += `<tr>
                 <td style="padding:10px;font-weight:600;color:#1a1a2e;">${sub.subject_name || '—'}</td>
