@@ -531,7 +531,7 @@ if (isset($_POST['update_status']) && $isMentor) {
                         'student_roll' => $roll,
                         'semester' => (int)$semester,
                         'type' => 'SGI Calculation',
-                        'status' => 'pending'
+                        'status' => ['$in' => ['pending','pending_evaluator']]
                     ]);
                     
                     if ($sgiApproval) {

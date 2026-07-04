@@ -559,8 +559,8 @@ function renderApprovals() {
                 </div>
             </div>
             <span class="approval-status">${a.status}</span>
-            ${a.status === 'pending' ? `
-                <button class="btn-cancel" onclick="event.stopPropagation();deleteApproval('${a._id}')">Cancel</button>
+${(a.status === 'pending' || a.status === 'pending_evaluator') ? `
+                <button class="btn-cancel" onclick="event.stopPropagation();deleteApproval('${a._id}')">Delete</button>
             ` : ''}
         </div>
     `}).join('');

@@ -144,8 +144,8 @@ $studentList   = iterator_to_array($studentCursor);
         <?php if (empty($studentList)): ?>
             <p class="no-data" style="padding:24px;">No students linked to your Mentor ID yet.</p>
         <?php else: ?>
-            <?php foreach ($studentList as $st): ?>
-            <div class="student-row">
+<?php foreach ($studentList as $st): ?>
+            <div class="student-row" style="cursor:pointer;" onclick="showStudentSemesters('<?= htmlspecialchars($st['roll']) ?>')">
                 <div style="display:flex;align-items:center;">
                     <?php if (!empty($st['photo'])): ?>
                         <img src="<?= htmlspecialchars(imgUrl($st['photo'])) ?>" class="student-avatar" alt="">
