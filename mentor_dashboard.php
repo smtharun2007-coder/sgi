@@ -181,6 +181,12 @@ async function showStudentSemesters(roll) {
         const student = data.student || {};
         const semesters = data.semesters || [];
 
+        // Store semester data globally for click handlers
+        window._semesterDataMap = {};
+        semesters.forEach(s => {
+            window._semesterDataMap[s.sem] = s;
+        });
+
         // Create semester cards HTML
         const semesterCards = semesters.map(s => {
             const sgi = s.sgi !== null ? s.sgi.toFixed(2) : '—';
@@ -196,7 +202,7 @@ async function showStudentSemesters(roll) {
             const statusBadge = `<span style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${s.status_color};color:#fff;">${s.status}</span>`;
 
             return `
-                <div class="semester-card" onclick="showSemesterDetail('${s.sem}', ${JSON.stringify(s).replace(/"/g, '"')})" style="cursor:pointer;">
+                <div class="semester-card" onclick="showSemesterDetailBySem('${s.sem}')" style="cursor:pointer;">
                     <div class="sem-header">
                         <span class="sem-num">Semester ${s.sem}</span>
                         ${statusBadge}
@@ -422,10 +428,6 @@ async function showStudentSemesters(roll) {
                             <span>${student.class || '—'}</span>
                         </div>
                         <div class="info-item">
-                            <label>Year</label>
-                            <span>${student.year || '—'}</span>
-                        </div>
-                        <div class="info-item">
                             <label>Batch No</label>
                             <span>${student.batch_no || '—'}</span>
                         </div>
@@ -447,6 +449,16 @@ async function showStudentSemesters(roll) {
     } catch (e) {
         alert('Error: ' + (e?.message || e));
     }
+}
+
+// Show detailed semester information by semester number
+function showSemesterDetailBySem(sem) {
+    const semData = window._semesterDataMap[sem];
+    if (!semData) {
+        alert('Semester data not found');
+        return;
+    }
+    showSemesterDetail(sem, semData);
 }
 
 // Show detailed semester information
@@ -562,21 +574,21 @@ function showSemesterDetail(sem, semData) {
                 
                 ${semData.result_photo || semData.ca_photo ? `
                 <h4 style="margin:20px 0 12px;color:#1a1a2e;">📎 Documents</h4>
-                <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">
+                <div style="display:flex;justify-content:center;gap:24px;flex-wrap:wrap;">
                     ${semData.result_photo ? `
                     <div style="text-align:center;">
-                        <div style="background:#f8f9fa;border-radius:12px;padding:12px;margin-bottom:8px;">
-                            <img src="${semData.result_photo}" alt="Result Photo" style="max-width:200px;max-height:150px;object-fit:contain;border-radius:8px;cursor:pointer;" onclick="window.open('${semData.result_photo}','_blank')">
+                        <div style="background:#f8f9fa;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                            <img src="${semData.result_photo}" alt="Result Photo" style="max-width:350px;max-height:280px;object-fit:contain;border-radius:8px;cursor:pointer;" onclick="window.open('${semData.result_photo}','_blank')">
                         </div>
-                        <a href="${semData.result_photo}" target="_blank" style="font-size:13px;color:#0066cc;text-decoration:none;">📄 View Full Result</a>
+                        <a href="${semData.result_photo}" target="_blank" style="font-size:14px;font-weight:600;color:#0066cc;text-decoration:none;">📄 View Full Result</a>
                     </div>
                     ` : ''}
                     ${semData.ca_photo ? `
                     <div style="text-align:center;">
-                        <div style="background:#f8f9fa;border-radius:12px;padding:12px;margin-bottom:8px;">
-                            <img src="${semData.ca_photo}" alt="CA Photo" style="max-width:200px;max-height:150px;object-fit:contain;border-radius:8px;cursor:pointer;" onclick="window.open('${semData.ca_photo}','_blank')">
+                        <div style="background:#f8f9fa;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+                            <img src="${semData.ca_photo}" alt="CA Photo" style="max-width:350px;max-height:280px;object-fit:contain;border-radius:8px;cursor:pointer;" onclick="window.open('${semData.ca_photo}','_blank')">
                         </div>
-                        <a href="${semData.ca_photo}" target="_blank" style="font-size:13px;color:#0066cc;text-decoration:none;">📋 View Full CA Sheet</a>
+                        <a href="${semData.ca_photo}" target="_blank" style="font-size:14px;font-weight:600;color:#0066cc;text-decoration:none;">📋 View Full CA Sheet</a>
                     </div>
                     ` : ''}
                 </div>

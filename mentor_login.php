@@ -23,6 +23,7 @@ if (isset($_POST['login'])) {
                 'mentor_id' => $mentor['mentor_id'],
                 'email'     => $mentor['email'],
                 'dept'      => $mentor['dept'],
+                'batch_no'  => $mentor['batch_no'] ?? '',
                 'phone'     => $mentor['phone'],
                 'photo'     => $mentor['photo'] ?? '',
             ];
