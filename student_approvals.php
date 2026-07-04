@@ -482,14 +482,16 @@ function loadApprovals() {
 function updateStats() {
     let pending = 0, approved = 0, rejected = 0;
     approvals.forEach(a => {
-        if (a.status === 'pending') pending++;
-        else if (a.status === 'approved') approved++;
-        else if (a.status === 'rejected') rejected++;
+        const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
+        if (normalizedStatus === 'pending') pending++;
+        else if (normalizedStatus === 'approved') approved++;
+        else if (normalizedStatus === 'rejected') rejected++;
     });
     document.getElementById('pendingCount').textContent = pending;
     document.getElementById('approvedCount').textContent = approved;
     document.getElementById('rejectedCount').textContent = rejected;
 }
+
 
 function setStatusFilter(status) {
     currentStatusFilter = status;
@@ -506,7 +508,9 @@ function applyFilters() {
 
 function getFilteredApprovals() {
     return approvals.filter(a => {
-        const statusMatch = currentStatusFilter === 'all' || a.status === currentStatusFilter;
+        // UI has only pending/approved/rejected. Map SGI waiting state.
+        const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
+        const statusMatch = currentStatusFilter === 'all' || normalizedStatus === currentStatusFilter;
         let semMatch = true;
         if (currentSemesterFilter === 'current' && currentSemester) {
             // Match current semester or approvals without a semester (general requests)
@@ -517,6 +521,7 @@ function getFilteredApprovals() {
         return statusMatch && semMatch;
     });
 }
+
 
 function renderApprovals() {
     const list = document.getElementById('approvalList');

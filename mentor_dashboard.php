@@ -81,11 +81,10 @@ $studentList   = iterator_to_array($studentCursor);
     </style>
 </head>
 <body>
-<nav class="navbar mentor-navbar">
-<a href="mentor_dashboard.php" class="nav-brand">
-    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo">
-    SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor</span>
-</a>
+<nav class="navbar" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);">
+    <a href="mentor_dashboard.php" class="nav-brand">
+        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor</span>
+    </a>
     <div class="nav-links">
         <a href="mentor_dashboard.php">Home</a>
         <a href="mentor_approvals.php">Approvals</a>
@@ -96,7 +95,7 @@ $studentList   = iterator_to_array($studentCursor);
         <a href="mentor_contact.php">Contact</a>
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
-                &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
+                🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
                 <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
@@ -106,6 +105,7 @@ $studentList   = iterator_to_array($studentCursor);
         <a href="mentor_logout.php" class="btn-logout">Logout</a>
     </div>
 </nav>
+
 <div class="container">
 
     <!-- MENTOR PROFILE CARD -->

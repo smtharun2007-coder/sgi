@@ -584,26 +584,60 @@ if (isset($_POST['update_status']) && $isMentor) {
                         }
                     }
                     
+                    // Decide final SGI Calculation status based on pending/rejected evaluator projects
+                    $pendingProjectsRemaining = !empty($pendingProjects);
+                    $hasRejectionsFinal = false;
+                    foreach ($otherProjects as $proj) {
+                        if (isset($proj['evaluator_status']) && $proj['evaluator_status'] === 'rejected') {
+                            $hasRejectionsFinal = true;
+                            break;
+                        }
+                    }
+
+                    $newSgiStatus = 'pending_evaluator';
+                    if ($hasRejectionsFinal) {
+                        $newSgiStatus = 'rejected';
+                    } elseif (!$pendingProjectsRemaining) {
+                        // all evaluator projects approved -> mentor can act on SGI
+                        $newSgiStatus = 'pending';
+                    }
+
+                    $approvals->updateOne(
+                        ['_id' => new MongoDB\BSON\ObjectId($sgiApprovalId)],
+                        ['$set' => [
+                            'status' => $newSgiStatus,
+                            'updated_at' => new MongoDB\BSON\UTCDateTime()
+                        ]]
+                    );
+
                     if (!empty($mentorId)) {
-                        if ($status === 'approved') {
-                            // Notify the student's mentor that evaluator has approved
+                        if ($newSgiStatus === 'pending') {
+                            // Notify the student's mentor that all evaluator projects are approved
                             $notifications->insertOne([
                                 'mentor_id' => $mentorId,
-                                'message' => '✅ Evaluator has approved the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). You can now proceed with SGI approval if all projects are approved.',
+                                'message' => '✅ Evaluator approvals completed for student ' . $studentName . ' (' . $roll . '). You can now APPROVE/REJECT the SGI request.',
+                                'read' => false,
+                                'created_at' => new MongoDB\BSON\UTCDateTime()
+                            ]);
+                        } elseif ($newSgiStatus === 'rejected') {
+                            // Notify the student's mentor that evaluator rejected something
+                            $notifications->insertOne([
+                                'mentor_id' => $mentorId,
+                                'message' => '❌ One or more evaluator projects were REJECTED for student ' . $studentName . ' (' . $roll . '). You cannot approve SGI until resolved.',
                                 'read' => false,
                                 'created_at' => new MongoDB\BSON\UTCDateTime()
                             ]);
                         } else {
-                            // Notify the student's mentor that evaluator has rejected
+                            // Still waiting for other evaluator projects
                             $notifications->insertOne([
                                 'mentor_id' => $mentorId,
-                                'message' => '❌ Evaluator has REJECTED the other project "' . $projectName . '" for student ' . $studentName . ' (' . $roll . '). Reason: ' . ($remarks ?: 'Not specified'). '. You cannot approve SGI until this is resolved.',
+                                'message' => '⏳ Evaluator updated for project "' . $projectName . '". Some other projects are still pending approval for student ' . $studentName . ' (' . $roll . ').',
                                 'read' => false,
                                 'created_at' => new MongoDB\BSON\UTCDateTime()
                             ]);
                         }
                     }
-                    
+
                     // Notify the student
                     if ($status === 'approved') {
                         $notifications->insertOne([
