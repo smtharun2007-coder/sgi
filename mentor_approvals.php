@@ -654,10 +654,9 @@ function loadApprovals() {
 function updateStats() {
     let pending = 0, approved = 0, rejected = 0;
     approvals.forEach(a => {
-        const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
-        if (normalizedStatus === 'pending') pending++;
-        else if (normalizedStatus === 'approved') approved++;
-        else if (normalizedStatus === 'rejected') rejected++;
+        if (a.status === 'pending') pending++;
+        else if (a.status === 'approved') approved++;
+        else if (a.status === 'rejected') rejected++;
     });
     document.getElementById('pendingCount').textContent = pending;
     document.getElementById('approvedCount').textContent = approved;
@@ -680,9 +679,7 @@ function applyFilters() {
 
 function getFilteredApprovals() {
     return approvals.filter(a => {
-        // UI has only pending/approved/rejected. Map SGI waiting state.
-        const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
-        const statusMatch = currentStatusFilter === 'all' || normalizedStatus === currentStatusFilter;
+        const statusMatch = currentStatusFilter === 'all' || a.status === currentStatusFilter;
         const semMatch = currentSemesterFilter === 'all' || a.semester == currentSemesterFilter;
         return statusMatch && semMatch;
     });
@@ -704,25 +701,6 @@ function renderApprovals() {
     }
     
     list.innerHTML = filtered.map(a => {
-        // Check if this is an SGI Calculation with pending evaluator projects
-        let hasPendingEvaluator = false;
-        let allEvaluatorApproved = false;
-        
-        if (a.type === 'SGI Calculation' && a.status === 'pending') {
-            const sgiData = a.sgi_data || {};
-            const pendingEvalProjects = sgiData.pending_evaluator_projects || [];
-            const otherProjects = sgiData.other_projects || [];
-            
-            hasPendingEvaluator = pendingEvalProjects.length > 0;
-            
-            // Check if all other projects have been approved by evaluators
-            if (otherProjects.length > 0) {
-                allEvaluatorApproved = otherProjects.every(p => p.evaluator_status === 'approved');
-            } else {
-                allEvaluatorApproved = true; // No other projects means all approved
-            }
-        }
-        
         return `
         <div class="approval-item" onclick="showDetails('${a._id}')">
             <div class="approval-avatar">${a.student_name.charAt(0).toUpperCase()}</div>

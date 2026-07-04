@@ -95,7 +95,7 @@ if (isset($_POST['calculate'])) {
             // FINAL SGI
             $sgi = (($academic * 4) + ($skills * 2) + ($projects * 1) + ($activities * 2) + ($discipline * 1)) / 10;
 
-            // Prepare other projects data if any
+            // Prepare other projects data (without evaluator - mentor only approval)
             $otherProjects = [];
             if (!empty($_POST['other_check']) && !empty($_POST['other_name'])) {
                 foreach ($_POST['other_name'] as $i => $name) {
@@ -103,64 +103,12 @@ if (isset($_POST['calculate'])) {
                     $otherProjects[] = [
                         'name' => trim($name),
                         'count' => (float)($_POST['other_count'][$i] ?? 0),
-                        'points' => (float)($_POST['other_points'][$i] ?? 0),
-                        'evaluator_id' => trim($_POST['other_eval_id'][$i] ?? '')
+                        'points' => (float)($_POST['other_points'][$i] ?? 0)
                     ];
                 }
             }
 
-            // Check if there are other projects that need evaluator approval
-            $needsEvaluatorApproval = false;
-            $pendingEvaluatorProjects = [];
-            
-            if (!empty($otherProjects)) {
-                foreach ($otherProjects as $proj) {
-                    if (!empty($proj['evaluator_id'])) {
-                        // Check if evaluator exists
-                        $evaluator = $users->findOne(['mentor_id' => trim($proj['evaluator_id'])]);
-                        if ($evaluator) {
-                            $needsEvaluatorApproval = true;
-                            $pendingEvaluatorProjects[] = [
-                                'project_name' => $proj['name'],
-                                'count' => $proj['count'],
-                                'points' => $proj['points'],
-                                'evaluator_id' => $proj['evaluator_id'],
-                                'evaluator_name' => $evaluator['name'] ?? 'Unknown'
-                            ];
-                            
-                            // Create evaluator approval request
-                            $evalApproval = [
-                                'student_roll' => $roll,
-                                'student_name' => $u['name'],
-                                'evaluator_id' => trim($proj['evaluator_id']),
-                                'type' => 'Project Evaluation',
-                                'semester' => (int)$sem['sem'],
-                                'message' => 'Please verify and approve the other project: ' . $proj['name'],
-                                'status' => 'pending',
-                                'project_data' => [
-                                    'project_name' => $proj['name'],
-                                    'count' => $proj['count'],
-                                    'points' => $proj['points'],
-                                    'submitted_by' => $u['name'],
-                                    'submitted_by_mentor' => $u['mentor_id'] ?? ''
-                                ],
-                                'created_at' => new MongoDB\BSON\UTCDateTime()
-                            ];
-                            $approvals->insertOne($evalApproval);
-                            
-                            // Notify evaluator
-                            $notifications->insertOne([
-                                'mentor_id' => trim($proj['evaluator_id']),
-                                'message' => '📝 Project evaluation request from ' . $u['name'] . ' (' . $roll . ') for project: ' . $proj['name'],
-                                'read' => false,
-                                'created_at' => new MongoDB\BSON\UTCDateTime()
-                            ]);
-                        }
-                    }
-                }
-            }
-            
-            // Create approval request with all SGI calculation details
+            // Create approval request with all SGI calculation details (always pending for mentor)
             $approvalData = [
                 'student_roll' => $roll,
                 'student_name' => $u['name'],
@@ -169,7 +117,7 @@ if (isset($_POST['calculate'])) {
                 'reg' => $u['reg'],
                 'mentor_id' => $u['mentor_id'] ?? '',
                 'message' => 'Request to confirm SGI for Semester ' . $sem['sem'],
-                'status' => $needsEvaluatorApproval ? 'pending_evaluator' : 'pending',
+                'status' => 'pending',
                 'sgi_data' => [
                     'sgi' => round($sgi, 2),
                     'academic_score' => round($academic, 2),
@@ -196,8 +144,7 @@ if (isset($_POST['calculate'])) {
                     'workshops' => (float)$_POST['workshop'],
                     'attendance' => $attendance,
                     'prev_gpa' => $prev_gpa,
-                    'other_projects' => $otherProjects,
-                    'pending_evaluator_projects' => $pendingEvaluatorProjects
+                    'other_projects' => $otherProjects
                 ],
                 'subject_count' => count($subList),
                 'sem_id' => $id,
@@ -303,11 +250,10 @@ if (isset($_POST['calculate'])) {
                 <table class="cat-table" id="other-project-table">
                     <thead>
                         <tr>
-                            <th style="width:35%;">Project Name</th>
-                            <th style="width:15%;">No. of Projects</th>
-                            <th style="width:15%;">Points / Project</th>
-                            <th style="width:25%;">Evaluator ID</th>
-                            <th style="width:10%;"></th>
+                            <th style="width:40%;">Project Name</th>
+                            <th style="width:20%;">No. of Projects</th>
+                            <th style="width:20%;">Points / Project</th>
+                            <th style="width:20%;"></th>
                         </tr>
                     </thead>
                     <tbody id="other-project-list">
@@ -315,7 +261,6 @@ if (isset($_POST['calculate'])) {
                             <td><input type="text"   name="other_name[]"    placeholder="Project Name" style="width:100%;margin:0;"></td>
                             <td><input type="number" name="other_count[]"   placeholder="Count" min="0" value="1" style="width:100%;margin:0;"></td>
                             <td><input type="number" step="0.01" name="other_points[]" placeholder="Points" min="0" value="0" style="width:100%;margin:0;"></td>
-                            <td><input type="text"   name="other_eval_id[]" placeholder="Evaluator ID" style="width:100%;margin:0;"></td>
                         <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">×</button></td>
                         </tr>
                     </tbody>
@@ -360,7 +305,6 @@ function addOtherRow() {
         <td><input type="text"   name="other_name[]"    placeholder="Project Name" style="width:100%;margin:0;"></td>
         <td><input type="number" name="other_count[]"   placeholder="Count" min="0" value="1" style="width:100%;margin:0;"></td>
         <td><input type="number" step="0.01" name="other_points[]" placeholder="Points" min="0" value="0" style="width:100%;margin:0;"></td>
-        <td><input type="text"   name="other_eval_id[]" placeholder="Evaluator ID" style="width:100%;margin:0;"></td>
         <td style="text-align:center;"><button type="button" class="btn-remove" onclick="removeOtherRow(this)">×</button></td>
     `;
     list.appendChild(row);

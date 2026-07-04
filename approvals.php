@@ -60,9 +60,6 @@ if (isset($_GET['fetch'])) {
         if ($sgiData instanceof \MongoDB\Model\BSONDocument) {
             $sgiData = (array)$sgiData;
             // Convert nested BSONArrays to PHP arrays
-            if (isset($sgiData['pending_evaluator_projects']) && $sgiData['pending_evaluator_projects'] instanceof \MongoDB\Model\BSONArray) {
-                $sgiData['pending_evaluator_projects'] = $sgiData['pending_evaluator_projects']->getArrayCopy();
-            }
             if (isset($sgiData['other_projects']) && $sgiData['other_projects'] instanceof \MongoDB\Model\BSONArray) {
                 $sgiData['other_projects'] = $sgiData['other_projects']->getArrayCopy();
             }
@@ -269,7 +266,7 @@ if (isset($_POST['update_status']) && $isMentor) {
         exit;
     }
     
-    // Check if already processed
+    // Check if already processed - only mentor can approve/reject (no evaluator workflow)
     $currentStatus = $approval['status'] ?? '';
     if ($currentStatus !== 'pending') {
         echo json_encode(['status' => 'error', 'message' => 'This request has already been processed (current status: ' . $currentStatus . ')']);
@@ -512,10 +509,6 @@ if (isset($_POST['update_status']) && $isMentor) {
                 }
                 break;
                 
-            case 'Project Evaluation':
-                // Evaluator approval workflow removed. SGI approvals are mentor-only.
-                // Intentionally do nothing here.
-                break;
         }
         
         // Create notification for student

@@ -489,10 +489,9 @@ function loadApprovals() {
 function updateStats() {
     let pending = 0, approved = 0, rejected = 0;
     approvals.forEach(a => {
-        const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
-        if (normalizedStatus === 'pending') pending++;
-        else if (normalizedStatus === 'approved') approved++;
-        else if (normalizedStatus === 'rejected') rejected++;
+        if (a.status === 'pending') pending++;
+        else if (a.status === 'approved') approved++;
+        else if (a.status === 'rejected') rejected++;
     });
     document.getElementById('pendingCount').textContent = pending;
     document.getElementById('approvedCount').textContent = approved;
@@ -510,12 +509,10 @@ function setStatusFilter(status) {
 
 function getFilteredApprovals() {
     return approvals.filter(a => {
-        const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
-
         const normalizedSemester = (a.semester === null || a.semester === undefined) ? null : String(a.semester);
         const semesterOk = currentSemesterFilter === 'all' || normalizedSemester === String(currentSemesterFilter);
 
-        return (currentStatusFilter === 'all' || normalizedStatus === currentStatusFilter) && semesterOk;
+        return (currentStatusFilter === 'all' || a.status === currentStatusFilter) && semesterOk;
     });
 }
 
@@ -557,7 +554,7 @@ function renderApprovals() {
                 </div>
             </div>
             <span class="approval-status">${a.status}</span>
-${(a.status === 'pending' || a.status === 'pending_evaluator') ? `
+${(a.status === 'pending') ? `
                 <button class="btn-cancel" onclick="event.stopPropagation();deleteApproval('${a._id}')">Delete</button>
             ` : ''}
         </div>
