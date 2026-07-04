@@ -418,24 +418,7 @@ $currentSemNum = $currentSem['sem'] ?? null;
     </div>
 
     <!-- Filters -->
-    <div class="filters-bar">
-        <div class="filter-group">
-            <label>📚 Semester:</label>
-            <select id="semesterFilter" onchange="applyFilters()">
-                <option value="current">Current Semester</option>
-                <?php foreach ($semList as $s): ?>
-                    <option value="<?= $s['sem'] ?>">Semester <?= $s['sem'] ?></option>
-                <?php endforeach; ?>
-                <option value="all">All Semesters</option>
-            </select>
-        </div>
-        <div class="status-tabs" id="statusTabs">
-            <button class="status-tab active" data-status="all" onclick="setStatusFilter('all')">All</button>
-            <button class="status-tab" data-status="pending" onclick="setStatusFilter('pending')">Pending</button>
-            <button class="status-tab" data-status="approved" onclick="setStatusFilter('approved')">Approved</button>
-            <button class="status-tab" data-status="rejected" onclick="setStatusFilter('rejected')">Rejected</button>
-        </div>
-    </div>
+
 
     <!-- Approval List -->
     <div class="approval-list" id="approvalList">
@@ -501,26 +484,13 @@ function setStatusFilter(status) {
     renderApprovals();
 }
 
-function applyFilters() {
-    currentSemesterFilter = document.getElementById('semesterFilter').value;
-    renderApprovals();
-}
-
 function getFilteredApprovals() {
     return approvals.filter(a => {
-        // UI has only pending/approved/rejected. Map SGI waiting state.
         const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
-        const statusMatch = currentStatusFilter === 'all' || normalizedStatus === currentStatusFilter;
-        let semMatch = true;
-        if (currentSemesterFilter === 'current' && currentSemester) {
-            // Match current semester or approvals without a semester (general requests)
-            semMatch = (a.semester == currentSemester) || (a.semester === null) || (a.semester === undefined) || (a.semester === '');
-        } else if (currentSemesterFilter !== 'all' && currentSemesterFilter !== 'current') {
-            semMatch = a.semester == currentSemesterFilter;
-        }
-        return statusMatch && semMatch;
+        return currentStatusFilter === 'all' || normalizedStatus === currentStatusFilter;
     });
 }
+
 
 
 function renderApprovals() {

@@ -165,11 +165,90 @@ $studentList   = iterator_to_array($studentCursor);
 
 </div>
 <script>
+async function showStudentSemesters(roll) {
+    try {
+        const res = await fetch('mentor_student_semesters.php?roll=' + encodeURIComponent(roll));
+        const data = await res.json();
+        if (!data || data.status !== 'success') {
+            alert(data?.message || 'Failed to load student semesters');
+            return;
+        }
+
+        // Remove old modal if exists
+        const existing = document.getElementById('studentSemModal');
+        if (existing) existing.remove();
+
+        const semesters = data.semesters || [];
+        const rows = semesters.map(s => {
+            const sgi = (s.sgi === null || s.sgi === undefined) ? '—' : s.sgi;
+            const grade = (function(g){
+                if (g === null || g === undefined) return '—';
+                if (g >= 9) return 'O (Excellent)';
+                if (g >= 8) return 'A (Very Good)';
+                if (g >= 7) return 'B (Good)';
+                if (g >= 6) return 'C (Average)';
+                return 'D (Needs Improvement)';
+            })(s.sgi);
+
+            return `
+                <tr>
+                    <td>${s.sem ?? '—'}</td>
+                    <td>${sgi}</td>
+                    <td>${grade}</td>
+                    <td>${s.attendance ?? '—'}%</td>
+                    <td>${s.gpa ?? '—'}</td>
+                    <td>
+                        ${s.result_photo ? `<a href="#" onclick="event.preventDefault();window.open('${s.result_photo}','_blank');">View Result</a>` : '—'}
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        const modal = document.createElement('div');
+        modal.id = 'studentSemModal';
+        modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px;';
+        modal.innerHTML = `
+            <div style="background:#fff;border-radius:16px;max-width:1000px;width:95%;max-height:85vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,0.35);">
+                <div style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);color:#fff;padding:18px 22px;display:flex;justify-content:space-between;align-items:center;">
+                    <div>
+                        <div style="font-weight:800;font-size:18px;">Student: ${data.student?.name || ''}</div>
+                        <div style="opacity:0.85;font-size:13px;">Roll: ${data.student?.roll || roll}</div>
+                    </div>
+                    <button onclick="document.getElementById('studentSemModal').remove();" style="background:none;border:none;color:#fff;font-size:26px;cursor:pointer;">×</button>
+                </div>
+                <div style="padding:18px 22px;">
+                    ${semesters.length ? `
+                    <table style="width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr style="text-align:left;border-bottom:2px solid #eee;">
+                                <th style="padding:10px 8px;">Semester</th>
+                                <th style="padding:10px 8px;">SGI</th>
+                                <th style="padding:10px 8px;">Grade</th>
+                                <th style="padding:10px 8px;">Attendance</th>
+                                <th style="padding:10px 8px;">GPA</th>
+                                <th style="padding:10px 8px;">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rows}
+                        </tbody>
+                    </table>` : `<div style="color:#777;text-align:center;padding:40px 10px;">No SGI calculated semesters found.</div>`}
+                </div>
+            </div>
+        `;
+        modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+        document.body.appendChild(modal);
+    } catch (e) {
+        alert('Error: ' + (e?.message || e));
+    }
+}
+
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');
     drop.classList.toggle('open');
     if (drop.classList.contains('open')) loadNotifs();
 }
+
 function loadNotifs() {
     fetch('notifications.php?fetch=1&mentor=1')
         .then(r=>r.json()).then(data=>{
