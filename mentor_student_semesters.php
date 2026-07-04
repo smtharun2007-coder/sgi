@@ -45,13 +45,73 @@ $semCursor = $semesters->find(
 );
 
 $semesters = [];
-$subjectsCursor = $subjects->find(['roll' => $roll]);
-$subjectsList = iterator_to_array($subjectsCursor);
+$allSubjectsCursor = $subjects->find(['roll' => $roll]);
+$allSubjectsList = iterator_to_array($allSubjectsCursor);
 
 foreach ($semCursor as $s) {
-    $semSubjects = array_filter($subjectsList, function($sub) use ($s) {
+    $semSubjects = array_filter($allSubjectsList, function($sub) use ($s) {
         return $sub['sem_id'] == (string)$s['_id'];
     });
+    
+    // Build subjects array with CAT marks and details
+    $subjectsData = [];
+    $internalSubs = array_filter($semSubjects, fn($sub) => $sub['internal'] === 'yes');
+    
+    foreach ($semSubjects as $sub) {
+        $subjectEntry = [
+            'subject_name' => $sub['subject_name'] ?? '',
+            'subject_code' => $sub['subject_code'] ?? '',
+            'credits' => $sub['credits'] ?? 0,
+            'internal' => $sub['internal'] ?? 'no'
+        ];
+        
+        // Add CAT marks for internal subjects
+        if ($sub['internal'] === 'yes') {
+            $subjectEntry['cat1'] = $sub['cat1'] ?? null;
+            $subjectEntry['cat2'] = $sub['cat2'] ?? null;
+            $subjectEntry['cat3'] = $sub['cat3'] ?? null;
+            
+            // Calculate total and percentage
+            $catTotal = 0;
+            $catMax = 0;
+            if (($sub['cat1'] ?? null) !== 'nil' && ($sub['cat1'] ?? null) !== null) {
+                $catTotal += (float)($sub['cat1'] ?? 0);
+                $catMax += 100;
+            }
+            if (($sub['cat2'] ?? null) !== 'nil' && ($sub['cat2'] ?? null) !== null) {
+                $catTotal += (float)($sub['cat2'] ?? 0);
+                $catMax += 100;
+            }
+            if (($sub['cat3'] ?? null) !== 'nil' && ($sub['cat3'] ?? null) !== null) {
+                $catTotal += (float)($sub['cat3'] ?? 0);
+                $catMax += 100;
+            }
+            $subjectEntry['cat_total'] = $catTotal;
+            $subjectEntry['cat_max'] = $catMax;
+            $subjectEntry['cat_percentage'] = $catMax > 0 ? round(($catTotal / $catMax) * 100, 2) : 0;
+        }
+        
+        // Add Final CA marks if available
+        if (isset($sub['ca_scored'])) {
+            $subjectEntry['ca_scored'] = $sub['ca_scored'] ?? null;
+            $subjectEntry['ca_max'] = $sub['ca_max'] ?? null;
+            $subjectEntry['ca_percent'] = $sub['ca_percent'] ?? null;
+        }
+        
+        $subjectsData[] = $subjectEntry;
+    }
+    
+    // Calculate CAT totals for the semester
+    $cat1Total = 0; $cat1Max = 0;
+    $cat2Total = 0; $cat2Max = 0;
+    $cat3Total = 0; $cat3Max = 0;
+    
+    foreach ($internalSubs as $sub) {
+        if ((int)($sub['credits'] ?? 0) === 0) continue;
+        if (($sub['cat1'] ?? null) !== 'nil') { $cat1Max += 100; $cat1Total += (float)($sub['cat1'] ?? 0); }
+        if (($sub['cat2'] ?? null) !== 'nil') { $cat2Max += 100; $cat2Total += (float)($sub['cat2'] ?? 0); }
+        if (($sub['cat3'] ?? null) !== 'nil') { $cat3Max += 100; $cat3Total += (float)($sub['cat3'] ?? 0); }
+    }
     
     // Determine semester status
     $status = 'Not Started';
@@ -73,6 +133,7 @@ foreach ($semCursor as $s) {
     
     $semesters[] = [
         'sem' => $s['sem'] ?? null,
+        'sem_id' => (string)$s['_id'] ?? null,
         'sgi' => isset($s['sgi']) ? (float)$s['sgi'] : null,
         'academic_score' => isset($s['academic_score']) ? (float)$s['academic_score'] : null,
         'skills_score' => isset($s['skills_score']) ? (float)$s['skills_score'] : null,
@@ -90,7 +151,17 @@ foreach ($semCursor as $s) {
         'status' => $status,
         'status_color' => $statusColor,
         'subject_count' => count($semSubjects),
-        'credits_done' => $s['credits_done'] ?? false
+        'credits_done' => $s['credits_done'] ?? false,
+        'subjects' => $subjectsData,
+        'cat1_total' => $cat1Total,
+        'cat1_max' => $cat1Max,
+        'cat1_percent' => $cat1Max > 0 ? round(($cat1Total / $cat1Max) * 100, 2) : 0,
+        'cat2_total' => $cat2Total,
+        'cat2_max' => $cat2Max,
+        'cat2_percent' => $cat2Max > 0 ? round(($cat2Total / $cat2Max) * 100, 2) : 0,
+        'cat3_total' => $cat3Total,
+        'cat3_max' => $cat3Max,
+        'cat3_percent' => $cat3Max > 0 ? round(($cat3Total / $cat3Max) * 100, 2) : 0
     ];
 }
 

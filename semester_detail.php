@@ -229,17 +229,23 @@ function grade($sgi) {
 
         <!-- PIE CHARTS -->
         <div class="cat-pie-row">
-            <div class="chart-box">
+            <div class="chart-box" style="position:relative;height:300px;display:flex;align-items:center;justify-content:center;">
                 <h3>CAT 1</h3>
-                <canvas id="cat1Pie"></canvas>
+                <div style="position:relative;width:100%;height:250px;">
+                    <canvas id="cat1Pie"></canvas>
+                </div>
             </div>
-            <div class="chart-box">
+            <div class="chart-box" style="position:relative;height:300px;display:flex;align-items:center;justify-content:center;">
                 <h3>CAT 2</h3>
-                <canvas id="cat2Pie"></canvas>
+                <div style="position:relative;width:100%;height:250px;">
+                    <canvas id="cat2Pie"></canvas>
+                </div>
             </div>
-            <div class="chart-box">
+            <div class="chart-box" style="position:relative;height:300px;display:flex;align-items:center;justify-content:center;">
                 <h3>CAT 3</h3>
-                <canvas id="cat3Pie"></canvas>
+                <div style="position:relative;width:100%;height:250px;">
+                    <canvas id="cat3Pie"></canvas>
+                </div>
             </div>
         </div>
         <div id="pie-legend" class="pie-legend-shared"></div>
@@ -497,28 +503,45 @@ subLabels.forEach((label, i) => {
 </div>
 <?php endif; ?>
 <!-- Document viewer modal -->
-<div id="docModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2001;flex-direction:column;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)closeDocModal()">
-    <div style="position:absolute;top:15px;right:20px;z-index:2002;">
-        <button onclick="closeDocModal()" style="background:none;border:none;color:#fff;font-size:32px;cursor:pointer;padding:0 10px;">&times;</button>
+<div id="docModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:2001;flex-direction:column;align-items:center;justify-content:center;padding:15px;" onclick="if(event.target===this)closeDocModal()">
+    <div style="position:absolute;top:10px;right:15px;z-index:2002;">
+        <button onclick="closeDocModal()" style="background:none;border:none;color:#fff;font-size:28px;cursor:pointer;padding:5px;">&times;</button>
     </div>
-    <div id="docTitle" style="color:#fff;font-size:16px;margin-bottom:15px;font-weight:600;text-align:center;"></div>
-    <div style="max-width:90vw;max-height:80vh;display:flex;align-items:center;justify-content:center;">
-        <iframe id="docViewer" src="" style="max-width:90vw;max-height:80vh;border:1px solid #444;border-radius:8px;background:#fff;"></iframe>
+    <div id="docTitle" style="color:#fff;font-size:14px;margin-bottom:10px;font-weight:600;text-align:center;max-width:80vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"></div>
+    <div style="width:100%;max-width:95vw;max-height:75vh;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+        <img id="docViewer" src="" alt="Document" style="max-width:100%;max-height:70vh;object-fit:contain;border-radius:8px;background:#fff;" onerror="this.style.display='none';document.getElementById('docIframe').style.display='block';">
+        <iframe id="docIframe" src="" style="max-width:95vw;max-height:70vh;border:1px solid #444;border-radius:8px;background:#fff;display:none;"></iframe>
     </div>
-    <div style="margin-top:15px;">
-        <a id="docDownloadLink" href="" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;font-size:14px;">Open in new tab / Download</a>
+    <div style="margin-top:10px;">
+        <a id="docDownloadLink" href="" target="_blank" rel="noopener" style="color:#fff;text-decoration:underline;font-size:13px;">Open in new tab / Download</a>
     </div>
 </div>
 <script>
 function showDoc(url, title) {
     document.getElementById('docTitle').textContent = title;
-    document.getElementById('docViewer').src = url;
     document.getElementById('docDownloadLink').href = url;
+    
+    // Check if it's an image file
+    const isImage = /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(url);
+    
+    if (isImage) {
+        document.getElementById('docViewer').src = url;
+        document.getElementById('docViewer').style.display = 'block';
+        document.getElementById('docIframe').style.display = 'none';
+        document.getElementById('docIframe').src = '';
+    } else {
+        document.getElementById('docViewer').style.display = 'none';
+        document.getElementById('docIframe').src = url;
+        document.getElementById('docIframe').style.display = 'block';
+        document.getElementById('docViewer').src = '';
+    }
+    
     document.getElementById('docModal').style.display = 'flex';
 }
 function closeDocModal() {
     document.getElementById('docModal').style.display = 'none';
     document.getElementById('docViewer').src = '';
+    document.getElementById('docIframe').src = '';
 }
 function toggleNotif() {
     const drop = document.getElementById('notifDrop');

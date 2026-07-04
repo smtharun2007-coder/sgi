@@ -660,6 +660,134 @@ textarea:focus { border-color: #e94560; }
     .readonly-grid { grid-template-columns: 1fr 1fr; }
     .cat-grid { grid-template-columns: repeat(2, 1fr); }
     .cat-pie-row { grid-template-columns: 1fr; }
+    
+    /* Auth pages mobile fixes */
+    .auth-box {
+        padding: 30px 25px 35px;
+        max-width: 95%;
+    }
+    .auth-box h1 { font-size: 22px; }
+    .auth-box h2 { font-size: 14px; }
+    .signup-box {
+        padding: 30px 25px 35px;
+        max-height: 90vh;
+    }
+    .portal-badge {
+        padding: 10px 24px;
+        font-size: 14px;
+    }
+    .switch-role-btn {
+        padding: 12px 20px;
+        font-size: 13px;
+    }
+    
+    /* Container padding */
+    .container { padding: 0 15px; margin: 20px auto; }
+    
+    /* Profile card mobile */
+    .profile-photo img { width: 180px; height: 220px; }
+    .no-photo { width: 160px; height: 160px; }
+    .profile-info h2 { font-size: 28px; }
+    .profile-roll { font-size: 22px; }
+    
+    /* Form box mobile */
+    .form-box { padding: 30px 20px; }
+    
+    /* Detail grid mobile */
+    .detail-grid { grid-template-columns: 1fr; }
+    
+    /* CAT summary mobile */
+    .cat-summary-row { grid-template-columns: 1fr; }
+    
+    /* Pie chart container fix */
+    .cat-pie-row .chart-box {
+        max-width: 100%;
+        overflow: hidden;
+    }
+    .cat-pie-row canvas {
+        max-height: 220px;
+    }
+    
+    /* Chart box mobile */
+    .chart-box {
+        padding: 16px;
+        overflow: hidden;
+    }
+    .chart-box canvas {
+        max-height: 300px;
+    }
+    
+    /* Document viewer improvements */
+    #docModal iframe {
+        max-width: 95vw;
+        max-height: 75vh;
+    }
+    
+    /* SGI card mobile */
+    .sgi-card {
+        padding: 16px 20px;
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+    }
+    .sgi-card-value { font-size: 42px; }
+    
+    /* Attendance card mobile */
+    .attendance-card {
+        padding: 16px 20px;
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+    }
+    .attendance-card-value { font-size: 36px; }
+    
+    /* Navbar mobile */
+    .navbar {
+        padding: 12px 15px;
+        flex-wrap: wrap;
+    }
+    .nav-brand { font-size: 18px; }
+    .nav-links {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .nav-links a {
+        font-size: 12px;
+        margin-left: 0;
+    }
+    
+    /* Fixed bar mobile */
+    .cat-fixed-bar {
+        flex-wrap: wrap;
+        padding: 10px 15px;
+        gap: 8px;
+    }
+    .cat-fixed-bar .btn-calc,
+    .cat-fixed-bar .btn-verify {
+        padding: 8px 16px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .auth-box {
+        padding: 25px 20px 30px;
+    }
+    .auth-box h1 { font-size: 20px; }
+    .logo-img {
+        width: 50px;
+        height: 50px;
+    }
+    
+    /* Extra small screens - single column everything */
+    .cat-grid { grid-template-columns: 1fr; }
+    .readonly-grid { grid-template-columns: 1fr; }
+    
+    /* Modal improvements */
+    .student-detail-modal {
+        margin: 5px;
+    }
 }
 
 /* COPYRIGHT FOOTER */

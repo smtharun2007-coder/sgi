@@ -522,54 +522,43 @@ function showSemesterDetail(sem, semData) {
                     </div>
                 </div>
                 
-                <h4 style="margin:20px 0 12px;color:#1a1a2e;">📊 CAT Marks</h4>
+                <h4 style="margin:20px 0 12px;color:#1a1a2e;">📊 CAT Marks & Subject Details</h4>
                 <div style="background:#f8f9fa;border-radius:12px;padding:16px;overflow-x:auto;">
-                    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                    <table style="width:100%;border-collapse:collapse;font-size:13px;min-width:700px;">
                         <thead>
                             <tr style="border-bottom:2px solid #dee2e6;">
                                 <th style="padding:10px;text-align:left;color:#888;font-size:11px;text-transform:uppercase;">Subject</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">Code</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">Credits</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">Type</th>
                                 <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">CAT 1</th>
                                 <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">CAT 2</th>
                                 <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">CAT 3</th>
                                 <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">Total</th>
                                 <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">%</th>
+                                <th style="padding:10px;text-align:center;color:#888;font-size:11px;text-transform:uppercase;">Final CA</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr style="border-bottom:1px solid #dee2e6;">
-                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Software Engineering</td>
-                                <td style="padding:10px;text-align:center;">85</td>
-                                <td style="padding:10px;text-align:center;">78</td>
-                                <td style="padding:10px;text-align:center;">82</td>
-                                <td style="padding:10px;text-align:center;font-weight:600;">245</td>
-                                <td style="padding:10px;text-align:center;color:#28a745;font-weight:600;">81.7%</td>
-                            </tr>
-                            <tr style="border-bottom:1px solid #dee2e6;">
-                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Database Management</td>
-                                <td style="padding:10px;text-align:center;">90</td>
-                                <td style="padding:10px;text-align:center;">88</td>
-                                <td style="padding:10px;text-align:center;">92</td>
-                                <td style="padding:10px;text-align:center;font-weight:600;">270</td>
-                                <td style="padding:10px;text-align:center;color:#28a745;font-weight:600;">90.0%</td>
-                            </tr>
-                            <tr style="border-bottom:1px solid #dee2e6;">
-                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Computer Networks</td>
-                                <td style="padding:10px;text-align:center;">75</td>
-                                <td style="padding:10px;text-align:center;">70</td>
-                                <td style="padding:10px;text-align:center;">78</td>
-                                <td style="padding:10px;text-align:center;font-weight:600;">223</td>
-                                <td style="padding:10px;text-align:center;color:#f5a623;font-weight:600;">74.3%</td>
-                            </tr>
-                            <tr>
-                                <td style="padding:10px;font-weight:600;color:#1a1a2e;">Operating Systems</td>
-                                <td style="padding:10px;text-align:center;">88</td>
-                                <td style="padding:10px;text-align:center;">85</td>
-                                <td style="padding:10px;text-align:center;">90</td>
-                                <td style="padding:10px;text-align:center;font-weight:600;">263</td>
-                                <td style="padding:10px;text-align:center;color:#28a745;font-weight:600;">87.7%</td>
-                            </tr>
+                        <tbody id="catMarksBody">
+                            <tr><td colspan="10" style="padding:20px;text-align:center;color:#888;">Loading subject details...</td></tr>
                         </tbody>
                     </table>
+                </div>
+                
+                <!-- CAT Totals Summary -->
+                <div style="margin-top:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;">
+                    <div style="background:linear-gradient(135deg,#e94560,#c73e54);color:#fff;padding:16px;border-radius:12px;text-align:center;">
+                        <div style="font-size:11px;opacity:0.8;text-transform:uppercase;">CAT 1 Total</div>
+                        <div style="font-size:24px;font-weight:700;" id="cat1TotalDisplay">—</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#1a1a2e,#2d3436);color:#fff;padding:16px;border-radius:12px;text-align:center;">
+                        <div style="font-size:11px;opacity:0.8;text-transform:uppercase;">CAT 2 Total</div>
+                        <div style="font-size:24px;font-weight:700;" id="cat2TotalDisplay">—</div>
+                    </div>
+                    <div style="background:linear-gradient(135deg,#f5a623,#e67e22);color:#fff;padding:16px;border-radius:12px;text-align:center;">
+                        <div style="font-size:11px;opacity:0.8;text-transform:uppercase;">CAT 3 Total</div>
+                        <div style="font-size:24px;font-weight:700;" id="cat3TotalDisplay">—</div>
+                    </div>
                 </div>
                 
                 ${semData.result_photo || semData.ca_photo ? `
@@ -598,6 +587,44 @@ function showSemesterDetail(sem, semData) {
     `;
     modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
     document.body.appendChild(modal);
+
+    // Populate CAT marks table from database
+    const subjects = semData.subjects || [];
+    const catMarksBody = document.getElementById('catMarksBody');
+    
+    if (subjects.length === 0) {
+        catMarksBody.innerHTML = '<tr><td colspan="10" style="padding:20px;text-align:center;color:#888;">No subjects found for this semester.</td></tr>';
+    } else {
+        let tableHTML = '';
+        subjects.forEach(sub => {
+            const isInternal = sub.internal === 'yes';
+            const cat1 = sub.cat1 !== null ? (sub.cat1 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat1) : '—';
+            const cat2 = sub.cat2 !== null ? (sub.cat2 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat2) : '—';
+            const cat3 = sub.cat3 !== null ? (sub.cat3 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat3) : '—';
+            const catTotal = isInternal ? (sub.cat_total || '—') : '—';
+            const catPercent = isInternal ? ((sub.cat_percentage || 0).toFixed(1) + '%') : '—';
+            const finalCA = sub.ca_scored !== null && sub.ca_scored !== undefined ? `${sub.ca_scored}/${sub.ca_max}` : '—';
+            
+            tableHTML += `<tr>
+                <td style="padding:10px;font-weight:600;color:#1a1a2e;">${sub.subject_name || '—'}</td>
+                <td style="padding:10px;text-align:center;color:#555;">${sub.subject_code || '—'}</td>
+                <td style="padding:10px;text-align:center;color:#555;">${sub.credits || '—'}</td>
+                <td style="padding:10px;text-align:center;">${isInternal ? '<span style="background:#e7f3ff;color:#0066cc;padding:2px 8px;border-radius:10px;font-size:11px;">Internal</span>' : '<span style="background:#f0f0f0;color:#888;padding:2px 8px;border-radius:10px;font-size:11px;">External</span>'}</td>
+                <td style="padding:10px;text-align:center;font-weight:600;color:${isInternal ? '#e94560' : '#ccc'};">${cat1}</td>
+                <td style="padding:10px;text-align:center;font-weight:600;color:${isInternal ? '#1a1a2e' : '#ccc'};">${cat2}</td>
+                <td style="padding:10px;text-align:center;font-weight:600;color:${isInternal ? '#f5a623' : '#ccc'};">${cat3}</td>
+                <td style="padding:10px;text-align:center;font-weight:700;color:#1a1a2e;">${catTotal}</td>
+                <td style="padding:10px;text-align:center;font-weight:700;color:${catPercent !== '—' && parseFloat(catPercent) >= 80 ? '#28a745' : catPercent !== '—' && parseFloat(catPercent) >= 60 ? '#f5a623' : catPercent !== '—' ? '#e94560' : '#ccc'};">${catPercent}</td>
+                <td style="padding:10px;text-align:center;font-weight:600;color:#27ae60;">${finalCA}</td>
+            </tr>`;
+        });
+        catMarksBody.innerHTML = tableHTML;
+    }
+    
+    // Update CAT totals
+    document.getElementById('cat1TotalDisplay').textContent = `${semData.cat1_total || 0} / ${semData.cat1_max || 0} (${semData.cat1_percent || 0}%)`;
+    document.getElementById('cat2TotalDisplay').textContent = `${semData.cat2_total || 0} / ${semData.cat2_max || 0} (${semData.cat2_percent || 0}%)`;
+    document.getElementById('cat3TotalDisplay').textContent = `${semData.cat3_total || 0} / ${semData.cat3_max || 0} (${semData.cat3_percent || 0}%)`;
 }
 
 function toggleNotif() {
