@@ -848,18 +848,16 @@ textarea:focus { border-color: #e94560; }
     text-decoration: none;
 }
 
-/* COPYRIGHT FOOTER - AUTH PAGES */
+/* COPYRIGHT FOOTER - AUTH PAGES - No longer fixed, appears at bottom of content */
 .auth-page .copyright-footer {
     color: rgba(255, 255, 255, 0.6);
     border-top: none;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    margin-top: 0;
-    padding: 12px;
-    background: rgba(0,0,0,0.3);
-    font-size: 11px;
+    position: relative;
+    margin-top: 40px;
+    padding: 20px;
+    background: transparent;
+    font-size: 12px;
+    text-align: center;
 }
 
 /* ── NOTIFICATION BELL ── */
