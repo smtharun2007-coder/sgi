@@ -418,7 +418,26 @@ $currentSemNum = $currentSem['sem'] ?? null;
     </div>
 
     <!-- Filters -->
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label for="semesterFilter">Semester</label>
+            <select id="semesterFilter" onchange="setSemesterFilter(this.value)">
+                <option value="all" selected>All semesters</option>
+                <?php foreach ($semList as $s): ?>
+                    <?php $semNum = $s['sem']; ?>
+                    <?php $label = 'Sem ' . $semNum; ?>
+                    <option value="<?= htmlspecialchars((string)$semNum) ?>"><?= htmlspecialchars($label) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
 
+        <div class="status-tabs" role="tablist" aria-label="Approval Status">
+            <button type="button" class="status-tab active" data-status="all" onclick="setStatusFilter('all')">All</button>
+            <button type="button" class="status-tab" data-status="pending" onclick="setStatusFilter('pending')">Pending</button>
+            <button type="button" class="status-tab" data-status="approved" onclick="setStatusFilter('approved')">Approved</button>
+            <button type="button" class="status-tab" data-status="rejected" onclick="setStatusFilter('rejected')">Rejected</button>
+        </div>
+    </div>
 
     <!-- Approval List -->
     <div class="approval-list" id="approvalList">
@@ -445,8 +464,13 @@ $currentSemNum = $currentSem['sem'] ?? null;
 <script>
 const currentSemester = <?= $currentSemNum ? $currentSemNum : 'null' ?>;
 let currentStatusFilter = 'all';
-let currentSemesterFilter = 'current';
+let currentSemesterFilter = 'all';
 let approvals = [];
+
+function setSemesterFilter(semesterValue) {
+    currentSemesterFilter = semesterValue;
+    renderApprovals();
+}
 
 document.addEventListener('DOMContentLoaded', function() {
     loadApprovals();
@@ -487,7 +511,11 @@ function setStatusFilter(status) {
 function getFilteredApprovals() {
     return approvals.filter(a => {
         const normalizedStatus = (a.status === 'pending_evaluator') ? 'pending' : a.status;
-        return currentStatusFilter === 'all' || normalizedStatus === currentStatusFilter;
+
+        const normalizedSemester = (a.semester === null || a.semester === undefined) ? null : String(a.semester);
+        const semesterOk = currentSemesterFilter === 'all' || normalizedSemester === String(currentSemesterFilter);
+
+        return (currentStatusFilter === 'all' || normalizedStatus === currentStatusFilter) && semesterOk;
     });
 }
 
@@ -598,22 +626,32 @@ function closeModal() {
 }
 
 function deleteApproval(id) {
-    if (!window.customConfirm) { confirm('Are you sure you want to cancel this pending request?') || (function(){return;})(); } else { customConfirm('Are you sure you want to cancel this pending request?', function(){ proceedDelete(id); }); return; }
+    // Keep UI messaging consistent with other pages by using our local showToast/customConfirm.
+    customConfirm(
+        'Are you sure you want to cancel this pending request?',
+        function () {
+            const formData = new FormData();
+            formData.append('approval_id', id);
+            formData.append('delete', '1');
 
-    const formData = new FormData();
-    formData.append('approval_id', id);
-    formData.append('delete', '1');
-
-    fetch('approvals.php', { method: 'POST', body: formData })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') {
-                loadApprovals();
-            } else {
-                showToast(data.message || 'Failed to delete', 'error');
-            }
-        });
+            fetch('approvals.php', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast('Approval request deleted', 'success');
+                        loadApprovals();
+                    } else {
+                        showToast(data.message || 'Failed to delete', 'error');
+                    }
+                });
+        },
+        function () {
+            // cancelled
+        }
+    );
 }
+
+
 
 function escapeHtml(text) {
     const div = document.createElement('div');
@@ -626,7 +664,7 @@ document.querySelectorAll('.status-tab').forEach(tab => {
     tab.addEventListener('click', function() {
         document.querySelectorAll('.status-tab').forEach(t => t.classList.remove('active'));
         this.classList.add('active');
-        currentStatusFilter = this.dataset.filter;
+        // dataset.filter is not used for these buttons (we call setStatusFilter directly)
         renderApprovals();
     });
 });

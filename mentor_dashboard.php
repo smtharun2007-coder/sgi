@@ -179,6 +179,7 @@ async function showStudentSemesters(roll) {
         if (existing) existing.remove();
 
         const semesters = data.semesters || [];
+        const fmt = (v) => (v === null || v === undefined || v === '') ? '—' : v;
         const rows = semesters.map(s => {
             const sgi = (s.sgi === null || s.sgi === undefined) ? '—' : s.sgi;
             const grade = (function(g){
@@ -196,7 +197,14 @@ async function showStudentSemesters(roll) {
                     <td>${sgi}</td>
                     <td>${grade}</td>
                     <td>${s.attendance ?? '—'}%</td>
-                    <td>${s.gpa ?? '—'}</td>
+        <td>${s.gpa ?? '—'}</td>
+                    <td>${s.cgpa ?? '—'}</td>
+                    <td>${s.attendance ?? '—'}%</td>
+                    <td>${s.academic_score ?? '—'}</td>
+                    <td>${s.skills_score ?? '—'}</td>
+                    <td>${s.projects_score ?? '—'}</td>
+                    <td>${s.activities_score ?? '—'}</td>
+                    <td>${s.discipline_score ?? '—'}</td>
                     <td>
                         ${s.result_photo ? `<a href="#" onclick="event.preventDefault();window.open('${s.result_photo}','_blank');">View Result</a>` : '—'}
                     </td>
@@ -226,6 +234,12 @@ async function showStudentSemesters(roll) {
                                 <th style="padding:10px 8px;">Grade</th>
                                 <th style="padding:10px 8px;">Attendance</th>
                                 <th style="padding:10px 8px;">GPA</th>
+                                <th style="padding:10px 8px;">CGPA</th>
+                                <th style="padding:10px 8px;">Academic</th>
+                                <th style="padding:10px 8px;">Skills</th>
+                                <th style="padding:10px 8px;">Projects</th>
+                                <th style="padding:10px 8px;">Activities</th>
+                                <th style="padding:10px 8px;">Discipline</th>
                                 <th style="padding:10px 8px;">Result</th>
                             </tr>
                         </thead>

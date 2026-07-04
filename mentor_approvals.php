@@ -736,18 +736,13 @@ function renderApprovals() {
                     <span>📅 ${a.created_at}</span>
                     <span>📚 Sem ${a.semester || '?'}</span>
                     <span>📝 ${a.subject_count || 0} subjects</span>
-                    ${hasPendingEvaluator ? '<span style="color:#ffc107;">⏳ Pending Evaluator</span>' : ''}
+
                 </div>
             </div>
             <div class="approval-actions">
                 ${a.status === 'pending' ? `
-                    ${a.type === 'SGI Calculation' && hasPendingEvaluator ? `
-                        <button class="btn-sm btn-view-sm" onclick="event.stopPropagation();showDetails('${a._id}')" title="View Details">👁</button>
-                        ${!allEvaluatorApproved ? '<span style="font-size:11px;color:#ffc107;">⏳ Waiting</span>' : ''}
-                    ` : `
-                        <button class="btn-sm btn-approve-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'approve')" title="Approve">✓</button>
-                        <button class="btn-sm btn-reject-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'reject')" title="Reject">✗</button>
-                    `}
+                    <button class="btn-sm btn-approve-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'approve')" title="Approve">✓</button>
+                    <button class="btn-sm btn-reject-sm" onclick="event.stopPropagation();openActionModal('${a._id}', 'reject')" title="Reject">✗</button>
                 ` : `
                     <button class="btn-sm btn-view-sm" onclick="event.stopPropagation();showDetails('${a._id}')" title="View">👁</button>
                 `}
@@ -1066,49 +1061,7 @@ function showDetails(id) {
                     </div>
                 </div>
                 
-                ${otherProjects.length > 0 ? `
-                <div style="margin-top:12px;">
-                    <div style="font-size:14px;font-weight:600;color:#1a1a2e;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
-                        🔧 Other Projects (Need Evaluator Approval)
-                    </div>
-                    <table class="subjects-table">
-                        <thead>
-                            <tr>
-                                <th>Project Name</th>
-                                <th>Count</th>
-                                <th>Points</th>
-                                <th>Evaluator ID</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${otherProjects.map(p => {
-                                const pendingProj = pendingEvalProjects.find(ep => ep.project_name === p.name);
-                                const status = pendingProj ? '⏳ Pending' : '✅ Approved';
-                                const statusColor = pendingProj ? '#ffc107' : '#28a745';
-                                return `
-                                <tr>
-                                    <td><strong>${escapeHtml(p.name)}</strong></td>
-                                    <td style="text-align:center;">${p.count}</td>
-                                    <td style="text-align:center;">${p.points}</td>
-                                    <td style="text-align:center;color:#888;">${escapeHtml(p.evaluator_id || '—')}</td>
-                                    <td style="text-align:center;font-weight:600;color:${statusColor};">${status}</td>
-                                </tr>
-                                `;
-                            }).join('')}
-                        </tbody>
-                    </table>
-                    ${pendingEvalProjects.length > 0 ? `
-                    <div style="margin-top:10px;padding:10px 14px;background:#fff3cd;border-radius:8px;font-size:12px;color:#856404;">
-                        ⚠️ ${pendingEvalProjects.length} project(s) pending evaluator approval. Once all evaluators approve, you can proceed with SGI approval.
-                    </div>
-                    ` : `
-                    <div style="margin-top:10px;padding:10px 14px;background:#d4edda;border-radius:8px;font-size:12px;color:#155724;">
-                        ✅ All other projects have been approved by evaluators.
-                    </div>
-                    `}
-                </div>
-                ` : ''}
+
             </div>
             
             <!-- Activities Details -->
