@@ -1,0 +1,8 @@
+uploads/
+cacert.pem
+composer.phar
+*.lock
+.env
+phpinfo_test.php
+vendor/
+config.php
