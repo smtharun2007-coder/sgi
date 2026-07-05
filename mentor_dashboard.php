@@ -199,7 +199,16 @@ async function showStudentSemesters(roll) {
                 return 'D';
             })(s.sgi);
 
-            const statusBadge = `<span style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:#1a1a2e;color:#fff;">${s.status}</span>`;
+            // Add color based on status
+            let statusBgColor = '#1a1a2e';
+            let statusTextColor = '#fff';
+            if (s.status === 'SGI Calculated') { statusBgColor = '#28a745'; }
+            else if (s.status === 'Final CA Done') { statusBgColor = '#17a2b8'; }
+            else if (s.status === 'Verified') { statusBgColor = '#ffc107'; statusTextColor = '#333'; }
+            else if (s.status === 'Registered') { statusBgColor = '#007bff'; }
+            else if (s.status === 'Not Started') { statusBgColor = '#6c757d'; }
+            
+            const statusBadge = `<span style="display:inline-block;padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:${statusBgColor};color:${statusTextColor};">${s.status}</span>`;
 
             return `
                 <div class="semester-card" onclick="showSemesterDetailBySem('${s.sem}')" style="cursor:pointer;">
@@ -594,11 +603,12 @@ function showSemesterDetail(sem, semData) {
         let tableHTML = '';
         subjects.forEach(sub => {
             const isInternal = sub.internal === 'yes';
-            const cat1 = sub.cat1 !== null ? (sub.cat1 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat1) : '—';
-            const cat2 = sub.cat2 !== null ? (sub.cat2 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat2) : '—';
-            const cat3 = sub.cat3 !== null ? (sub.cat3 === 'nil' ? '<span style="color:#aaa;">NIL</span>' : sub.cat3) : '—';
-            const catTotal = isInternal ? (sub.cat_total || '—') : '—';
-            const catPercent = isInternal ? ((sub.cat_percentage || 0).toFixed(1) + '%') : '—';
+            // CAT marks in black color - only for internal subjects
+            const cat1 = isInternal ? (sub.cat1 !== null && sub.cat1 !== undefined ? (sub.cat1 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat1}</span>`) : '—') : '—';
+            const cat2 = isInternal ? (sub.cat2 !== null && sub.cat2 !== undefined ? (sub.cat2 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat2}</span>`) : '—') : '—';
+            const cat3 = isInternal ? (sub.cat3 !== null && sub.cat3 !== undefined ? (sub.cat3 === 'nil' ? '<span style="color:#333;">NIL</span>' : `<span style="color:#1a1a2e;font-weight:600;">${sub.cat3}</span>`) : '—') : '—';
+            const catTotal = isInternal ? (sub.cat_total !== null && sub.cat_total !== undefined ? sub.cat_total : '—') : '—';
+            const catPercent = isInternal ? ((sub.cat_percentage !== null && sub.cat_percentage !== undefined ? sub.cat_percentage : 0).toFixed(1) + '%') : '—';
             // Display CA marks out of 100 (converted) - show only the number, not "/100"
             const finalCA = (sub.ca_out_of_100 !== null && sub.ca_out_of_100 !== undefined) ? `${sub.ca_out_of_100}` : (sub.ca_scored !== null && sub.ca_scored !== undefined ? `${sub.ca_scored}/${sub.ca_max}` : '—');
             // Color CA marks red if less than 50
