@@ -310,7 +310,7 @@ if (isset($_POST['confirm_credits'])) {
                     <td><?= $sub['credits'] ?></td>
                     <td style="text-align:center;">
                         <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&remove_pending=<?= $tempId ?>" 
-                           onclick="event.preventDefault();customConfirm('Remove this pending subject?', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>';});return false;"
+                           onclick="event.preventDefault();customConfirm('Remove this pending subject?', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&remove_pending=<?= $tempId ?>';});"
                            class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;">Remove</a>
                     </td>
                 </tr>
@@ -354,11 +354,11 @@ if (isset($_POST['confirm_credits'])) {
                     <td style="text-align:center;">
                         <?php if ($isMarkedForDeletion): ?>
                             <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>" 
-                               onclick="event.preventDefault();customConfirm('Undo deletion mark?', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>';});return false;"
+                               onclick="event.preventDefault();customConfirm('Undo deletion mark?', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&undo_delete=<?= $sid ?>';});"
                                class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;background:#ffc107;color:#000;">Undo</a>
                         <?php else: ?>
                             <a href="credit_subjects.php?sem_id=<?= $sem_id ?>&mark_delete=<?= $sid ?>" 
-                               onclick="event.preventDefault();customConfirm('Mark this subject for deletion? It will be removed after mentor approval.', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&mark_delete=<?= $sid ?>';});return false;"
+                               onclick="event.preventDefault();customConfirm('Mark this subject for deletion? It will be removed after mentor approval.', function(){window.location.href='credit_subjects.php?sem_id=<?= $sem_id ?>&mark_delete=<?= $sid ?>';});"
                                class="btn-remove" style="display:inline-block;text-decoration:none;padding:4px 10px;font-size:12px;background:#dc3545;">Mark Delete</a>
                         <?php endif; ?>
                     </td>
@@ -432,8 +432,7 @@ if (isset($_POST['confirm_credits'])) {
     
     <div style="display:flex;gap:15px;justify-content:center;flex-wrap:wrap;">
         <form method="POST" style="display:inline;">
-            <button type="submit" name="confirm_credits" class="btn-primary" 
-                    <?= (empty($_SESSION['credit_changes']['additions']) && empty($_SESSION['credit_changes']['deletions'])) ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : '' ?>>
+            <button type="submit" name="confirm_credits" class="btn-primary">
                 Submit Changes for Approval
             </button>
         </form>
@@ -448,14 +447,14 @@ if (isset($_POST['confirm_credits'])) {
 // Custom Toast Notification System
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
-    toast.style.cssText = `position:fixed;top:80px;right:20px;background:${type==='success'?'#28a745':type==='error'?'#dc3545':type==='warning'?'#ffc107':'#17a2b8'};color:#fff;padding:14px 24px;border-radius:12px;font-size:14px;font-weight:600;z-index:10000;box-shadow:0 8px 30px rgba(0,0,0,0.2);animation:toastSlideIn 0.3s ease;max-width:350px;display:flex;align-items:center;gap:10px;`;
+    toast.style.cssText = `position:fixed;top:80px;right:20px;background:${type==='success'?'#28a745':type==='error'?'#dc3545':type==='warning'?'#ffc107':'#17a2b8'};color:#fff;padding:14px 24px;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,0.12);z-index:10001;display:flex;gap:12px;align-items:center;`;
     const icons = {success:'✅',error:'❌',warning:'⚠️',info:'ℹ️'};
     toast.innerHTML = `<span>${icons[type]||''}</span><span>${message}</span>`;
     document.body.appendChild(toast);
     if (!document.getElementById('toastStyles')) {
         const style = document.createElement('style');
         style.id = 'toastStyles';
-        style.textContent = `@keyframes toastSlideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes toastSlideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}`;
+        style.textContent = `@keyframes toastSlideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}@keyframes toastSlideOut{from{transform:translateX(0);opacity:1}to{transform:translateX(100%);opacity:0}}.toast{animation:toastSlideIn 0.3s ease}`;
         document.head.appendChild(style);
     }
     setTimeout(() => { toast.style.animation = 'toastSlideOut 0.3s ease'; setTimeout(() => toast.remove(), 300); }, 3000);
@@ -467,7 +466,7 @@ function customConfirm(message, onConfirm, onCancel) {
     overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';
     const modal = document.createElement('div');
     modal.style.cssText = 'background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:modalSlide 0.3s ease;';
-    modal.innerHTML = `<div style="text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🤔</div><h3 style="margin-bottom:12px;color:#1a1a2e;font-size:18px;">Confirm Action</h3><p style="color:#666;margin-bottom:24px;font-size:14px;line-height:1.5;">${message}</p><div style="display:flex;gap:12px;justify-content:center;"><button id="confirmCancel" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e9ecef;color:#555;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button><button id="confirmOk" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a1a2e,#e94560);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">Confirm</button></div></div>`;
+    modal.innerHTML = `<div style="text-align:center;"><div style="font-size:48px;margin-bottom:16px;">🤔</div><h3 style="margin-bottom:12px;color:#1a1a2e;font-size:18px;">Confirm Action</h3><p style="color:#555;margin-bottom:18px;">${message}</p><div style="display:flex;gap:12px;justify-content:center;"><button id="confirmOk" style="background:#28a745;color:#fff;border-radius:8px;padding:8px 16px;border:0;">Yes</button><button id="confirmCancel" style="background:#f1f1f1;border-radius:8px;padding:8px 16px;border:0;">Cancel</button></div></div>`;
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
     if (!document.getElementById('modalStyles')) {
@@ -481,9 +480,9 @@ function customConfirm(message, onConfirm, onCancel) {
 }
 
 function toggleNotif(){const d=document.getElementById('notifDrop');d.classList.toggle('open');if(d.classList.contains('open'))loadNotifs();}
-function loadNotifs(){fetch('notifications.php?fetch=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML=data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');});}
-function markAll(e){e.preventDefault();fetch('notifications.php?mark_all=1');document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));const b=document.querySelector('.notif-badge');if(b)b.remove();}
-function clearAll(e){e.preventDefault();fetch('notifications.php?delete_all=1');document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';const b=document.querySelector('.notif-badge');if(b)b.remove();}
+function loadNotifs(){fetch('notifications.php?fetch=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML='';data.forEach(n=>{const item=document.createElement('div');item.className='notif-item '+(n.read? '':'unread');item.innerHTML=`<div class="notif-msg">${n.message}</div><div class="notif-time">${new Date(n.created_at).toLocaleString()}</div>`;l.appendChild(item);});}).catch(e=>{document.getElementById('notifList').innerHTML='<div class="notif-empty">Unable to load</div>';});}
+function markAll(e){e.preventDefault();fetch('notifications.php?mark_all=1');document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));const b=document.querySelector('.notif-badge');if(b) b.remove();}
+function clearAll(e){e.preventDefault();fetch('notifications.php?delete_all=1');document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';const b=document.querySelector('.notif-badge');if(b) b.remove();}
 document.addEventListener('click',e=>{const btn=document.getElementById('bellBtn');const d=document.getElementById('notifDrop');if(btn&&d&&!btn.contains(e.target)&&!d.contains(e.target))d.classList.remove('open');});
 </script>
 </body>
