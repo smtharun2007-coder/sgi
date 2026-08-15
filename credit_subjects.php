@@ -121,107 +121,94 @@ if (isset($_GET['undo_delete']) && !empty($_GET['undo_delete'])) {
 if (isset($_POST['confirm_credits'])) {
     $hasAdditions = !empty($_SESSION['credit_changes']['additions']);
     $hasDeletions = !empty($_SESSION['credit_changes']['deletions']);
-    
-    // If no changes pending, just mark as done and proceed
-    if (!$hasAdditions && !$hasDeletions) {
-        // Check if there are existing non-internal subjects
-        if (empty($nonInternalSubs)) {
-            $semesters->updateOne(
-                ['_id' => new MongoDB\BSON\ObjectId($sem_id)],
-                ['$set' => ['credits_done' => true]]
-            );
-            header("Location: verify_marks.php?sem_id=$sem_id");
-            exit;
-        } else {
-            $error = "No pending changes to submit. Add or mark subjects for deletion first, or proceed if existing subjects are correct.";
-        }
+
+    // Always create a request for the mentor even if there are no additions/deletions
+    // Prepare data for approval
+    $additionsData = array_values($_SESSION['credit_changes']['additions']);
+    $deletionsData = array_values($_SESSION['credit_changes']['deletions']);
+
+    // Check if there's already a pending approval for this
+    $existingApproval = $approvals->findOne([
+        'student_roll' => $roll,
+        'semester' => (int)$sem['sem'],
+        'type' => 'Credit Subjects',
+        'status' => 'pending'
+    ]);
+
+    if ($existingApproval) {
+        $error = "You already have a pending Credit Subjects approval for this semester.";
     } else {
-        // Check if there's already a pending approval for this
-        $existingApproval = $approvals->findOne([
-            'student_roll' => $roll,
-            'semester' => (int)$sem['sem'],
-            'type' => 'Credit Subjects',
-            'status' => 'pending'
-        ]);
-        
-        if ($existingApproval) {
-            $error = "You already have a pending Credit Subjects approval for this semester.";
-        } else {
-            // Prepare data for approval
-            $additionsData = array_values($_SESSION['credit_changes']['additions']);
-            $deletionsData = array_values($_SESSION['credit_changes']['deletions']);
-            
-            // Prepare existing internal subjects for display
-            $existingSubjectsData = [];
-            foreach ($internalSubs as $sub) {
-                $existingSubjectsData[] = [
-                    'name' => $sub['subject_name'],
-                    'code' => $sub['subject_code'],
-                    'credits' => (int)$sub['credits'],
-                    'internal' => $sub['internal']
-                ];
-            }
-            
-            // Prepare existing non-internal subjects (showing which are marked for deletion)
-            $existingNonInternalData = [];
-            foreach ($nonInternalSubs as $sub) {
-                $isMarkedForDeletion = isset($_SESSION['credit_changes']['deletions'][(string)$sub['_id']]);
-                $existingNonInternalData[] = [
-                    'subject_id' => (string)$sub['_id'],
-                    'name' => $sub['subject_name'],
-                    'code' => $sub['subject_code'],
-                    'credits' => (int)$sub['credits'],
-                    'marked_for_deletion' => $isMarkedForDeletion
-                ];
-            }
-            
-            // Create approval request
-            $approvalData = [
-                'student_roll' => $roll,
-                'student_name' => $u['name'],
-                'type' => 'Credit Subjects',
-                'semester' => (int)$sem['sem'],
-                'reg' => $u['reg'],
-                'mentor_id' => $u['mentor_id'] ?? '',
-                'message' => 'Request to confirm credit subject changes for Semester ' . $sem['sem'] . 
-                            ' (' . count($additionsData) . ' additions, ' . count($deletionsData) . ' deletions)',
-                'status' => 'pending',
-                'credit_subjects' => $additionsData,  // New subjects to add
-                'credit_deletions' => $deletionsData,  // Subjects to delete
-                'existing_subjects' => $existingSubjectsData,  // Internal subjects (unchanged)
-                'existing_non_internal' => $existingNonInternalData,  // Existing non-internal with deletion status
-                'subject_count' => count($additionsData),
-                'deletion_count' => count($deletionsData),
-                'sem_id' => $sem_id,
-                'created_at' => new MongoDB\BSON\UTCDateTime()
+        // Prepare existing internal subjects for display
+        $existingSubjectsData = [];
+        foreach ($internalSubs as $sub) {
+            $existingSubjectsData[] = [
+                'name' => $sub['subject_name'],
+                'code' => $sub['subject_code'],
+                'credits' => (int)$sub['credits'],
+                'internal' => $sub['internal']
             ];
-            
-            $approvals->insertOne($approvalData);
-            
-            // Create notification for mentor
-            if (!empty($u['mentor_id'])) {
-                $notifications->insertOne([
-                    'mentor_id' => $u['mentor_id'],
-                    'message' => '📝 Credit Subjects changes approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
-                    'read' => false,
-                    'created_at' => new MongoDB\BSON\UTCDateTime()
-                ]);
-            }
-            
-            // Create notification for student
+        }
+
+        // Prepare existing non-internal subjects (showing which are marked for deletion)
+        $existingNonInternalData = [];
+        foreach ($nonInternalSubs as $sub) {
+            $isMarkedForDeletion = isset($_SESSION['credit_changes']['deletions'][(string)$sub['_id']]);
+            $existingNonInternalData[] = [
+                'subject_id' => (string)$sub['_id'],
+                'name' => $sub['subject_name'],
+                'code' => $sub['subject_code'],
+                'credits' => (int)$sub['credits'],
+                'marked_for_deletion' => $isMarkedForDeletion
+            ];
+        }
+
+        // Create approval request
+        $approvalData = [
+            'student_roll' => $roll,
+            'student_name' => $u['name'],
+            'type' => 'Credit Subjects',
+            'semester' => (int)$sem['sem'],
+            'reg' => $u['reg'],
+            'mentor_id' => $u['mentor_id'] ?? '',
+            'message' => 'Request to confirm credit subject changes for Semester ' . $sem['sem'] . 
+                        ' (' . count($additionsData) . ' additions, ' . count($deletionsData) . ' deletions)',
+            'status' => 'pending',
+            'credit_subjects' => $additionsData,  // New subjects to add
+            'credit_deletions' => $deletionsData,  // Subjects to delete
+            'existing_subjects' => $existingSubjectsData,  // Internal subjects (unchanged)
+            'existing_non_internal' => $existingNonInternalData,  // Existing non-internal with deletion status
+            'subject_count' => count($additionsData),
+            'deletion_count' => count($deletionsData),
+            'sem_id' => $sem_id,
+            'submitted_without_changes' => (!$hasAdditions && !$hasDeletions),
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ];
+
+        $approvals->insertOne($approvalData);
+
+        // Create notification for mentor
+        if (!empty($u['mentor_id'])) {
             $notifications->insertOne([
-                'roll' => $roll,
-                'message' => '✅ Your Credit Subjects changes request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
+                'mentor_id' => $u['mentor_id'],
+                'message' => '📝 Credit Subjects changes approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
                 'read' => false,
                 'created_at' => new MongoDB\BSON\UTCDateTime()
             ]);
-            
-            // Clear the session changes since they're now in the approval
-            unset($_SESSION['credit_changes']);
-            $_SESSION['credit_changes'] = ['additions' => [], 'deletions' => []];
-            
-            $success = 'Your Credit Subjects changes request has been submitted for approval. You will be notified once your mentor reviews it.';
         }
+
+        // Create notification for student
+        $notifications->insertOne([
+            'roll' => $roll,
+            'message' => '✅ Your Credit Subjects changes request for Semester ' . $sem['sem'] . ' has been submitted and is pending mentor approval.',
+            'read' => false,
+            'created_at' => new MongoDB\BSON\UTCDateTime()
+        ]);
+
+        // Clear the session changes since they're now in the approval
+        unset($_SESSION['credit_changes']);
+        $_SESSION['credit_changes'] = ['additions' => [], 'deletions' => []];
+
+        $success = 'Your Credit Subjects changes request has been submitted for approval. You will be notified once your mentor reviews it.';
     }
 }
 ?>
