@@ -5,6 +5,10 @@ header('Content-Type: text/html; charset=utf-8');
 // Start output buffering to prevent header issues
 ob_start();
 
+// Set the default timezone to Asia/Kolkata (India Standard Time)
+// This ensures all date/time functions use the correct timezone
+date_default_timezone_set('Asia/Kolkata');
+
 // Start session if not already started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
