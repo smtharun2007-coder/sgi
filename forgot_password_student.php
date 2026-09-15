@@ -295,11 +295,11 @@ if (isset($_POST['resend_otp'])) {
             <span class="switch-role-icon">🔄</span>
             <span>Switch to Mentor Portal</span>
         </a>
-    </div>
+ </div>
     <?php endif; ?>
-</div>
-<div class="copyright-footer">
-    &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+    <div class="copyright-footer" style="margin-top:24px;padding-top:20px;border-top:1px solid rgba(0,0,0,0.1);color:rgba(0,0,0,0.5);font-size:11px;">
+        &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
+    </div>
 </div>
 </body>
 </html>
