@@ -87,6 +87,7 @@ $studentList   = iterator_to_array($studentCursor);
     </a>
     <div class="nav-links">
         <a href="mentor_dashboard.php">Home</a>
+        <a href="mentor_attendance.php">Attendance</a>
         <a href="mentor_approvals.php">Approvals</a>
         <a href="mentor_calendar.php">Calendar</a>
         <a href="mentor_announcements.php">Announcements</a>
@@ -135,6 +136,10 @@ $studentList   = iterator_to_array($studentCursor);
         <div class="summary-card" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);">
             <h3>My Students</h3>
             <p><?= count($studentList) ?></p>
+        </div>
+        <div class="summary-card" style="background:linear-gradient(135deg,#1a1a2e,#17a2b8);">
+            <h3>Attendance</h3>
+            <p><a href="mentor_attendance.php" style="color:#fff;text-decoration:none;font-size:14px;">Manage &rarr;</a></p>
         </div>
     </div>
 

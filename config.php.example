@@ -28,6 +28,13 @@ try {
     $semesters  = $database->semesters;
     $subjects   = $database->subjects;
     $otp_store  = $database->otp_store;
+
+    // Attendance module collections
+    $timetables            = $database->timetables;
+    $attendance_sessions   = $database->attendance_sessions;
+    $student_attendance    = $database->student_attendance;
+    $attendance_exceptions = $database->attendance_exceptions;
+    $od_requests           = $database->od_requests;
 } catch (Exception $e) {
     die("Database connection failed. Please check your configuration.");
 }

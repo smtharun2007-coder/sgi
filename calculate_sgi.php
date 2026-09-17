@@ -35,8 +35,30 @@ $cat3_10 = $cat3Max > 0 ? round(($cat3Total / $cat3Max) * 10, 2) : 0;
 // Auto-fetched from verify
 $gpa        = (float)($sem['gpa'] ?? 0);
 $cgpa       = (float)($sem['cgpa'] ?? 0);
-$attendance = (float)($sem['attendance'] ?? 0);
 $prev_gpa   = (float)($sem['prev_gpa'] ?? 0);
+
+// Auto-fetch attendance from the attendance module (falls back to semester value)
+$attendance = (float)($sem['attendance'] ?? 0);
+try {
+    $attSessions = iterator_to_array($attendance_sessions->find(['rolls' => $roll, 'status' => 'CONDUCTED']));
+    $attRecords  = iterator_to_array($student_attendance->find(['student_roll' => $roll]));
+    $attBySession = [];
+    foreach ($attRecords as $a) { $attBySession[$a['attendance_session_id']] = $a; }
+    $attTotal = count($attSessions);
+    $attPresent = 0;
+    foreach ($attSessions as $sess) {
+        $a = $attBySession[$sess['attendance_session_id']] ?? null;
+        if ($a) {
+            $eff = $a['effective_status'] ?? $a['status'] ?? 'ABSENT';
+            if ($eff === 'PRESENT' || $eff === 'OD') $attPresent++;
+        }
+    }
+    if ($attTotal > 0) {
+        $attendance = round(($attPresent / $attTotal) * 100, 2);
+    }
+} catch (Exception $e) {
+    // Fall back to semester attendance if attendance module not available
+}
 
 $error = '';
 

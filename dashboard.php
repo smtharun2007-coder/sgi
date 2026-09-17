@@ -19,6 +19,7 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
 </a>
     <div class="nav-links">
         <a href="dashboard.php">Home</a>
+        <a href="attendance.php">Attendance</a>
         <a href="update_profile.php">Profile</a>
         <a href="about.php">About</a>
         <a href="contact.php">Contact</a>
@@ -102,6 +103,13 @@ if (!empty($u['mentor_id'])) {
             <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
                 <p style="font-size:13px;color:#888;margin-bottom:16px;">View announcements from your mentor.</p>
                 <a href="announcements.php" class="btn-primary" style="width:auto;padding:10px 24px;">Open Announcements</a>
+            </div>
+        </div>
+        <div class="sem-card">
+            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#17a2b8);"><h3>&#9989; Attendance</h3></div>
+            <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">View your attendance, calendar & apply for OD/Leave.</p>
+                <a href="attendance.php" class="btn-primary" style="width:auto;padding:10px 24px;">Open Attendance</a>
             </div>
         </div>
     </div>
