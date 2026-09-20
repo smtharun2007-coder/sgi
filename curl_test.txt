@@ -1,0 +1,46 @@
+Array
+(
+    [version_number] => 525312
+    [age] => 10
+    [features] => 1361907613
+    [ssl_version_number] => 0
+    [version] => 8.4.0
+    [host] => x86_64-pc-win32
+    [ssl_version] => OpenSSL/3.0.11
+    [libz_version] => 1.2.12
+    [protocols] => Array
+        (
+            [0] => dict
+            [1] => file
+            [2] => ftp
+            [3] => ftps
+            [4] => gopher
+            [5] => gophers
+            [6] => http
+            [7] => https
+            [8] => imap
+            [9] => imaps
+            [10] => ldap
+            [11] => ldaps
+            [12] => mqtt
+            [13] => pop3
+            [14] => pop3s
+            [15] => rtsp
+            [16] => scp
+            [17] => sftp
+            [18] => smb
+            [19] => smbs
+            [20] => smtp
+            [21] => smtps
+            [22] => telnet
+            [23] => tftp
+        )
+
+    [ares] => 
+    [ares_num] => 0
+    [libidn] => 
+    [iconv_ver_num] => 0
+    [libssh_version] => libssh2/1.10.0
+    [brotli_ver_num] => 0
+    [brotli_version] => 
+)
