@@ -1,39 +1,31 @@
 <?php
-// send_otp.php is always included after config.php, which already loaded .env
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
+// send_otp.php — always included after config.php
 
 function generateOTP($length = 6) {
     return str_pad(random_int(0, pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
 }
 
 function sendOTPEmail($to, $name, $otp, $type = 'student') {
-    $username = getenv('MAIL_USERNAME');
-    $password = getenv('MAIL_PASSWORD');
+    $apiKey   = getenv('BREVO_API_KEY');
+    $fromEmail = getenv('MAIL_USERNAME') ?: 'support.tgsgi@gmail.com';
 
-    if (empty($username) || empty($password)) {
-        error_log("SGI Email Error: MAIL_USERNAME or MAIL_PASSWORD not configured");
+    if (empty($apiKey)) {
+        error_log("SGI Email Error: BREVO_API_KEY not configured");
         return false;
     }
 
-    $subject = "SGI - Password Reset OTP Verification";
     $accentColor = ($type === 'mentor') ? '#8e44ad' : '#e94560';
-
-    $message = "
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta charset='UTF-8'>
-        <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-            .header { background: linear-gradient(135deg, #1a1a2e, {$accentColor}); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
-            .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
-            .otp-box { background: white; border: 2px dashed {$accentColor}; padding: 20px; text-align: center; margin: 20px 0; border-radius: 10px; }
-            .otp-code { font-size: 36px; font-weight: bold; color: {$accentColor}; letter-spacing: 8px; }
-            .warning { background: #fff3cd; border-left: 4px solid #f5a623; padding: 15px; margin: 20px 0; border-radius: 5px; }
-        </style>
-    </head>
+    $subject     = "SGI - Password Reset OTP Verification";
+    $html        = "
+    <!DOCTYPE html><html><head><meta charset='UTF-8'>
+    <style>
+        body{font-family:'Segoe UI',Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;}
+        .header{background:linear-gradient(135deg,#1a1a2e,{$accentColor});color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0;}
+        .content{background:#f9f9f9;padding:30px;border-radius:0 0 10px 10px;}
+        .otp-box{background:white;border:2px dashed {$accentColor};padding:20px;text-align:center;margin:20px 0;border-radius:10px;}
+        .otp-code{font-size:36px;font-weight:bold;color:{$accentColor};letter-spacing:8px;}
+        .warning{background:#fff3cd;border-left:4px solid #f5a623;padding:15px;margin:20px 0;border-radius:5px;}
+    </style></head>
     <body>
         <div class='header'><h1>🔐 SGI Password Reset</h1><p>Student Growth Index - " . ucfirst($type) . " Portal</p></div>
         <div class='content'>
@@ -53,39 +45,42 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
             <p>If you didn't request a password reset, ignore this email.</p>
         </div>
         <p style='text-align:center;color:#888;font-size:12px;'>© " . date('Y') . " Student Growth Index (SGI). All rights reserved.</p>
-    </body>
-    </html>";
+    </body></html>";
 
-    try {
-        $mail = new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $username;
-        $mail->Password   = $password;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+    $data = [
+        'sender'     => ['name' => 'SGI - Student Growth Index', 'email' => $fromEmail],
+        'to'         => [['email' => $to, 'name' => $name]],
+        'subject'    => $subject,
+        'htmlContent'=> $html,
+    ];
 
-        // SSL cert for XAMPP local
-        $localCert = __DIR__ . '/cacert.pem';
-        if (file_exists($localCert)) {
-            $mail->SMTPOptions = ['ssl' => ['cafile' => $localCert, 'verify_peer' => true, 'verify_peer_name' => true]];
-        }
+    $ch = curl_init('https://api.brevo.com/v3/smtp/email');
+    curl_setopt_array($ch, [
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => json_encode($data),
+        CURLOPT_TIMEOUT        => 15,
+        CURLOPT_HTTPHEADER     => [
+            'api-key: ' . $apiKey,
+            'Content-Type: application/json',
+            'Accept: application/json',
+        ],
+    ]);
+    $localCert = __DIR__ . '/cacert.pem';
+    if (file_exists($localCert)) curl_setopt($ch, CURLOPT_CAINFO, $localCert);
 
-        $mail->setFrom($username, 'SGI - Student Growth Index');
-        $mail->addAddress($to, $name);
-        $mail->isHTML(true);
-        $mail->Subject = $subject;
-        $mail->Body    = $message;
-        $mail->AltBody = "Your SGI OTP is: $otp (valid for 10 minutes)";
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    $curlErr  = curl_error($ch);
+    curl_close($ch);
 
-        $mail->send();
-        error_log("SGI Email: OTP sent to $to");
+    if ($httpCode === 201) {
+        error_log("SGI Email: OTP sent to $to via Brevo");
         return true;
-    } catch (Exception $e) {
-        error_log("SGI Email Error: " . $mail->ErrorInfo);
-        return false;
     }
+
+    error_log("SGI Brevo Error: HTTP $httpCode - $curlErr - $response");
+    return false;
 }
 
 function sendOTPViaSMS($phone, $otp) {

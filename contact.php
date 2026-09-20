@@ -1,44 +1,21 @@
 <?php
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
 include 'config.php';
+include 'mail_helper.php';
 requireLogin();
 $u = $_SESSION['user'];
 $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]);
 $success = ''; $error = '';
 
 if (isset($_POST['send'])) {
-    $toEmail  = getenv('MAIL_USERNAME');
-    $username = getenv('MAIL_USERNAME');
-    $password = getenv('MAIL_PASSWORD');
-
-    try {
-        $mail = new PHPMailer(true);
-        $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
-        $mail->SMTPAuth   = true;
-        $mail->Username   = $username;
-        $mail->Password   = $password;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-        $localCert = __DIR__ . '/cacert.pem';
-        if (file_exists($localCert)) {
-            $mail->SMTPOptions = ['ssl' => ['cafile' => $localCert, 'verify_peer' => true, 'verify_peer_name' => true]];
-        }
-        $mail->setFrom($username, 'SGI Contact Form');
-        $mail->addAddress($toEmail, 'SGI Support');
-        $mail->addReplyTo($_POST['email'], $_POST['name']);
-        $mail->Subject = '[SGI] ' . $_POST['subject'];
-        $mail->isHTML(false);
-        $mail->Body =
-            "Name:    " . $_POST['name']              . "\n" .
-            "Email:   " . $_POST['email']             . "\n" .
-            "Roll No: " . $_SESSION['user']['roll']   . "\n\n" .
-            "Message:\n" . $_POST['message'];
-        $mail->send();
+    $toEmail = getenv('MAIL_USERNAME');
+    $body    =
+        "Name:    " . $_POST['name']            . "\n" .
+        "Email:   " . $_POST['email']           . "\n" .
+        "Roll No: " . $_SESSION['user']['roll'] . "\n\n" .
+        "Message:\n" . $_POST['message'];
+    if (sendContactEmail($toEmail, 'SGI Support', $_POST['email'], $_POST['name'], $_POST['email'], '[SGI] ' . $_POST['subject'], $body)) {
         $success = "Your message has been sent. We will get back to you soon.";
-    } catch (Exception $e) {
-        error_log("SGI Contact Error: " . $mail->ErrorInfo);
+    } else {
         $error = "Message could not be sent. Please try again later.";
     }
 }
