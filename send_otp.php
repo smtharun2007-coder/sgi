@@ -1,18 +1,6 @@
 <?php
-// Load environment variables from .env file only if not already loaded
-if (!getenv('SENDGRID_API_KEY')) {
-    $envFile = __DIR__ . '/.env';
-    if (file_exists($envFile)) {
-        $lines = file($envFile, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
-        foreach ($lines as $line) {
-            if (strpos($line, '=') === false || strpos($line, '#') === 0) continue;
-            list($key, $value) = explode('=', $line, 2);
-            if (!getenv(trim($key))) {
-                putenv(trim($key) . '=' . trim($value));
-            }
-        }
-    }
-}
+// send_otp.php is always included after config.php, which already loaded .env
+// and set all env vars. No need to re-read the file here.
 
 // Email OTP sending utility
 function generateOTP($length = 6) {
