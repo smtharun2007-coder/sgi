@@ -2,6 +2,7 @@
     "require": {
         "mongodb/mongodb": "^1.15",
         "cloudinary/cloudinary_php": "^2.0",
-        "phpmailer/phpmailer": "^7.1"
+        "phpmailer/phpmailer": "^7.1",
+        "resend/resend-php": "^1.15"
     }
 }
