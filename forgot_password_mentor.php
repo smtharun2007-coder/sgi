@@ -186,44 +186,40 @@ if (isset($_POST['resend_otp'])) {
     <link rel="stylesheet" href="/css/style.css?v=2">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
-        body.auth-page {
-            background: linear-gradient(135deg, #1a1a2e, #16213e);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0;
-            padding: 20px;
-        }
-        .auth-box {
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(12px);
-            padding: 48px 40px;
-            border-radius: 28px;
-            width: 92%;
-            max-width: 480px;
-            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45);
-        }
+        body.auth-page { background: #f4f6fb; min-height: 100vh; margin: 0; }
+        .reset-nav { background: linear-gradient(135deg, #1a1a2e, #8e44ad); color: #fff; padding: 18px 6%; }
+        .reset-nav a { color: #fff; text-decoration: none; font-weight: 700; }
+        .reset-shell { max-width: 720px; margin: 0 auto; padding: 28px 20px 48px; }
+        .reset-card { background: #fff; border-radius: 16px; padding: 34px; box-shadow: 0 4px 16px rgba(0,0,0,.08); }
+        .reset-card h1, .reset-card h2 { color: #1a1a2e; }
+        .reset-card h1 { margin: 0 0 8px; font-size: 26px; }
+        .reset-card h2 { margin: 0 0 20px; }
+        .reset-intro { color: #666; line-height: 1.7; }
+        .reset-status { display: flex; gap: 8px; margin: 24px 0; }
+        .reset-status span { flex: 1; padding: 10px 6px; border-radius: 8px; text-align: center; font-size: 12px; font-weight: 700; background: #eef0f5; color: #777; }
+        .reset-status span.active { background: #8e44ad; color: #fff; }
+        .reset-status span.complete { background: #eaffea; color: #218838; }
+        .otp-hint { color: #666; font-size: 13px; line-height: 1.6; }
+        .otp-input { text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: 700; }
+        .resend-form { margin-top: 14px; text-align: center; }
+        .resend-form button { background: none; border: 0; color: #8e44ad; cursor: pointer; text-decoration: underline; }
+        @media (max-width: 520px) { .reset-card { padding: 24px 18px; } .reset-status span { font-size: 10px; } }
     </style>
 </head>
 <body class="auth-page">
-<div class="auth-box">
-     <div class="logo-container">
-        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="logo-img">
-    </div>
+<nav class="reset-nav"><a href="index.php">SGI <span style="font-size:13px;opacity:.75;font-weight:400;">Mentor Portal</span></a></nav>
+<main class="reset-shell">
+<div class="reset-card">
     <h1>Student Growth Index</h1>
-    <div class="portal-badge mentor-portal">👨 Mentor Portal</div>
+    <p class="reset-intro">Reset your mentor portal password securely. We will verify your registered details before allowing a password change.</p>
     <h2>Forgot Password</h2>
 
     <!-- PROGRESS STEPS -->
-    <div style="display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:24px;">
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 1 ? '#e94560' : '#eee' ?>;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">1</div>
-        <div style="width:40px;height:2px;background:<?= $step >= 2 ? '#e94560' : '#eee' ?>;"></div>
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 2 ? '#e94560' : '#eee' ?>;color:<?= $step >= 2 ? '#fff' : '#aaa' ?>;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">2</div>
-        <div style="width:40px;height:2px;background:<?= $step >= 3 ? '#e94560' : '#eee' ?>;"></div>
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 3 ? '#e94560' : '#eee' ?>;color:<?= $step >= 3 ? '#fff' : '#aaa' ?>;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">3</div>
-        <div style="width:40px;height:2px;background:<?= $step >= 4 ? '#27ae60' : '#eee' ?>;"></div>
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 4 ? '#27ae60' : '#eee' ?>;color:<?= $step >= 4 ? '#fff' : '#aaa' ?>;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">✓</div>
+    <div class="reset-status">
+        <span class="<?= $step >= 1 ? 'active' : '' ?>">1. Send OTP</span>
+        <span class="<?= $step >= 2 ? 'active' : '' ?>">2. Verify</span>
+        <span class="<?= $step >= 3 ? 'active' : '' ?>">3. Reset</span>
+        <span class="<?= $step >= 4 ? 'complete' : '' ?>">4. Done</span>
     </div>
 
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
@@ -235,9 +231,9 @@ if (isset($_POST['resend_otp'])) {
         <input type="hidden" name="step" value="1">
         <input type="text" name="mentor_id" placeholder="Mentor ID" required>
         <input type="email" name="email" placeholder="Registered Email Address" required>
-        <button type="submit" name="send_otp" class="btn-login">Send OTP</button>
+        <button type="submit" name="send_otp" class="btn-primary">Send OTP</button>
     </form>
-    <p style="font-size: 13px; color: #888; margin-top: 16px;">
+    <p class="otp-hint">
         We'll send a 6-digit OTP to your registered email address for verification.
     </p>
 
@@ -245,17 +241,17 @@ if (isset($_POST['resend_otp'])) {
     <!-- STEP 2: Verify OTP -->
     <form method="POST">
         <input type="hidden" name="step" value="2">
-        <p style="color: #555; margin-bottom: 20px;">
+        <p class="otp-hint">
             Enter the 6-digit OTP sent to:<br>
             <strong><?= htmlspecialchars($_SESSION['reset_email'] ?? '') ?></strong>
         </p>
-        <input type="text" name="otp" placeholder="Enter OTP (6 digits)" maxlength="6" required style="text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: bold;">
-        <button type="submit" name="verify_otp" class="btn-login">Verify OTP</button>
+        <input class="otp-input" type="text" name="otp" placeholder="Enter 6-digit OTP" maxlength="6" required>
+        <button type="submit" name="verify_otp" class="btn-primary">Verify OTP</button>
     </form>
-    <div style="margin-top: 16px;">
+    <div class="resend-form">
         <form method="POST" style="display: inline;">
             <input type="hidden" name="step" value="2">
-            <button type="submit" name="resend_otp" style="background: none; border: none; color: #e94560; cursor: pointer; font-size: 14px; text-decoration: underline;">
+            <button type="submit" name="resend_otp">
                 Resend OTP
             </button>
         </form>
@@ -267,7 +263,7 @@ if (isset($_POST['resend_otp'])) {
         <input type="hidden" name="step" value="3">
         <input type="password" name="new_password" placeholder="New Password" required>
         <input type="password" name="confirm_password" placeholder="Confirm New Password" required>
-        <button type="submit" name="reset_password" class="btn-login">Reset Password</button>
+        <button type="submit" name="reset_password" class="btn-primary">Reset Password</button>
     </form>
 
     <?php elseif ($step === 4): ?>
@@ -276,13 +272,13 @@ if (isset($_POST['resend_otp'])) {
         <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
         <h3 style="color: #27ae60; margin-bottom: 10px;">Password Reset Successful!</h3>
         <p style="color: #555; margin-bottom: 24px;">Your password has been updated. You can now login with your new password.</p>
-        <a href="mentor_login.php" class="btn-login" style="display: inline-block; width: auto; padding: 12px 40px; text-decoration: none;">
+        <a href="mentor_login.php" class="btn-primary" style="display: inline-block; width: auto; padding: 12px 40px; text-decoration: none;">
             Go to Login
         </a>
     </div>
     <?php endif; ?>
 
-    <p><a href="mentor_login.php">← Back to Login</a></p>
+    <p style="margin-top:24px;"><a href="mentor_login.php">← Back to Login</a></p>
     
     <?php if ($step < 4): ?>
     <div class="switch-role-container">
@@ -296,5 +292,6 @@ if (isset($_POST['resend_otp'])) {
         &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.
     </div>
 </div>
+</main>
 </body>
 </html>

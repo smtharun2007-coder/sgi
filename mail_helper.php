@@ -2,8 +2,8 @@
 // mail_helper.php — shared Resend HTTP mailer
 
 function sendResendEmail($toEmail, $subject, $bodyText, $html = null, $replyTo = null, $fromLabel = 'SGI') {
-    $apiKey      = getenv('RESEND_API_KEY');
-    $senderEmail = getenv('RESEND_FROM_EMAIL') ?: 'onboarding@resend.dev';
+    $apiKey = getenv('RESEND_API_KEY');
+    $senderEmail = trim((string)getenv('RESEND_FROM_EMAIL')) ?: 'onboarding@resend.dev';
 
     if (empty($apiKey)) {
         error_log("SGI Email Error: RESEND_API_KEY not configured");
@@ -15,7 +15,6 @@ function sendResendEmail($toEmail, $subject, $bodyText, $html = null, $replyTo =
     }
 
     $data = [
-        'from'    => $fromLabel . ' <' . $senderEmail . '>',
         'to'      => [$toEmail],
         'subject' => $subject,
         'text'    => $bodyText,
@@ -23,6 +22,7 @@ function sendResendEmail($toEmail, $subject, $bodyText, $html = null, $replyTo =
     if ($html !== null) $data['html'] = $html;
     if (!empty($replyTo)) $data['reply_to'] = $replyTo;
 
+    $data['from'] = $fromLabel . ' <' . $senderEmail . '>';
     $payload = json_encode($data);
     if ($payload === false) {
         error_log("SGI Resend Error: failed to encode email payload");
@@ -49,8 +49,12 @@ function sendResendEmail($toEmail, $subject, $bodyText, $html = null, $replyTo =
     $curlErr  = curl_error($ch);
     curl_close($ch);
 
-    if ($httpCode === 200 || $httpCode === 201) return true;
-    error_log("SGI Resend Error: HTTP $httpCode - $curlErr - $response");
+    if ($httpCode === 200 || $httpCode === 201) {
+        error_log("SGI Resend: email accepted using configured sender");
+        return true;
+    }
+
+    error_log("SGI Resend Error: HTTP $httpCode using sender - " . ($curlErr ?: 'API rejected request') . " - $response");
     return false;
 }
 
