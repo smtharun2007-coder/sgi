@@ -59,7 +59,7 @@ If the extension fails to load the build will **fail with an error** rather than
 1. Connect your GitHub repository.
 2. Set all environment variables listed above in the platform dashboard.
 3. The platform will run `composer install` automatically if a `composer.json` is present, **or** use the Dockerfile.
-4. `config.php` and `.env` are **not** committed — the app reads credentials directly from the platform env vars.
+4. `config.php` is a tracked, deployment-safe entry point. It reads credentials directly from the platform environment, so no manual config file creation is required.
 
 ---
 
