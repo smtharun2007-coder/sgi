@@ -1,22 +1,15 @@
 <?php
-// SGI Configuration Template
-// Copy this file to config.php and update with your actual values
+// SGI Configuration — copy this to config.php
+// All sensitive values come from environment variables.
+// Set them in your platform dashboard or in a local .env file (never commit .env).
 
-session_start();
+date_default_timezone_set('Asia/Kolkata');
 
-// Error Reporting (disable in production)
-if (getenv('APP_ENV') === 'production') {
-    error_reporting(0);
-    ini_set('display_errors', 0);
-} else {
-    error_reporting(E_ALL);
-    ini_set('display_errors', 1);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
 }
 
-// Database Configuration
-$mongoHost = getenv('MONGODB_HOST') ?: 'localhost';
-$mongoPort = getenv('MONGODB_PORT') ?: 27017;
-$mongoDB   = getenv('MONGODB_DB') ?: 'sgi';
+require __DIR__ . '/vendor/autoload.php';
 
 try {
     $mongoClient = new MongoDB\Driver\Manager("mongodb://$mongoHost:$mongoPort");
@@ -45,76 +38,84 @@ function requireLogin() {
         header("Location: student_login.php");
         exit;
     }
+}
+
+// Cloudinary — only initialise when credentials are present
+if (getenv('CLOUDINARY_CLOUD_NAME') && getenv('CLOUDINARY_API_KEY') && getenv('CLOUDINARY_API_SECRET')) {
+    \Cloudinary\Configuration\Configuration::instance([
+        'cloud' => [
+            'cloud_name' => getenv('CLOUDINARY_CLOUD_NAME'),
+            'api_key'    => getenv('CLOUDINARY_API_KEY'),
+            'api_secret' => getenv('CLOUDINARY_API_SECRET'),
+        ],
+        'url' => ['secure' => true]
+    ]);
+}
+
+function uploadToCloudinary($fileTmpPath, $folder = 'sgi', $resourceType = 'image', $publicId = null) {
+    if (!getenv('CLOUDINARY_CLOUD_NAME') || !getenv('CLOUDINARY_API_KEY') || !getenv('CLOUDINARY_API_SECRET')) {
+        $origName = '';
+        foreach ($_FILES as $f) {
+            if (isset($f['tmp_name']) && $f['tmp_name'] === $fileTmpPath) { $origName = $f['name']; break; }
+            if (is_array($f['tmp_name'] ?? null)) {
+                foreach ($f['tmp_name'] as $i => $t) {
+                    if ($t === $fileTmpPath) { $origName = $f['name'][$i]; break 2; }
+                }
+            }
+        }
+        $ext      = strtolower(pathinfo($origName, PATHINFO_EXTENSION)) ?: 'bin';
+        $filename = uniqid('sgi_', true) . '.' . $ext;
+        $dest     = __DIR__ . '/uploads/' . $filename;
+        if (!is_dir(__DIR__ . '/uploads')) mkdir(__DIR__ . '/uploads', 0755, true);
+        move_uploaded_file($fileTmpPath, $dest);
+        return 'uploads/' . $filename;
+    }
+    $uploader      = new \Cloudinary\Api\Upload\UploadApi();
+    $uploadOptions = ['folder' => $folder, 'resource_type' => $resourceType];
+    if ($publicId !== null) $uploadOptions['public_id'] = $publicId;
+    $result = $uploader->upload($fileTmpPath, $uploadOptions);
+    return $result['secure_url'];
+}
+
+// MongoDB — supports MONGODB_URI (Atlas) or MONGODB_HOST/PORT/DB (self-hosted)
+$_mongoUri = getenv('MONGODB_URI');
+if (empty($_mongoUri)) {
+    $_mongoHost = getenv('MONGODB_HOST') ?: 'localhost';
+    $_mongoPort = getenv('MONGODB_PORT') ?: '27017';
+    $_mongoUri  = "mongodb://{$_mongoHost}:{$_mongoPort}";
+}
+
+$client          = new MongoDB\Client($_mongoUri);
+$db              = $client->sgi_db;
+$users           = $db->users;
+$semesters       = $db->semesters;
+$subjects        = $db->subjects;
+$mentors         = $db->mentors;
+$announcements   = $db->announcements;
+$calendar_events = $db->calendar_events;
+$notifications   = $db->notifications;
+$approvals       = $db->approvals;
+
+// Session timeout — 30 minutes
+if (isset($_SESSION['user'])) {
     if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
-        session_unset();
         session_destroy();
-        header("Location: student_login.php?timeout=1");
+        header("Location: index.php?timeout=1");
         exit;
     }
     $_SESSION['last_activity'] = time();
 }
 
-function requireMentor() {
-    if (!isset($_SESSION['mentor'])) {
-        header("Location: mentor_login.php");
-        exit;
+function imgUrl($path) {
+    if (empty($path)) return '';
+    if (strpos($path, 'http') === 0) {
+        if (strpos($path, '/raw/upload/') !== false)
+            return str_replace('/raw/upload/', '/raw/upload/fl_attachment:false/', $path);
+        return $path;
     }
-    if (isset($_SESSION['last_mentor_activity']) && (time() - $_SESSION['last_mentor_activity'] > 1800)) {
-        session_unset();
-        session_destroy();
-        header("Location: mentor_login.php?timeout=1");
-        exit;
-    }
-    $_SESSION['last_mentor_activity'] = time();
+    return 'uploads/' . $path;
 }
 
-// Cloudinary Configuration
-$cloudinaryCloudName = getenv('CLOUDINARY_CLOUD_NAME');
-$cloudinaryApiKey    = getenv('CLOUDINARY_API_KEY');
-$cloudinaryApiSecret = getenv('CLOUDINARY_API_SECRET');
-
-function uploadToCloudinary($filePath, $folder = 'sgi') {
-    global $cloudinaryCloudName, $cloudinaryApiKey, $cloudinaryApiSecret;
-    
-    if (empty($cloudinaryCloudName) || empty($cloudinaryApiKey) || empty($cloudinaryApiSecret)) {
-        // Return a local path if Cloudinary is not configured
-        $ext = pathinfo($filePath, PATHINFO_EXTENSION);
-        $filename = uniqid() . '.' . $ext;
-        $localPath = 'uploads/' . $filename;
-        if (copy($filePath, $localPath)) {
-            return $localPath;
-        }
-        return null;
-    }
-    
-    $timestamp = time();
-    $signature = sha1("timestamp={$timestamp}{cloudinaryApiSecret}");
-    
-    $ch = curl_init();
-    curl_setopt_array($ch, [
-        CURLOPT_URL => "https://api.cloudinary.com/v1_1/$cloudinaryCloudName/upload",
-        CURLOPT_POST => true,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POSTFIELDS => [
-            'file' => new CURLFile($filePath),
-            'upload_preset' => 'sgi_preset',
-            'folder' => $folder,
-            'api_key' => $cloudinaryApiKey,
-            'timestamp' => $timestamp,
-            'signature' => $signature
-        ]
-    ]);
-    
-    $response = curl_exec($ch);
-    curl_close($ch);
-    
-    $result = json_decode($response, true);
-    return $result['secure_url'] ?? null;
+function requireLogin() {
+    if (!isset($_SESSION['user'])) { header("Location: index.php"); exit; }
 }
-
-function imgUrl($url) {
-    if (empty($url)) return 'https://via.placeholder.com/150';
-    if (filter_var($url, FILTER_VALIDATE_URL)) return $url;
-    return $url;
-}
-?>

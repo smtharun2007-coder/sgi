@@ -20,17 +20,24 @@ RUN apt-get update && apt-get install -y \
     unzip \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pecl install mongodb-1.21.0 && echo "extension=mongodb.so" > /etc/php/8.1/apache2/conf.d/20-mongodb.ini
+# Install MongoDB PHP extension and verify it loaded correctly
+RUN pecl install mongodb-1.21.0 \
+    && echo "extension=mongodb.so" > /etc/php/8.1/apache2/conf.d/20-mongodb.ini \
+    && echo "extension=mongodb.so" > /etc/php/8.1/cli/conf.d/20-mongodb.ini \
+    && php -m | grep -i mongodb || (echo "ERROR: MongoDB extension failed to load" && exit 1)
 
 RUN a2enmod rewrite php8.1
 
+# Error reporting — on by default; override via APP_DEBUG env var at runtime
 RUN echo "display_errors = On\nerror_reporting = E_ALL" > /etc/php/8.1/apache2/conf.d/99-errors.ini
 
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY . /var/www/html/
 
-RUN cd /var/www/html && composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-mongodb
+# Install Composer dependencies — do NOT ignore the mongodb platform requirement
+# so we get a hard failure at build time if the extension is missing
+RUN cd /var/www/html && composer install --no-dev --optimize-autoloader
 
 RUN mkdir -p /var/www/html/uploads && chmod -R 777 /var/www/html/uploads
 
@@ -38,7 +45,11 @@ RUN rm -f /var/www/html/index.html
 
 RUN chown -R www-data:www-data /var/www/html
 
-RUN echo '<Directory /var/www/html>\n    AllowOverride All\n    Require all granted\n    DirectoryIndex index.php index.html\n</Directory>' >> /etc/apache2/apache2.conf
+# Configure Apache VirtualHost properly — set DocumentRoot and DirectoryIndex
+# in one place to avoid conflicts with the global apache2.conf append
+RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html|' /etc/apache2/sites-enabled/000-default.conf
+RUN sed -i '/<\/VirtualHost>/i\\t<Directory /var/www/html>\n\t\tAllowOverride All\n\t\tRequire all granted\n\t\tDirectoryIndex index.php index.html\n\t</Directory>' \
+    /etc/apache2/sites-enabled/000-default.conf
 
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 

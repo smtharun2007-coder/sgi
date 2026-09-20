@@ -1,5 +1,8 @@
 <?php
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
 include 'config.php';
+include 'mail_helper.php';
 if (!isset($_SESSION['mentor'])) { header("Location: mentor_login.php"); exit; }
 
 $m = $_SESSION['mentor'];
@@ -7,34 +10,13 @@ $unreadCount = $notifications->countDocuments(['mentor_id'=>$m['mentor_id'],'rea
 $success = ''; $error = '';
 
 if (isset($_POST['send'])) {
-    $apiKey = getenv('RESEND_API_KEY');
-    $payload = json_encode([
-        'from'     => 'SGI Support <onboarding@resend.dev>',
-        'to'       => [getenv('MAIL_USERNAME')],
-        'reply_to' => $_POST['email'],
-        'subject'  => '[SGI Mentor] ' . $_POST['subject'],
-        'text'     =>
-            "Name:      " . $_POST['name']      . "\n" .
-            "Email:     " . $_POST['email']     . "\n" .
-            "Mentor ID: " . $m['mentor_id']     . "\n\n" .
-            "Message:\n" . $_POST['message']
-    ]);
-
-    $ch = curl_init('https://api.resend.com/emails');
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => $payload,
-        CURLOPT_HTTPHEADER     => [
-            'Authorization: Bearer ' . $apiKey,
-            'Content-Type: application/json'
-        ]
-    ]);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
-
-    if ($httpCode === 200 || $httpCode === 201) {
+    $toEmail = getenv('MAIL_USERNAME');
+    $body    =
+        "Name:      " . $_POST['name']  . "\n" .
+        "Email:     " . $_POST['email'] . "\n" .
+        "Mentor ID: " . $m['mentor_id'] . "\n\n" .
+        "Message:\n" . $_POST['message'];
+    if (sendContactEmail($toEmail, 'SGI Support', $_POST['email'], $_POST['name'], $_POST['email'], '[SGI Mentor] ' . $_POST['subject'], $body)) {
         $success = "Your message has been sent. We will get back to you soon.";
     } else {
         $error = "Message could not be sent. Please try again later.";
