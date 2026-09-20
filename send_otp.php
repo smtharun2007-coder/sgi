@@ -1,19 +1,12 @@
 <?php
 // send_otp.php — always included after config.php
+include_once __DIR__ . '/mail_helper.php';
 
 function generateOTP($length = 6) {
     return str_pad(random_int(0, pow(10, $length) - 1), $length, '0', STR_PAD_LEFT);
 }
 
 function sendOTPEmail($to, $name, $otp, $type = 'student') {
-    $apiKey    = getenv('RESEND_API_KEY');
-    $fromEmail = getenv('RESEND_FROM_EMAIL') ?: 'onboarding@resend.dev';
-
-    if (empty($apiKey)) {
-        error_log("SGI Email Error: RESEND_API_KEY not configured");
-        return false;
-    }
-
     $accentColor = ($type === 'mentor') ? '#8e44ad' : '#e94560';
     $subject     = "SGI - Password Reset OTP Verification";
     $html        = "
@@ -47,41 +40,16 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
         <p style='text-align:center;color:#888;font-size:12px;'>© " . date('Y') . " Student Growth Index (SGI). All rights reserved.</p>
     </body></html>";
 
-    $data = [
-        'from'    => 'SGI - Student Growth Index <' . $fromEmail . '>',
-        'to'      => [$to],
-        'subject' => $subject,
-        'html'    => $html,
-        'text'    => "Your SGI OTP is: $otp. Valid for 10 minutes. Do not share with anyone.",
-    ];
-
-    $ch = curl_init('https://api.resend.com/emails');
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => json_encode($data),
-        CURLOPT_TIMEOUT        => 15,
-        CURLOPT_HTTPHEADER     => [
-            'Authorization: Bearer ' . $apiKey,
-            'Content-Type: application/json',
-            'Accept: application/json',
-        ],
-    ]);
-    $localCert = __DIR__ . '/cacert.pem';
-    if (file_exists($localCert)) curl_setopt($ch, CURLOPT_CAINFO, $localCert);
-
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curlErr  = curl_error($ch);
-    curl_close($ch);
-
-    if ($httpCode === 200 || $httpCode === 201) {
-        error_log("SGI Email: OTP sent to $to via Resend");
-        return true;
-    }
-
-    error_log("SGI Resend Error: HTTP $httpCode - $curlErr - $response");
-    return false;
+    $sent = sendResendEmail(
+        $to,
+        $subject,
+        "Hi $name,\n\nYour SGI OTP is: $otp. Valid for 10 minutes. Do not share with anyone.",
+        $html,
+        null,
+        'SGI - Student Growth Index'
+    );
+    if ($sent) error_log("SGI Email: OTP sent to $to via Resend");
+    return $sent;
 }
 
 function sendOTPViaSMS($phone, $otp) {

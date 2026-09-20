@@ -1,7 +1,7 @@
 <?php
 // mail_helper.php — shared Resend HTTP mailer
 
-function sendContactEmail($toEmail, $toName, $fromEmail, $fromName, $replyTo, $subject, $bodyText) {
+function sendResendEmail($toEmail, $subject, $bodyText, $html = null, $replyTo = null, $fromLabel = 'SGI') {
     $apiKey      = getenv('RESEND_API_KEY');
     $senderEmail = getenv('RESEND_FROM_EMAIL') ?: 'onboarding@resend.dev';
 
@@ -10,23 +10,30 @@ function sendContactEmail($toEmail, $toName, $fromEmail, $fromName, $replyTo, $s
         return false;
     }
     if (empty($toEmail)) {
-        error_log("SGI Email Error: contact destination is not configured");
+        error_log("SGI Email Error: email destination is not configured");
         return false;
     }
 
     $data = [
-        'from'     => 'SGI Contact Form <' . $senderEmail . '>',
-        'to'       => [$toEmail],
-        'reply_to' => $replyTo,
-        'subject'  => $subject,
-        'text'     => $bodyText,
+        'from'    => $fromLabel . ' <' . $senderEmail . '>',
+        'to'      => [$toEmail],
+        'subject' => $subject,
+        'text'    => $bodyText,
     ];
+    if ($html !== null) $data['html'] = $html;
+    if (!empty($replyTo)) $data['reply_to'] = $replyTo;
+
+    $payload = json_encode($data);
+    if ($payload === false) {
+        error_log("SGI Resend Error: failed to encode email payload");
+        return false;
+    }
 
     $ch = curl_init('https://api.resend.com/emails');
     curl_setopt_array($ch, [
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => json_encode($data),
+        CURLOPT_POSTFIELDS     => $payload,
         CURLOPT_TIMEOUT        => 15,
         CURLOPT_HTTPHEADER     => [
             'Authorization: Bearer ' . $apiKey,
@@ -43,7 +50,18 @@ function sendContactEmail($toEmail, $toName, $fromEmail, $fromName, $replyTo, $s
     curl_close($ch);
 
     if ($httpCode === 200 || $httpCode === 201) return true;
-    error_log("SGI Resend Contact Error: HTTP $httpCode - $curlErr - $response");
+    error_log("SGI Resend Error: HTTP $httpCode - $curlErr - $response");
     return false;
+}
+
+function sendContactEmail($toEmail, $toName, $fromEmail, $fromName, $replyTo, $subject, $bodyText) {
+    return sendResendEmail(
+        $toEmail,
+        $subject,
+        $bodyText,
+        null,
+        $replyTo,
+        'SGI Contact Form'
+    );
 }
 ?>
