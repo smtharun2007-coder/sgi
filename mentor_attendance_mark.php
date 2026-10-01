@@ -19,11 +19,19 @@ if (!$sessionId) { header("Location: mentor_attendance_calendar.php"); exit; }
         .mark-header h2 { color: #1a1a2e; font-size: 22px; margin-bottom: 8px; }
         .mark-header .session-meta { color: #888; font-size: 14px; }
 
+        .suspended-alert {
+            background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24;
+            border-radius: 12px; padding: 16px 20px; margin-top: 16px;
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;
+        }
+
         .mark-actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
         .mark-btn { padding: 10px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
         .mark-btn.all-present { background: #28a745; color: #fff; }
         .mark-btn.all-present:hover { background: #218838; }
         .mark-btn.save { background: linear-gradient(135deg, #1a1a2e, #8e44ad); color: #fff; }
+        .mark-btn.suspend { background: #ffc107; color: #333; }
+        .mark-btn.unsuspend { background: #17a2b8; color: #fff; }
         .mark-btn.back { background: #eee; color: #555; text-decoration: none; }
 
         .student-table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 14px rgba(0,0,0,0.08); }
@@ -38,7 +46,22 @@ if (!$sessionId) { header("Location: mentor_attendance_calendar.php"); exit; }
         .status-btn.active.od { background: #17a2b8; color: #fff; border-color: #17a2b8; }
         .status-btn.active.leave { background: #ffc107; color: #333; border-color: #ffc107; }
 
-        .od-badge { font-size: 11px; padding: 2px 8px; border-radius: 10px; background: #d1ecf1; color: #0c5460; }
+        .od-badge { font-size: 11px; padding: 4px 10px; border-radius: 10px; background: #d1ecf1; color: #0c5460; font-weight: 700; }
+
+        /* Modal Overlay */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: #fff; border-radius: 20px; max-width: 500px; width: 90%; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlide 0.3s ease; }
+        @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-box h3 { color: #1a1a2e; font-size: 18px; margin-bottom: 16px; }
+        .modal-box .form-group { margin-bottom: 16px; }
+        .modal-box .form-group label { display: block; font-size: 13px; font-weight: 600; color: #555; margin-bottom: 6px; }
+        .modal-box .form-group input, .modal-box .form-group textarea { width: 100%; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; background: #f8f9fa; box-sizing: border-box; }
+        .modal-box .form-group input:focus, .modal-box .form-group textarea:focus { border-color: #8e44ad; background: #fff; outline: none; }
+        .modal-btn-row { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; }
+        .modal-btn.save { background: linear-gradient(135deg, #1a1a2e, #8e44ad); color: #fff; }
+        .modal-btn.cancel { background: #eee; color: #555; }
     </style>
 </head>
 <body>
@@ -71,10 +94,44 @@ if (!$sessionId) { header("Location: mentor_attendance_calendar.php"); exit; }
     <div class="mark-header">
         <h2 id="sessionTitle">Loading...</h2>
         <div class="session-meta" id="sessionMeta"></div>
+
+        <div id="suspendedAlert" style="display:none;" class="suspended-alert">
+            <div>
+                <strong>⚠️ SESSION IS SUSPENDED:</strong> <span id="suspendedReasonText"></span>
+                <div style="font-size:12px;opacity:0.8;margin-top:2px;">Suspended sessions do NOT count in attendance calculations and do NOT generate absence records.</div>
+            </div>
+            <button class="mark-btn unsuspend" onclick="unsuspendSession()">Re-activate Session</button>
+        </div>
+
+        <div id="lockedAlert" style="display:none;background:#fff3cd;border:1px solid #ffeeba;border-left:5px solid #ffc107;color:#856404;border-radius:12px;padding:16px 20px;margin-top:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:28px;">🔒</span>
+                <div>
+                    <strong style="font-size:16px;display:block;">Attendance Locked</strong>
+                    <div style="font-size:13px;margin-top:4px;" id="lockedReasonText">
+                        Previous semester attendance has not been closed. Please close the previous semester attendance before marking attendance for this semester.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="closedAlert" style="display:none;background:#e2e3e5;border:1px solid #d6d8db;border-left:5px solid #6c757d;color:#383d41;border-radius:12px;padding:16px 20px;margin-top:16px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+                <span style="font-size:28px;">🔒</span>
+                <div>
+                    <strong style="font-size:16px;display:block;">Semester Attendance Closed (Read-Only)</strong>
+                    <div style="font-size:13px;margin-top:4px;" id="closedReasonText">
+                        Attendance for this semester has been finalized and closed. Records are strictly read-only and can no longer be modified.
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="mark-actions">
             <a href="mentor_attendance_calendar.php" class="mark-btn back">&#8592; Back to Calendar</a>
-            <button class="mark-btn all-present" onclick="markAllPresent()">Mark All Present</button>
-            <button class="mark-btn save" onclick="saveAttendance()">Save Attendance</button>
+            <button class="mark-btn all-present" id="btnAllPresent" onclick="markAllPresent()">Mark All Present</button>
+            <button class="mark-btn save" id="btnSaveAttendance" onclick="saveAttendance()">Save Attendance</button>
+            <button class="mark-btn suspend" id="btnSuspend" onclick="openSuspendModal()">Suspend Session</button>
         </div>
     </div>
 
@@ -83,8 +140,8 @@ if (!$sessionId) { header("Location: mentor_attendance_calendar.php"); exit; }
             <tr>
                 <th>Roll No</th>
                 <th>Name</th>
-                <th>Status</th>
-                <th>OD Approved</th>
+                <th>Attendance Status</th>
+                <th>OD / Regularization</th>
             </tr>
         </thead>
         <tbody id="studentBody">
@@ -92,9 +149,31 @@ if (!$sessionId) { header("Location: mentor_attendance_calendar.php"); exit; }
         </tbody>
     </table>
 </div>
+
+<!-- Suspend Modal -->
+<div class="modal-overlay" id="suspendModal">
+    <div class="modal-box">
+        <h3>Suspend Timetable Session</h3>
+        <p style="font-size:13px;color:#666;margin-bottom:16px;">
+            A suspended session does NOT mark students absent or present, does NOT count in the attendance denominator, and does NOT reduce attendance percentage.
+        </p>
+        <div class="form-group">
+            <label>Suspension Reason <span style="color:#dc3545;">* (Mandatory)</span></label>
+            <input type="text" id="suspendReason" placeholder="e.g. Faculty meeting, College event, Power outage" required>
+        </div>
+        <div class="modal-btn-row">
+            <button class="modal-btn cancel" onclick="closeSuspendModal()">Cancel</button>
+            <button class="modal-btn save" onclick="confirmSuspendSession()">Confirm Suspension</button>
+        </div>
+    </div>
+</div>
+
 <script>
 const sessionId = '<?= htmlspecialchars($sessionId) ?>';
+let sessionData = {};
 let students = [];
+let isReadOnly = false;
+let lockReason = '';
 
 document.addEventListener('DOMContentLoaded', loadSession);
 
@@ -102,39 +181,88 @@ function loadSession() {
     fetch(`attendance_api.php?action=session_attendance&session_id=${sessionId}`)
         .then(r => r.json())
         .then(data => {
-            if (data.status !== 'success') { showToast(data.message || 'Failed', 'error'); return; }
-            const s = data.session;
-            document.getElementById('sessionTitle').textContent = `${s.subject} - H${s.hour}`;
-            document.getElementById('sessionMeta').textContent = `${s.date} · Batch: ${s.batch} · Semester: ${s.semester} · Status: ${s.status}`;
+            if (data.status !== 'success') { showToast(data.message || 'Failed to load session', 'error'); return; }
+            sessionData = data.session;
+            document.getElementById('sessionTitle').textContent = `${sessionData.subject} - H${sessionData.hour}`;
+            document.getElementById('sessionMeta').textContent = `${sessionData.date} · Batch: ${sessionData.batch} · Semester: ${sessionData.semester} · Faculty: ${sessionData.faculty} · Status: ${sessionData.status}`;
+
+            const semStatus = data.semester_status || (data.can_mark ? 'OPEN' : 'LOCKED');
+            isReadOnly = (semStatus === 'CLOSED' || semStatus === 'LOCKED' || !data.can_mark);
+            lockReason = data.semester_lock_reason || '';
+
+            const lockedAlert = document.getElementById('lockedAlert');
+            const closedAlert = document.getElementById('closedAlert');
+
+            if (semStatus === 'LOCKED' || data.is_locked) {
+                lockedAlert.style.display = 'block';
+                if (lockReason) document.getElementById('lockedReasonText').textContent = lockReason;
+                document.getElementById('btnAllPresent').style.display = 'none';
+                document.getElementById('btnSaveAttendance').style.display = 'none';
+                document.getElementById('btnSuspend').style.display = 'none';
+            } else {
+                lockedAlert.style.display = 'none';
+            }
+
+            if (semStatus === 'CLOSED' || data.is_closed) {
+                closedAlert.style.display = 'block';
+                let closedInfo = `Attendance for Semester ${sessionData.semester} has been finalized and closed.`;
+                if (data.closed_by) closedInfo += ` Closed by: ${data.closed_by}`;
+                if (data.closed_at) closedInfo += ` on ${data.closed_at}`;
+                closedInfo += ' Attendance records are strictly read-only.';
+                document.getElementById('closedReasonText').textContent = closedInfo;
+                document.getElementById('btnAllPresent').style.display = 'none';
+                document.getElementById('btnSaveAttendance').style.display = 'none';
+                document.getElementById('btnSuspend').style.display = 'none';
+            } else {
+                closedAlert.style.display = 'none';
+            }
+
+            const suspendedAlert = document.getElementById('suspendedAlert');
+            if (sessionData.status === 'SUSPENDED') {
+                suspendedAlert.style.display = 'flex';
+                document.getElementById('suspendedReasonText').textContent = sessionData.suspension_reason || 'No reason provided';
+                document.getElementById('btnSuspend').style.display = 'none';
+            } else if (!isReadOnly) {
+                suspendedAlert.style.display = 'none';
+                document.getElementById('btnSuspend').style.display = 'inline-block';
+            }
 
             students = data.students;
             const body = document.getElementById('studentBody');
             if (!students.length) {
-                body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;">No students found.</td></tr>';
+                body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#888;">No students found for this session.</td></tr>';
                 return;
             }
             body.innerHTML = students.map((s, i) => {
                 const currentStatus = s.effective_status || s.status || '';
-                const odApproved = (s.effective_status === 'OD' && s.original_status !== 'OD');
+                const odApproved = (!empty(s.od_approved) || s.effective_status === 'OD');
+                const disabledAttr = isReadOnly ? 'disabled style="cursor:not-allowed;opacity:0.85;"' : '';
                 return `<tr>
                     <td><strong>${escapeHtml(s.roll)}</strong></td>
                     <td>${escapeHtml(s.name)}</td>
                     <td>
                         <div class="status-btns" data-index="${i}">
-                            <button class="status-btn ${currentStatus==='PRESENT'?'active present':''}" data-status="PRESENT" onclick="setStatus(${i},'PRESENT')">Present</button>
-                            <button class="status-btn ${currentStatus==='ABSENT'?'active absent':''}" data-status="ABSENT" onclick="setStatus(${i},'ABSENT')">Absent</button>
-                            <button class="status-btn ${currentStatus==='OD'?'active od':''}" data-status="OD" onclick="setStatus(${i},'OD')">OD</button>
-                            <button class="status-btn ${currentStatus==='LEAVE'?'active leave':''}" data-status="LEAVE" onclick="setStatus(${i},'LEAVE')">Leave</button>
+                            <button type="button" ${disabledAttr} class="status-btn ${currentStatus==='PRESENT'?'active present':''}" data-status="PRESENT" onclick="setStatus(${i},'PRESENT')">Present</button>
+                            <button type="button" ${disabledAttr} class="status-btn ${currentStatus==='ABSENT'?'active absent':''}" data-status="ABSENT" onclick="setStatus(${i},'ABSENT')">Absent</button>
+                            <button type="button" ${disabledAttr} class="status-btn ${currentStatus==='OD'?'active od':''}" data-status="OD" onclick="setStatus(${i},'OD')">OD</button>
+                            <button type="button" ${disabledAttr} class="status-btn ${currentStatus==='LEAVE'?'active leave':''}" data-status="LEAVE" onclick="setStatus(${i},'LEAVE')">Leave</button>
                         </div>
                     </td>
-                    <td>${odApproved ? '<span class="od-badge">OD Approved</span>' : '—'}</td>
+                    <td>${odApproved ? '<span class="od-badge">OD Approved (Effective Present)</span>' : '<span style="color:#aaa;">—</span>'}</td>
                 </tr>`;
             }).join('');
         });
 }
 
+function empty(val) { return !val || val === '0' || val === false; }
+
 function setStatus(index, status) {
+    if (isReadOnly) {
+        showToast('Attendance cannot be modified: ' + (lockReason || 'Semester attendance is locked or finalized.'), 'error');
+        return;
+    }
     students[index].status = status;
+    students[index].effective_status = status;
     const btns = document.querySelectorAll(`.status-btns[data-index="${index}"] .status-btn`);
     btns.forEach(btn => {
         btn.classList.remove('active', 'present', 'absent', 'od', 'leave');
@@ -145,19 +273,28 @@ function setStatus(index, status) {
 }
 
 function markAllPresent() {
+    if (isReadOnly) {
+        showToast('Attendance cannot be modified: ' + (lockReason || 'Semester attendance is locked or finalized.'), 'error');
+        return;
+    }
     students.forEach((s, i) => {
-        if (s.effective_status === 'OD' && s.original_status !== 'OD') return;
+        if (s.od_approved || s.effective_status === 'OD') return;
         s.status = 'PRESENT';
+        s.effective_status = 'PRESENT';
         const btns = document.querySelectorAll(`.status-btns[data-index="${i}"] .status-btn`);
         btns.forEach(btn => {
             btn.classList.remove('active', 'present', 'absent', 'od', 'leave');
             if (btn.dataset.status === 'PRESENT') btn.classList.add('active', 'present');
         });
     });
-    showToast('All students marked present (OD-approved kept as OD)', 'success');
+    showToast('All students marked present (OD-approved preserved)', 'success');
 }
 
 function saveAttendance() {
+    if (isReadOnly) {
+        showToast('Attendance cannot be modified: ' + (lockReason || 'Semester attendance is locked or finalized.'), 'error');
+        return;
+    }
     const statuses = students.map(s => ({ roll: s.roll, status: s.status || 'ABSENT' }));
     const formData = new FormData();
     formData.append('action', 'mark_attendance');
@@ -168,7 +305,58 @@ function saveAttendance() {
         .then(data => {
             if (data.status === 'success') {
                 showToast(data.message, 'success');
-                setTimeout(() => window.location.href = 'mentor_attendance_calendar.php', 1500);
+                setTimeout(() => window.location.href = 'mentor_attendance_calendar.php', 1200);
+            } else {
+                showToast(data.message || 'Failed to save attendance', 'error');
+            }
+        });
+}
+
+function openSuspendModal() {
+    document.getElementById('suspendReason').value = '';
+    document.getElementById('suspendModal').classList.add('active');
+}
+
+function closeSuspendModal() {
+    document.getElementById('suspendModal').classList.remove('active');
+}
+
+function confirmSuspendSession() {
+    const reason = document.getElementById('suspendReason').value.trim();
+    if (!reason) {
+        showToast('A suspension reason is mandatory', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('action', 'suspend_session');
+    formData.append('session_id', sessionId);
+    formData.append('reason', reason);
+
+    fetch('attendance_api.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+                closeSuspendModal();
+                loadSession();
+            } else {
+                showToast(data.message || 'Failed to suspend session', 'error');
+            }
+        });
+}
+
+function unsuspendSession() {
+    const formData = new FormData();
+    formData.append('action', 'unsuspend_session');
+    formData.append('session_id', sessionId);
+
+    fetch('attendance_api.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+                loadSession();
             } else {
                 showToast(data.message || 'Failed', 'error');
             }

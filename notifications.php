@@ -37,6 +37,8 @@ function sanitizeNotifLink($raw, $isMentorCtx) {
         'leap_profile_edit.php' => 'leap_profile_edit.php',
         'announcements.php' => 'announcements.php',
         'attendance.php' => 'attendance.php',
+        'attendance_calendar.php' => 'attendance_calendar.php',
+        'attendance_od_request.php' => 'attendance_od_request.php',
         'calendar.php' => 'calendar.php',
         'dashboard.php' => 'dashboard.php',
         'student_approvals.php' => 'student_approvals.php',
@@ -55,6 +57,10 @@ function sanitizeNotifLink($raw, $isMentorCtx) {
         'mentor_announcements.php' => 'mentor_announcements.php',
         'mentor_approvals.php' => 'mentor_approvals.php',
         'mentor_attendance.php' => 'mentor_attendance.php',
+        'mentor_attendance_calendar.php' => 'mentor_attendance_calendar.php',
+        'mentor_attendance_mark.php' => 'mentor_attendance_mark.php',
+        'mentor_attendance_od.php' => 'mentor_attendance_od.php',
+        'mentor_timetable.php' => 'mentor_timetable.php',
         'mentor_calendar.php' => 'mentor_calendar.php',
     ];
     if (isset($studentPages[$page])) {
@@ -70,6 +76,9 @@ function sanitizeNotifLink($raw, $isMentorCtx) {
                 'leap_results.php' => 'mentor_leap_results.php',
                 'leap_progress.php' => 'mentor_leap_attendance.php',
                 'leap_profile_edit.php' => 'mentor_leap_applications.php',
+                'attendance.php' => 'mentor_attendance.php',
+                'attendance_calendar.php' => 'mentor_attendance_calendar.php',
+                'attendance_od_request.php' => 'mentor_attendance_od.php',
             ];
             return ($map[$page] ?? 'mentor_dashboard.php') . $query;
         }
@@ -87,6 +96,9 @@ function sanitizeNotifLink($raw, $isMentorCtx) {
                 'mentor_leap_attendance.php' => 'leap_training.php',
                 'mentor_leap_tests.php' => 'leap_tests.php',
                 'mentor_leap_results.php' => 'leap_results.php',
+                'mentor_attendance.php' => 'attendance.php',
+                'mentor_attendance_calendar.php' => 'attendance_calendar.php',
+                'mentor_attendance_od.php' => 'attendance_od_request.php',
             ];
             return ($map[$page] ?? 'dashboard.php') . $query;
         }

@@ -127,12 +127,12 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 <select name="duration" id="duration" onchange="toggleDurationFields()" required>
                     <option value="">Select duration...</option>
                     <option value="full_day">Full Day</option>
-                    <option value="half_day">Half Day</option>
-                    <option value="select_hours">Select Hours</option>
+                    <option value="half_day">Half Day (Morning / Afternoon)</option>
+                    <option value="select_hours">Multi-Hour / Specific Periods</option>
                 </select>
             </div>
 
-            <div id="dateRangeFields" style="display:none;">
+            <div id="fullDayFields" style="display:none;">
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
                     <div class="form-group">
                         <label>From Date</label>
@@ -145,17 +145,37 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
                 </div>
             </div>
 
+            <div id="halfDayFields" style="display:none;">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="halfDayDate">
+                    </div>
+                    <div class="form-group">
+                        <label>Half Day Session</label>
+                        <select id="halfDayType">
+                            <option value="morning">Morning Session (H1 - H4)</option>
+                            <option value="afternoon">Afternoon Session (H5 - H7)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div id="hoursFields" style="display:none;">
                 <div class="form-group">
-                    <label>Select Hours (click to toggle, can select multiple)</label>
+                    <label>Date</label>
+                    <input type="date" id="hoursDate">
+                </div>
+                <div class="form-group">
+                    <label>Select Periods / Hours (click to select)</label>
                     <div class="hour-grid" id="hourGrid">
-                        <div class="hour-chip" data-hour="1" onclick="toggleHour(this)">H1</div>
-                        <div class="hour-chip" data-hour="2" onclick="toggleHour(this)">H2</div>
-                        <div class="hour-chip" data-hour="3" onclick="toggleHour(this)">H3</div>
-                        <div class="hour-chip" data-hour="4" onclick="toggleHour(this)">H4</div>
-                        <div class="hour-chip" data-hour="5" onclick="toggleHour(this)">H5</div>
-                        <div class="hour-chip" data-hour="6" onclick="toggleHour(this)">H6</div>
-                        <div class="hour-chip" data-hour="7" onclick="toggleHour(this)">H7</div>
+                        <div class="hour-chip" data-hour="1" onclick="toggleHour(this)">H1 (08:45)</div>
+                        <div class="hour-chip" data-hour="2" onclick="toggleHour(this)">H2 (09:35)</div>
+                        <div class="hour-chip" data-hour="3" onclick="toggleHour(this)">H3 (10:45)</div>
+                        <div class="hour-chip" data-hour="4" onclick="toggleHour(this)">H4 (11:35)</div>
+                        <div class="hour-chip" data-hour="5" onclick="toggleHour(this)">H5 (13:25)</div>
+                        <div class="hour-chip" data-hour="6" onclick="toggleHour(this)">H6 (14:15)</div>
+                        <div class="hour-chip" data-hour="7" onclick="toggleHour(this)">H7 (15:25)</div>
                     </div>
                 </div>
             </div>
@@ -178,7 +198,8 @@ let selectedHours = [];
 
 function toggleDurationFields() {
     const dur = document.getElementById('duration').value;
-    document.getElementById('dateRangeFields').style.display = (dur === 'full_day' || dur === 'half_day') ? 'block' : 'none';
+    document.getElementById('fullDayFields').style.display = (dur === 'full_day') ? 'block' : 'none';
+    document.getElementById('halfDayFields').style.display = (dur === 'half_day') ? 'block' : 'none';
     document.getElementById('hoursFields').style.display = (dur === 'select_hours') ? 'block' : 'none';
 }
 
@@ -198,12 +219,41 @@ function submitOD(event) {
     btn.disabled = true;
     btn.textContent = 'Submitting...';
 
+    const dur = document.getElementById('duration').value;
+    let dateFrom = '', dateTo = '', halfDayType = 'morning';
+
+    if (dur === 'full_day') {
+        dateFrom = document.getElementById('dateFrom').value;
+        dateTo = document.getElementById('dateTo').value || dateFrom;
+    } else if (dur === 'half_day') {
+        dateFrom = document.getElementById('halfDayDate').value;
+        dateTo = dateFrom;
+        halfDayType = document.getElementById('halfDayType').value;
+    } else if (dur === 'select_hours') {
+        dateFrom = document.getElementById('hoursDate').value;
+        dateTo = dateFrom;
+        if (selectedHours.length === 0) {
+            btn.disabled = false;
+            btn.textContent = 'Submit Request';
+            showToast('Please select at least one hour', 'error');
+            return;
+        }
+    }
+
+    if (!dateFrom) {
+        btn.disabled = false;
+        btn.textContent = 'Submit Request';
+        showToast('Please select a valid date', 'error');
+        return;
+    }
+
     const formData = new FormData();
     formData.append('action', 'submit_od');
     formData.append('od_type', document.getElementById('odType').value);
-    formData.append('duration', document.getElementById('duration').value);
-    formData.append('date_from', document.getElementById('dateFrom').value);
-    formData.append('date_to', document.getElementById('dateTo').value);
+    formData.append('duration', dur);
+    formData.append('date_from', dateFrom);
+    formData.append('date_to', dateTo);
+    formData.append('half_day_type', halfDayType);
     formData.append('reason', document.getElementById('reason').value);
     selectedHours.forEach(h => formData.append('hours[]', h));
 

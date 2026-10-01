@@ -53,6 +53,46 @@ sort($batches);
         .pct-badge.bad { background: #f8d7da; color: #721c24; }
 
         .empty-state { text-align: center; padding: 40px; color: #888; }
+
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px); }
+        .modal-overlay.active { display: flex; }
+        .modal-box { background: #fff; border-radius: 20px; max-width: 520px; width: 90%; padding: 32px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: modalSlide 0.3s ease; }
+        @keyframes modalSlide { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-box h3 { color: #1a1a2e; font-size: 19px; margin-bottom: 12px; }
+        .modal-btn-row { display: flex; gap: 12px; margin-top: 20px; }
+        .modal-btn { flex: 1; padding: 12px; border-radius: 10px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .modal-btn.cancel { background: #eee; color: #555; }
+        .modal-btn.cancel:hover { background: #e0e0e0; }
+
+        .sem-lifecycle-card {
+            background: #fff; border-radius: 16px; padding: 22px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06); border-top: 4px solid #eee;
+            display: flex; flex-direction: column; justify-content: space-between;
+            transition: all 0.3s ease; min-height: 180px;
+        }
+        .sem-lifecycle-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.1); }
+        .sem-lifecycle-card.status-open { border-top-color: #28a745; }
+        .sem-lifecycle-card.status-closed { border-top-color: #6c757d; background: #fafbfc; }
+        .sem-lifecycle-card.status-locked { border-top-color: #ffc107; background: #fffdf5; }
+
+        .sem-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .sem-badge.open { background: #d4edda; color: #155724; }
+        .sem-badge.closed { background: #e2e3e5; color: #383d41; }
+        .sem-badge.locked { background: #fff3cd; color: #856404; }
+
+        .btn-close-att {
+            background: linear-gradient(135deg, #e53e3e, #c53030); color: #fff;
+            border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-close-att:hover { background: #9b2c2c; box-shadow: 0 4px 12px rgba(197,48,48,0.3); }
+
+        .btn-mark-att {
+            background: #1a1a2e; color: #fff; text-decoration: none;
+            padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 600;
+            transition: all 0.2s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn-mark-att:hover { background: #8e44ad; }
     </style>
 </head>
 <body>
@@ -112,7 +152,31 @@ sort($batches);
         </a>
     </div>
 
-    <div class="batch-selector">
+    <!-- SEMESTER ATTENDANCE LIFECYCLE & CLOSE SECTION -->
+    <div class="batch-selector" style="margin-top:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:12px;">
+            <div>
+                <h3 style="margin:0;font-size:20px;color:#1a1a2e;display:flex;align-items:center;gap:8px;">
+                    <span>🔒</span> Semester Attendance Lifecycle & Close Control
+                </h3>
+                <p style="margin:4px 0 0;font-size:13px;color:#666;">
+                    Sequential semester control: Previous semesters must be explicitly closed before future semester attendance can be marked.
+                </p>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <label style="margin:0;font-size:13px;font-weight:600;color:#555;">Batch:</label>
+                <select id="lifecycleBatch" onchange="loadLifecycleStatus()" style="max-width:220px;padding:8px 14px;border-radius:10px;border:2px solid #e0e0e0;font-size:14px;background:#f8f9fa;">
+                    <?php foreach($batches as $b): ?>
+                    <option value="<?= htmlspecialchars($b) ?>"><?= htmlspecialchars($b) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        </div>
+
+        <div id="lifecycleGrid" style="display:grid;grid-template-columns:repeat(auto-fill, minmax(270px, 1fr));gap:16px;margin-top:20px;">
+            <div class="empty-state" style="grid-column:1/-1;">Loading semester attendance status...</div>
+        </div>
+    </div>
         <h3>Batch Attendance Report</h3>
         <label>Select Batch & Semester</label>
         <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
@@ -135,6 +199,30 @@ sort($batches);
         </div>
         <div id="reportArea" style="margin-top:16px;">
             <div class="empty-state">Select a batch and semester to view the attendance report.</div>
+        </div>
+    </div>
+</div>
+
+<!-- Close Semester Confirmation Modal -->
+<div class="modal-overlay" id="closeSemesterModal">
+    <div class="modal-box">
+        <div style="font-size:38px;text-align:center;margin-bottom:12px;">🔒</div>
+        <h3 style="text-align:center;margin-bottom:8px;" id="closeModalTitle">Close Semester Attendance</h3>
+        <div style="background:#fff3cd;border:1px solid #ffeeba;border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:#856404;line-height:1.5;">
+            <strong>⚠️ CRITICAL ACTION:</strong> After closing, attendance marking, status modifications, session edits, and OD approvals for this semester will <strong>no longer be allowed</strong>. Records will become permanent and read-only.
+        </div>
+        <p style="font-size:13px;color:#555;margin-bottom:16px;line-height:1.4;" id="closeModalPrompt">
+            Are you sure you want to close attendance for this semester?
+        </p>
+        <div style="margin-bottom:18px;">
+            <label style="display:flex;align-items:flex-start;gap:10px;font-size:13px;cursor:pointer;user-select:none;color:#333;">
+                <input type="checkbox" id="closeConfirmCheck" style="margin-top:3px;cursor:pointer;">
+                <span>I confirm that all attendance sessions for this semester have been completed and verified for finalization.</span>
+            </label>
+        </div>
+        <div class="modal-btn-row">
+            <button type="button" class="modal-btn cancel" onclick="closeSemesterModalClose()">Cancel</button>
+            <button type="button" class="modal-btn" style="background:#dc3545;color:#fff;" id="btnConfirmCloseSem" onclick="executeCloseSemester()">Close Attendance</button>
         </div>
     </div>
 </div>
@@ -193,6 +281,170 @@ function loadReport() {
             area.innerHTML = html;
         });
 }
+
+let pendingCloseBatch = '';
+let pendingCloseSem = 0;
+
+function loadLifecycleStatus() {
+    const batchSelect = document.getElementById('lifecycleBatch');
+    const grid = document.getElementById('lifecycleGrid');
+    if (!batchSelect || !batchSelect.value) {
+        if (grid) grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Please select a batch to view semester attendance lifecycle.</div>';
+        return;
+    }
+    const batch = batchSelect.value;
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;">Loading semester attendance lifecycle...</div>';
+
+    fetch(`attendance_api.php?action=batch_semesters_status&batch=${encodeURIComponent(batch)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (data.status !== 'success') {
+                grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;color:#dc3545;">Failed to load lifecycle status: ${escapeHtml(data.message || 'Error')}</div>`;
+                return;
+            }
+
+            const semMap = data.semesters || {};
+            let html = '';
+
+            for (let s = 1; s <= 8; s++) {
+                const info = semMap[s] || { status: (s === 1 ? 'OPEN' : 'LOCKED'), can_mark: (s === 1) };
+                const st = info.status || 'OPEN';
+                const isClosed = (st === 'CLOSED');
+                const isLocked = (st === 'LOCKED');
+                const isOpen = (st === 'OPEN');
+
+                let cardClass = 'status-' + st.toLowerCase();
+                let badgeClass = st.toLowerCase();
+
+                let closedDateStr = '';
+                if (info.closed_at) {
+                    try {
+                        const d = new Date(info.closed_at.date || info.closed_at);
+                        closedDateStr = !isNaN(d.getTime()) ? d.toLocaleDateString('en-GB') : '';
+                    } catch(e) {}
+                }
+
+                html += `<div class="sem-lifecycle-card ${cardClass}">
+                    <div>
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                            <h4 style="margin:0;font-size:16px;color:#1a1a2e;font-weight:700;">Semester ${s}</h4>
+                            <span class="sem-badge ${badgeClass}">${st}</span>
+                        </div>`;
+
+                if (isClosed) {
+                    html += `
+                        <div style="font-size:12px;color:#555;margin-bottom:12px;line-height:1.5;">
+                            <div><strong>Closed by:</strong> ${escapeHtml(info.closed_by_name || info.closed_by || 'Admin/Mentor')}</div>
+                            ${closedDateStr ? `<div><strong>Closed on:</strong> ${escapeHtml(closedDateStr)}</div>` : ''}
+                            <div style="color:#6c757d;margin-top:6px;font-style:italic;">Attendance is finalized & read-only.</div>
+                        </div>`;
+                } else if (isLocked) {
+                    html += `
+                        <div style="font-size:12px;color:#856404;background:#fff3cd;padding:10px 12px;border-radius:8px;margin-bottom:12px;line-height:1.4;">
+                            <strong>🔒 Attendance Locked</strong><br>
+                            ${escapeHtml(info.reason || `Semester ${s-1} attendance has not been closed. Please close Semester ${s-1} attendance before marking Semester ${s} attendance.`)}
+                        </div>`;
+                } else {
+                    html += `
+                        <div style="font-size:12px;color:#155724;background:#d4edda;padding:10px 12px;border-radius:8px;margin-bottom:12px;line-height:1.4;">
+                            <strong>✅ Attendance Open</strong><br>
+                            Attendance sessions can be generated, marked, and modified.
+                        </div>`;
+                }
+
+                html += `</div>
+                    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;align-items:center;">`;
+
+                if (isOpen) {
+                    html += `
+                        <a href="mentor_attendance_calendar.php?batch=${encodeURIComponent(batch)}&semester=${s}" class="btn-mark-att">
+                            Mark Attendance
+                        </a>
+                        <button type="button" class="btn-close-att" onclick="openCloseSemesterModal('${escapeHtml(batch)}', ${s})">
+                            Close Attendance
+                        </button>`;
+                } else if (isClosed) {
+                    html += `
+                        <a href="mentor_attendance_calendar.php?batch=${encodeURIComponent(batch)}&semester=${s}" class="btn-mark-att" style="background:#6c757d;">
+                            View Attendance
+                        </a>
+                        <button type="button" disabled style="background:#e2e3e5;color:#6c757d;border:none;padding:8px 14px;border-radius:8px;font-size:12px;font-weight:600;cursor:not-allowed;">
+                            Attendance Closed
+                        </button>`;
+                } else {
+                    html += `
+                        <button type="button" disabled style="background:#f8f9fa;color:#aaa;border:1px solid #ddd;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:600;cursor:not-allowed;">
+                            Attendance Locked
+                        </button>`;
+                }
+
+                html += `</div>
+                </div>`;
+            }
+
+            grid.innerHTML = html;
+        })
+        .catch(err => {
+            grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;color:#dc3545;">Network error loading lifecycle status.</div>`;
+        });
+}
+
+function openCloseSemesterModal(batch, sem) {
+    pendingCloseBatch = batch;
+    pendingCloseSem = sem;
+    document.getElementById('closeModalTitle').textContent = `Close Semester ${sem} Attendance`;
+    document.getElementById('closeModalPrompt').innerHTML = `Are you sure you want to close attendance for <strong>Batch ${escapeHtml(batch)} — Semester ${sem}</strong>?`;
+    document.getElementById('closeConfirmCheck').checked = false;
+    document.getElementById('closeSemesterModal').classList.add('active');
+}
+
+function closeSemesterModalClose() {
+    document.getElementById('closeSemesterModal').classList.remove('active');
+    pendingCloseBatch = '';
+    pendingCloseSem = 0;
+}
+
+function executeCloseSemester() {
+    const check = document.getElementById('closeConfirmCheck');
+    if (!check.checked) {
+        showToast('Please check the confirmation box to proceed.', 'error');
+        return;
+    }
+    if (!pendingCloseBatch || !pendingCloseSem) return;
+
+    const btn = document.getElementById('btnConfirmCloseSem');
+    btn.disabled = true;
+    btn.textContent = 'Closing...';
+
+    const formData = new FormData();
+    formData.append('action', 'close_semester');
+    formData.append('batch', pendingCloseBatch);
+    formData.append('semester', pendingCloseSem);
+    formData.append('confirm', '1');
+
+    fetch('attendance_api.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            btn.disabled = false;
+            btn.textContent = 'Close Attendance';
+            if (data.status === 'success') {
+                showToast(data.message, 'success');
+                closeSemesterModalClose();
+                loadLifecycleStatus();
+            } else {
+                showToast(data.message || 'Failed to close semester', 'error');
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            btn.textContent = 'Close Attendance';
+            showToast('Network error while closing semester', 'error');
+        });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadLifecycleStatus();
+});
 
 function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
 

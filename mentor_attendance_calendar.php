@@ -373,6 +373,7 @@ function showDateDetail(dateStr) {
                 html += `<div style="background:#f0f0f0;padding:16px;border-radius:12px;margin-bottom:16px;text-align:center;">
                     <div style="font-size:24px;">🏖️</div>
                     <div style="font-weight:600;color:#555;margin-top:8px;">Holiday: ${escapeHtml(data.holiday.description)}</div>
+                    <button class="action-btn" style="margin-top:10px;background:#e53e3e;color:#fff;border:none;padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;" onclick="removeHoliday('${data.holiday._id}')">Remove Holiday / Working Day</button>
                 </div>`;
             }
 
@@ -387,19 +388,42 @@ function showDateDetail(dateStr) {
             } else {
                 html += '<div class="session-list">';
                 data.sessions.forEach(s => {
+                    const isClosed = (s.semester_status === 'CLOSED');
+                    const isLocked = (s.semester_status === 'LOCKED');
+
+                    let actionBtns = '';
+                    if (isClosed) {
+                        actionBtns = `<a href="mentor_attendance_mark.php?session_id=${s.attendance_session_id}" class="sess-btn mark" style="background:#6c757d;">View Attendance (Closed)</a>`;
+                    } else if (isLocked) {
+                        actionBtns = `<a href="mentor_attendance_mark.php?session_id=${s.attendance_session_id}" class="sess-btn mark" style="background:#ffc107;color:#333;">Locked</a>`;
+                    } else {
+                        if (s.status === 'SCHEDULED') actionBtns += `<a href="mentor_attendance_mark.php?session_id=${s.attendance_session_id}" class="sess-btn mark">Mark</a>`;
+                        if (s.status === 'CONDUCTED') actionBtns += `<a href="mentor_attendance_mark.php?session_id=${s.attendance_session_id}" class="sess-btn mark" style="background:#17a2b8;">Edit Attendance</a>`;
+                        if (s.status === 'SUSPENDED') actionBtns += `<a href="mentor_attendance_mark.php?session_id=${s.attendance_session_id}" class="sess-btn mark" style="background:#6c757d;">View / Unsuspend</a>`;
+                        if (s.status === 'SCHEDULED') {
+                            actionBtns += ` <button class="sess-btn suspend" onclick="openSuspendModal('${s.attendance_session_id}')">Suspend</button>`;
+                            actionBtns += ` <button class="sess-btn substitute" onclick="openSubModal('${s.attendance_session_id}')">Substitute</button>`;
+                            actionBtns += ` <button class="sess-btn reschedule" onclick="openRescheduleModal('${s.attendance_session_id}')">Reschedule</button>`;
+                        }
+                    }
+
                     html += `<div class="session-item">
                         <div class="session-info">
                             <div class="s-hour">H${s.hour} ${s.start_time}-${s.end_time}</div>
                             <div class="s-subject">${escapeHtml(s.subject)} ${s.subject_code ? '(' + escapeHtml(s.subject_code) + ')' : ''}</div>
                             <div class="s-meta">Faculty: ${escapeHtml(s.actual_faculty || s.original_faculty)} · Batch: ${escapeHtml(s.batch)} · Sem: ${s.semester}</div>
+                            ${isClosed ? '<div style="color:#6c757d;font-size:12px;margin-top:3px;font-weight:600;">🔒 Semester attendance closed (Read-only)</div>' : ''}
+                            ${isLocked ? `<div style="color:#856404;font-size:12px;margin-top:3px;font-weight:600;">🔒 Attendance Locked: ${escapeHtml(s.lock_reason || 'Previous semester not closed')}</div>` : ''}
+                            ${s.suspension_reason ? `<div style="color:#d9534f;font-size:12px;margin-top:3px;">Reason: ${escapeHtml(s.suspension_reason)}</div>` : ''}
                         </div>
                         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;">
-                            <span class="sess-badge ${s.status}">${s.status}</span>
+                            <div style="display:flex;gap:6px;align-items:center;">
+                                ${isClosed ? '<span class="sess-badge" style="background:#e2e3e5;color:#383d41;">CLOSED</span>' : ''}
+                                ${isLocked ? '<span class="sess-badge" style="background:#fff3cd;color:#856404;">LOCKED</span>' : ''}
+                                <span class="sess-badge ${s.status}">${s.status}</span>
+                            </div>
                             <div class="session-actions">
-                                ${s.status === 'SCHEDULED' ? `<a href="mentor_attendance_mark.php?session_id=${s.attendance_session_id}" class="sess-btn mark">Mark</a>` : ''}
-                                ${s.status === 'SCHEDULED' ? `<button class="sess-btn suspend" onclick="openSuspendModal('${s.attendance_session_id}')">Suspend</button>` : ''}
-                                ${s.status === 'SCHEDULED' ? `<button class="sess-btn substitute" onclick="openSubModal('${s.attendance_session_id}')">Substitute</button>` : ''}
-                                ${s.status === 'SCHEDULED' ? `<button class="sess-btn reschedule" onclick="openRescheduleModal('${s.attendance_session_id}')">Reschedule</button>` : ''}
+                                ${actionBtns}
                             </div>
                         </div>
                     </div>`;
@@ -447,6 +471,19 @@ function declareHoliday() {
         .then(r => r.json())
         .then(data => {
             if (data.status === 'success') { showToast(data.message, 'success'); closeHolidayModal(); }
+            else showToast(data.message || 'Failed', 'error');
+        });
+}
+
+function removeHoliday(id) {
+    if (!confirm('Are you sure you want to remove this holiday and convert this date back to a normal working day?')) return;
+    const formData = new FormData();
+    formData.append('action', 'remove_holiday');
+    formData.append('holiday_id', id);
+    fetch('attendance_api.php', { method: 'POST', body: formData })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') { showToast(data.message, 'success'); closeDateModal(); setTimeout(() => location.reload(), 800); }
             else showToast(data.message || 'Failed', 'error');
         });
 }

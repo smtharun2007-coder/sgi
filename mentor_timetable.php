@@ -144,6 +144,10 @@ $selSem = (int)($_GET['semester'] ?? 1);
             <label>Faculty Name</label>
             <input type="text" id="slotFaculty" placeholder="e.g. Dr. Smith">
         </div>
+        <div class="form-group">
+            <label>Class / Section (optional)</label>
+            <input type="text" id="slotClassSection" placeholder="e.g. CSE-F">
+        </div>
         <div class="modal-btn-row">
             <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
             <button class="modal-btn save" onclick="saveSlot()">Save</button>
@@ -202,7 +206,7 @@ function renderGrid() {
                     <span class="tt-delete" onclick="event.stopPropagation();deleteSlot('${slot._id}')">&times;</span>
                     <div class="tt-subject">${escapeHtml(slot.subject)}</div>
                     <div class="tt-code">${escapeHtml(slot.subject_code)}</div>
-                    <div class="tt-faculty">${escapeHtml(slot.faculty)}</div>
+                    <div class="tt-faculty">${escapeHtml(slot.faculty)}${slot.class_section ? ' · ' + escapeHtml(slot.class_section) : ''}</div>
                 </div>`;
             } else {
                 html += `<div class="tt-slot" onclick="openModal(${d}, ${h})"><span style="color:#ccc;font-size:20px;">+</span></div>`;
@@ -218,6 +222,7 @@ function openModal(day, hour) {
     document.getElementById('slotSubject').value = '';
     document.getElementById('slotCode').value = '';
     document.getElementById('slotFaculty').value = '';
+    document.getElementById('slotClassSection').value = '';
     document.getElementById('slotModal').classList.add('active');
 }
 
@@ -230,6 +235,7 @@ function editSlot(day, hour, id) {
     document.getElementById('slotSubject').value = slot.subject || '';
     document.getElementById('slotCode').value = slot.subject_code || '';
     document.getElementById('slotFaculty').value = slot.faculty || '';
+    document.getElementById('slotClassSection').value = slot.class_section || '';
     document.getElementById('slotModal').classList.add('active');
 }
 
@@ -243,6 +249,7 @@ function saveSlot() {
     const subject = document.getElementById('slotSubject').value.trim();
     const code = document.getElementById('slotCode').value.trim();
     const faculty = document.getElementById('slotFaculty').value.trim();
+    const classSection = document.getElementById('slotClassSection').value.trim();
     if (!subject) { showToast('Subject name is required', 'error'); return; }
 
     const formData = new FormData();
@@ -254,6 +261,7 @@ function saveSlot() {
     formData.append('subject', subject);
     formData.append('subject_code', code);
     formData.append('faculty', faculty);
+    formData.append('class_section', classSection);
 
     fetch('attendance_api.php', { method: 'POST', body: formData })
         .then(r => r.json())

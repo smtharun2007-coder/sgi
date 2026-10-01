@@ -203,22 +203,45 @@ function renderCalendar() {
         const cell = document.getElementById('cell-' + day);
         if (!dotsDiv || !cell) return;
 
-        let allPresent = true, allAbsent = true;
+        let allPresent = true, allAbsent = true, allSuspended = true;
         let dotHtml = '';
         sessions.forEach(s => {
             const att = s.attendance;
+            const sessSt = s.session_status;
             let color = '#aaa';
-            if (att === 'PRESENT') { color = '#28a745'; allAbsent = false; }
-            else if (att === 'ABSENT') { color = '#dc3545'; allPresent = false; }
-            else if (att === 'OD') { color = '#17a2b8'; allAbsent = false; }
-            else if (att === 'LEAVE') { color = '#ffc107'; allAbsent = false; }
-            else if (s.session_status === 'SUSPENDED' || s.session_status === 'CANCELLED') { color = '#aaa'; allPresent = false; allAbsent = false; }
-            dotHtml += `<span class="cal-status-dot" style="background:${color};"></span>`;
+
+            if (sessSt === 'SUSPENDED') {
+                color = '#6c757d';
+                allPresent = false;
+                allAbsent = false;
+            } else if (sessSt === 'CANCELLED') {
+                color = '#dc3545';
+                allPresent = false;
+                allAbsent = false;
+            } else {
+                allSuspended = false;
+                if (s.is_od || att === 'OD') {
+                    color = '#17a2b8';
+                    allAbsent = false;
+                } else if (att === 'PRESENT') {
+                    color = '#28a745';
+                    allAbsent = false;
+                } else if (att === 'ABSENT') {
+                    color = '#dc3545';
+                    allPresent = false;
+                } else {
+                    color = '#ffc107';
+                    allPresent = false;
+                    allAbsent = false;
+                }
+            }
+            dotHtml += `<span class="cal-status-dot" style="background:${color};" title="H${s.hour}: ${s.subject} (${att || sessSt})"></span>`;
         });
         dotsDiv.innerHTML = dotHtml;
 
         if (sessions.length > 0) {
-            if (allPresent) cell.classList.add('all-present');
+            if (allSuspended) cell.classList.add('holiday');
+            else if (allPresent) cell.classList.add('all-present');
             else if (allAbsent) cell.classList.add('all-absent');
             else cell.classList.add('mixed');
         }
@@ -234,9 +257,10 @@ function showDayDetail(day) {
 
     let html = '';
     if (holiday) {
-        html += `<div style="background:#f0f0f0;padding:16px;border-radius:12px;margin-bottom:16px;text-align:center;">
+        html += `<div style="background:#f8d7da;color:#721c24;padding:16px;border-radius:12px;margin-bottom:16px;text-align:center;">
             <div style="font-size:24px;">🏖️</div>
-            <div style="font-weight:600;color:#555;margin-top:8px;">Holiday: ${escapeHtml(holiday)}</div>
+            <div style="font-weight:700;margin-top:8px;">Holiday: ${escapeHtml(holiday)}</div>
+            <div style="font-size:12px;opacity:0.8;margin-top:4px;">No attendance sessions conducted on this date</div>
         </div>`;
     }
 
@@ -250,20 +274,32 @@ function showDayDetail(day) {
                     <th>Time</th>
                     <th>Subject</th>
                     <th>Faculty</th>
-                    <th>Session</th>
-                    <th>Attendance</th>
+                    <th>Session Status</th>
+                    <th>Your Attendance</th>
                 </tr>
             </thead>
             <tbody>
                 ${sessions.map(s => {
-                    const attBadge = s.attendance ? `<span class="att-badge ${s.attendance}">${s.attendance}</span>` : '<span style="color:#aaa;">—</span>';
+                    let attLabel = s.attendance || '—';
+                    let attClass = s.attendance || '';
+                    if (s.is_od || s.attendance === 'OD') {
+                        attLabel = 'OD Approved';
+                        attClass = 'OD';
+                    } else if (s.session_status === 'SUSPENDED') {
+                        attLabel = 'Suspended (Excluded)';
+                        attClass = 'SUSPENDED';
+                    }
+
+                    const attBadge = `<span class="att-badge ${attClass}">${attLabel}</span>`;
                     const sessBadge = `<span class="sess-badge ${s.session_status}">${s.session_status}</span>`;
+                    const reasonNote = s.suspension_reason ? `<div style="font-size:11px;color:#6c757d;margin-top:3px;">Reason: ${escapeHtml(s.suspension_reason)}</div>` : '';
+
                     return `<tr>
                         <td><strong>H${s.hour}</strong></td>
                         <td>${s.start_time}-${s.end_time}</td>
-                        <td>${escapeHtml(s.subject)}</td>
-                        <td>${escapeHtml(s.faculty)}</td>
-                        <td>${sessBadge}</td>
+                        <td><strong>${escapeHtml(s.subject)}</strong></td>
+                        <td>${escapeHtml(s.faculty || '—')}</td>
+                        <td>${sessBadge}${reasonNote}</td>
                         <td>${attBadge}</td>
                     </tr>`;
                 }).join('')}
