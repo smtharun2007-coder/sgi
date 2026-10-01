@@ -467,6 +467,8 @@ function customConfirm(message, onConfirm, onCancel) {
 }
 
 function toggleNotif(){const d=document.getElementById('notifDrop');d.classList.toggle('open');if(d.classList.contains('open'))loadNotifs();}
+function escNotifLink(u){return String(u||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function notifLinkHTML(n){return n.link?`<div style="margin-top:6px;"><a href="${escNotifLink(n.link)}" style="display:inline-block;padding:4px 12px;background:#e94560;color:#fff;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">View &rarr;</a></div>`:'';}
 function loadNotifs(){fetch('notifications.php?fetch=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML='';data.forEach(n=>{const item=document.createElement('div');item.className='notif-item '+(n.read? '':'unread');item.innerHTML=`<div class="notif-msg">${n.message}</div><div class="notif-time">${new Date(n.created_at).toLocaleString()}</div>`;l.appendChild(item);});}).catch(e=>{document.getElementById('notifList').innerHTML='<div class="notif-empty">Unable to load</div>';});}
 function markAll(e){e.preventDefault();fetch('notifications.php?mark_all=1');document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));const b=document.querySelector('.notif-badge');if(b) b.remove();}
 function clearAll(e){e.preventDefault();fetch('notifications.php?delete_all=1');document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';const b=document.querySelector('.notif-badge');if(b) b.remove();}

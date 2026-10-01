@@ -1535,12 +1535,14 @@ function toggleNotif() {
     drop.classList.toggle('open');
     if (drop.classList.contains('open')) loadNotifs();
 }
+function escNotifLink(u){return String(u||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function notifLinkHTML(n){return n.link?`<div style="margin-top:6px;"><a href="${escNotifLink(n.link)}" style="display:inline-block;padding:4px 12px;background:#e94560;color:#fff;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">View &rarr;</a></div>`:'';}
 function loadNotifs() {
     fetch('notifications.php?fetch=1&mentor=1')
         .then(r=>r.json()).then(data=>{
             const list = document.getElementById('notifList');
             if (!data.length) { list.innerHTML='<div class="notif-empty">No notifications</div>'; return; }
-            list.innerHTML = data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');
+            list.innerHTML = data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}${notifLinkHTML(n)}</div><div class="notif-time">${n.time}</div></div>`).join('');
         });
 }
 function markAll(e) {

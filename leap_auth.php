@@ -48,7 +48,8 @@ function leapNotifyStudent($roll, $message, $link = '') {
     global $notifications;
     $notifications->insertOne([
         'roll'       => $roll,
-        'message'    => $message . ($link ? " <a href=\"$link\">View</a>" : ''),
+        'message'    => $message,
+        'link'       => sanitizeLeapNotifLink($link),
         'type'       => 'leap',
         'read'       => false,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
@@ -60,11 +61,38 @@ function leapNotifyMentor($mentor_id, $message, $link = '') {
     global $notifications;
     $notifications->insertOne([
         'mentor_id'  => $mentor_id,
-        'message'    => $message . ($link ? " <a href=\"$link\">View</a>" : ''),
+        'message'    => $message,
+        'link'       => sanitizeLeapNotifLink($link),
         'type'       => 'leap',
         'read'       => false,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
     ]);
+}
+
+// Allow-list for LEAP notification links (same-app relative .php only).
+// Defined here so leap_auth.php works even when notifications.php is not loaded.
+function sanitizeLeapNotifLink($raw) {
+    $raw = trim((string)$raw);
+    if ($raw === '') return '';
+    if (preg_match('#^\s*(https?:|//|javascript:|data:|mailto:)#i', $raw)) return '';
+    if (strpos($raw, '..') !== false) return '';
+    $raw = ltrim($raw, '/');
+    $parts = explode('?', $raw, 2);
+    $page = strtolower(trim($parts[0]));
+    $query = isset($parts[1]) ? ('?' . $parts[1]) : '';
+    if ($query !== '' && !preg_match('/^[\w=&%\-\.]+$/', $parts[1])) $query = '';
+    $allowed = [
+        'leap.php','leap_apply.php','leap_announcements.php','leap_activities.php',
+        'leap_training.php','leap_tests.php','leap_progress.php','leap_results.php',
+        'leap_profile_edit.php','announcements.php','attendance.php','calendar.php',
+        'dashboard.php','student_approvals.php','verify_marks.php',
+        'mentor_leap_applications.php','mentor_leap_pacc.php','mentor_leap_announcements.php',
+        'mentor_leap_activities.php','mentor_leap_training.php','mentor_leap_attendance.php',
+        'mentor_leap_tests.php','mentor_leap_results.php','mentor_dashboard.php',
+        'mentor_announcements.php','mentor_approvals.php','mentor_attendance.php','mentor_calendar.php',
+    ];
+    if (!in_array($page, $allowed, true)) return '';
+    return $page . $query;
 }
 
 // Render student LEAP navbar (call after $u and $unreadCount are set)
@@ -156,8 +184,10 @@ HTML;
 function leapNotifJS() {
     echo <<<'JS'
 <script>
+function escNotifLink(u){return String(u||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function notifLinkHTML(n){return n.link?`<div style="margin-top:6px;"><a href="${escNotifLink(n.link)}" style="display:inline-block;padding:4px 12px;background:#f5a623;color:#fff;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">View &rarr;</a></div>`:'';}
 function toggleNotif(){const d=document.getElementById('notifDrop');d.classList.toggle('open');if(d.classList.contains('open'))loadNotifs();}
-function loadNotifs(){fetch('notifications.php?fetch=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML=data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');});}
+function loadNotifs(){fetch('notifications.php?fetch=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML=data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}${notifLinkHTML(n)}</div><div class="notif-time">${n.time}</div></div>`).join('');});}
 function markAll(e){e.preventDefault();fetch('notifications.php?mark_all=1');document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));const b=document.querySelector('.notif-badge');if(b)b.remove();}
 function clearAll(e){e.preventDefault();fetch('notifications.php?delete_all=1');document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';const b=document.querySelector('.notif-badge');if(b)b.remove();}
 document.addEventListener('click',e=>{const btn=document.getElementById('bellBtn');const drop=document.getElementById('notifDrop');if(btn&&drop&&!btn.contains(e.target)&&!drop.contains(e.target))drop.classList.remove('open');});
@@ -169,8 +199,10 @@ JS;
 function leapMentorNotifJS() {
     echo <<<'JS'
 <script>
+function escNotifLink(u){return String(u||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function notifLinkHTML(n){return n.link?`<div style="margin-top:6px;"><a href="${escNotifLink(n.link)}" style="display:inline-block;padding:4px 12px;background:#8e44ad;color:#fff;border-radius:6px;font-size:12px;font-weight:700;text-decoration:none;" onclick="event.stopPropagation();">View &rarr;</a></div>`:'';}
 function toggleNotif(){const d=document.getElementById('notifDrop');d.classList.toggle('open');if(d.classList.contains('open'))loadNotifs();}
-function loadNotifs(){fetch('notifications.php?fetch=1&mentor=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML=data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}</div><div class="notif-time">${n.time}</div></div>`).join('');});}
+function loadNotifs(){fetch('notifications.php?fetch=1&mentor=1').then(r=>r.json()).then(data=>{const l=document.getElementById('notifList');if(!data.length){l.innerHTML='<div class="notif-empty">No notifications</div>';return;}l.innerHTML=data.map(n=>`<div class="notif-item ${n.read?'':'unread'}"><div>${n.message}${notifLinkHTML(n)}</div><div class="notif-time">${n.time}</div></div>`).join('');});}
 function markAll(e){e.preventDefault();fetch('notifications.php?mark_all=1&mentor=1');document.querySelectorAll('.notif-item.unread').forEach(el=>el.classList.remove('unread'));const b=document.querySelector('.notif-badge');if(b)b.remove();}
 function clearAll(e){e.preventDefault();fetch('notifications.php?delete_all=1&mentor=1');document.getElementById('notifList').innerHTML='<div class="notif-empty">No notifications</div>';const b=document.querySelector('.notif-badge');if(b)b.remove();}
 document.addEventListener('click',e=>{const btn=document.getElementById('bellBtn');const drop=document.getElementById('notifDrop');if(btn&&drop&&!btn.contains(e.target)&&!drop.contains(e.target))drop.classList.remove('open');});
