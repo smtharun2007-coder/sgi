@@ -57,10 +57,14 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
+    min-height: 100dvh;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #e94560 100%);
     padding: 30px 20px;
     position: relative;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    box-sizing: border-box;
 }
 .auth-page::before {
     content: '';
@@ -83,13 +87,15 @@ body {
     background: #ffffff;
     padding: 50px 45px 55px;
     border-radius: 28px;
-    width: 92%;
-    max-width: 580px;
+    width: 100%;
+    max-width: 540px;
     box-shadow: 0 32px 80px rgba(0,0,0,0.45);
     text-align: center;
     animation: slideUp 0.6s ease-out;
     position: relative;
     z-index: 10;
+    margin: auto 0;
+    box-sizing: border-box;
 }
 @keyframes borderGlow {
     0%, 100% { opacity: 0.3; }
@@ -663,36 +669,47 @@ textarea:focus { border-color: #e94560; }
     
     /* Auth pages mobile fixes - COMPLETE OVERHAUL */
     .auth-page {
-        padding: 20px 15px;
+        padding: 24px 14px;
         min-height: 100vh;
+        min-height: 100dvh;
+        align-items: flex-start;
     }
     .auth-box {
-        padding: 35px 25px 40px;
-        max-width: 95%;
-        width: 92%;
+        padding: 36px 24px 40px;
+        max-width: 100%;
+        width: 100%;
+        border-radius: 24px;
+        margin: auto 0;
+        box-sizing: border-box;
     }
-    .auth-box h1 { font-size: 24px; margin-bottom: 8px; }
-    .auth-box h2 { font-size: 14px; margin-bottom: 24px; }
+    .auth-box h1 { font-size: 24px; margin-bottom: 8px; line-height: 1.25; }
+    .auth-box h2 { font-size: 14px; margin-bottom: 22px; }
     .signup-box {
-        padding: 35px 25px 40px;
-        max-height: 90vh;
-        width: 95%;
-        max-width: 95%;
+        padding: 32px 20px 38px;
+        max-height: none;
+        overflow-y: visible;
+        width: 100%;
+        max-width: 100%;
+        border-radius: 22px;
     }
     .portal-badge {
         padding: 10px 24px;
         font-size: 14px;
         margin-bottom: 16px;
-        margin-top: 8px;
+        margin-top: 6px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     .switch-role-container {
         margin-top: 24px;
         padding-top: 20px;
     }
     .switch-role-btn {
-        padding: 12px 20px;
+        padding: 13px 20px;
         font-size: 13px;
         gap: 10px;
+        max-width: 100%;
+        box-sizing: border-box;
     }
     .logo-container {
         margin-bottom: 16px;
@@ -793,35 +810,62 @@ textarea:focus { border-color: #e94560; }
 
 @media (max-width: 480px) {
     .auth-page {
-        padding: 15px 10px;
+        padding: 16px 10px;
+        min-height: 100vh;
+        min-height: 100dvh;
+        align-items: flex-start;
     }
     .auth-box {
-        padding: 28px 18px 32px;
-        width: 95%;
-        max-width: 95%;
+        padding: 26px 16px 28px;
+        width: 100%;
+        max-width: 100%;
         border-radius: 20px;
+        margin: auto 0;
+        box-sizing: border-box;
     }
-    .auth-box h1 { font-size: 20px; }
-    .auth-box h2 { font-size: 13px; }
+    .auth-box h1 { font-size: 20px; line-height: 1.25; margin-bottom: 6px; }
+    .auth-box h2 { font-size: 13px; margin-bottom: 16px; }
     .signup-box {
-        padding: 28px 18px 32px;
-        width: 95%;
-        max-width: 95%;
-        max-height: 92vh;
+        padding: 24px 14px 28px;
+        width: 100%;
+        max-width: 100%;
+        max-height: none;
+        overflow-y: visible;
+        border-radius: 18px;
     }
     .logo-img {
-        width: 48px;
-        height: 48px;
+        width: 46px;
+        height: 46px;
     }
     .portal-badge {
-        padding: 8px 20px;
-        font-size: 13px;
-        gap: 8px;
+        padding: 8px 18px;
+        font-size: 12px;
+        gap: 6px;
+        max-width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 12px;
+    }
+    .switch-role-container {
+        margin-top: 20px;
+        padding-top: 16px;
     }
     .switch-role-btn {
-        padding: 10px 16px;
+        padding: 11px 14px;
         font-size: 12px;
         gap: 8px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        white-space: normal;
+        text-align: center;
+    }
+    input, select {
+        padding: 12px 14px;
+        font-size: 16px; /* Prevents auto-zoom on iOS Safari */
+    }
+    .btn-login, .btn-primary {
+        padding: 13px 16px;
+        font-size: 15px;
     }
     
     /* Extra small screens - single column everything */

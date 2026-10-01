@@ -187,27 +187,98 @@ if (isset($_POST['resend_otp'])) {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
     <title>SGI – Student Forgot Password</title>
-    <link rel="stylesheet" href="/css/style.css?v=2">
+    <link rel="stylesheet" href="/css/style.css?v=3">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
     <style>
         body.auth-page {
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             min-height: 100vh;
+            min-height: 100dvh;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0;
-            padding: 20px;
+            padding: 24px 16px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            box-sizing: border-box;
         }
         .auth-box {
             background: rgba(255, 255, 255, 0.97);
             backdrop-filter: blur(12px);
             padding: 48px 40px;
             border-radius: 28px;
-            width: 92%;
+            width: 100%;
             max-width: 480px;
             box-shadow: 0 32px 80px rgba(0, 0, 0, 0.45);
+            margin: auto;
+            box-sizing: border-box;
+        }
+        .otp-input {
+            width: 100%;
+            text-align: center;
+            font-size: 22px;
+            letter-spacing: 6px;
+            font-weight: bold;
+            box-sizing: border-box;
+        }
+        .otp-input::placeholder {
+            font-size: 15px;
+            letter-spacing: 1px;
+            font-weight: normal;
+        }
+        .step-bubble {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .step-line {
+            width: 36px;
+            height: 2px;
+            flex-shrink: 1;
+        }
+        @media (max-width: 600px) {
+            body.auth-page {
+                padding: 16px 12px;
+            }
+            .auth-box {
+                padding: 32px 20px 36px;
+                border-radius: 22px;
+            }
+            .step-line {
+                width: 22px;
+            }
+            .otp-input {
+                font-size: 20px;
+                letter-spacing: 4px;
+                padding: 12px 8px;
+            }
+        }
+        @media (max-width: 380px) {
+            .auth-box {
+                padding: 24px 14px 28px;
+                border-radius: 18px;
+            }
+            .step-line {
+                width: 16px;
+            }
+            .step-bubble {
+                width: 28px;
+                height: 28px;
+                font-size: 12px;
+            }
+            .otp-input {
+                font-size: 18px;
+                letter-spacing: 3px;
+            }
         }
     </style>
 </head>
@@ -222,13 +293,13 @@ if (isset($_POST['resend_otp'])) {
 
     <!-- PROGRESS STEPS -->
     <div style="display:flex;justify-content:center;align-items:center;gap:0;margin-bottom:24px;">
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 1 ? '#e94560' : '#eee' ?>;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">1</div>
-        <div style="width:40px;height:2px;background:<?= $step >= 2 ? '#e94560' : '#eee' ?>;"></div>
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 2 ? '#e94560' : '#eee' ?>;color:<?= $step >= 2 ? '#fff' : '#aaa' ?>;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">2</div>
-        <div style="width:40px;height:2px;background:<?= $step >= 3 ? '#e94560' : '#eee' ?>;"></div>
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 3 ? '#e94560' : '#eee' ?>;color:<?= $step >= 3 ? '#fff' : '#aaa' ?>;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">3</div>
-        <div style="width:40px;height:2px;background:<?= $step >= 4 ? '#27ae60' : '#eee' ?>;"></div>
-        <div style="width:30px;height:30px;border-radius:50%;background:<?= $step >= 4 ? '#27ae60' : '#eee' ?>;color:<?= $step >= 4 ? '#fff' : '#aaa' ?>;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;">✓</div>
+        <div class="step-bubble" style="background:<?= $step >= 1 ? '#e94560' : '#eee' ?>;color:#fff;">1</div>
+        <div class="step-line" style="background:<?= $step >= 2 ? '#e94560' : '#eee' ?>;"></div>
+        <div class="step-bubble" style="background:<?= $step >= 2 ? '#e94560' : '#eee' ?>;color:<?= $step >= 2 ? '#fff' : '#aaa' ?>;">2</div>
+        <div class="step-line" style="background:<?= $step >= 3 ? '#e94560' : '#eee' ?>;"></div>
+        <div class="step-bubble" style="background:<?= $step >= 3 ? '#e94560' : '#eee' ?>;color:<?= $step >= 3 ? '#fff' : '#aaa' ?>;">3</div>
+        <div class="step-line" style="background:<?= $step >= 4 ? '#27ae60' : '#eee' ?>;"></div>
+        <div class="step-bubble" style="background:<?= $step >= 4 ? '#27ae60' : '#eee' ?>;color:<?= $step >= 4 ? '#fff' : '#aaa' ?>;">✓</div>
     </div>
 
     <?php if ($error): ?><p class="error"><?= $error ?></p><?php endif; ?>
@@ -254,7 +325,7 @@ if (isset($_POST['resend_otp'])) {
             Enter the 6-digit OTP sent to:<br>
             <strong><?= htmlspecialchars($_SESSION['reset_email'] ?? '') ?></strong>
         </p>
-        <input type="text" name="otp" placeholder="Enter OTP (6 digits)" maxlength="6" required style="text-align: center; font-size: 24px; letter-spacing: 8px; font-weight: bold;">
+        <input type="text" name="otp" placeholder="Enter 6-digit OTP" maxlength="6" required class="otp-input">
         <button type="submit" name="verify_otp" class="btn-login">Verify OTP</button>
     </form>
     <div style="margin-top: 16px;">
