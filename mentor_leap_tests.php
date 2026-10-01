@@ -134,6 +134,6 @@ $statusColors = ['UPCOMING' => '#17a2b8', 'ONGOING' => '#f5a623', 'COMPLETED' =>
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
-<?php leapMentorNotifJS(); leapFooter(); ?>
+<?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 </body>
 </html>

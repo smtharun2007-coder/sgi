@@ -86,7 +86,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
                 <div style="font-size:12px;color:#aaa;margin-top:8px;"><?= date('d M Y, h:i A', $a['created_at']->toDateTime()->getTimestamp()) ?></div>
             </div>
             <a href="mentor_leap_announcements.php?delete=<?= (string)$a['_id'] ?>"
-               onclick="return confirm('Delete this announcement?')"
+               onclick="return sgiConfirmLink(this,'Are you sure you want to delete this announcement?','Delete Announcement','Yes, Delete')"
                style="color:#e94560;font-size:18px;text-decoration:none;flex-shrink:0;">🗑</a>
         </div>
         <?php endforeach; ?>

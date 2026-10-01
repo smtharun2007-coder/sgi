@@ -47,6 +47,7 @@ $leap_training_sessions = $db->leap_training_sessions;
 $leap_attendance        = $db->leap_attendance;
 $leap_tests             = $db->leap_tests;
 $leap_test_results      = $db->leap_test_results;
+$leap_activity_registrations = $db->leap_activity_registrations;
 
 // Cloudinary — only initialise when all credentials are present.
 if (getenv('CLOUDINARY_CLOUD_NAME') && getenv('CLOUDINARY_API_KEY') && getenv('CLOUDINARY_API_SECRET')) {

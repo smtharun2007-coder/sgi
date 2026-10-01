@@ -118,13 +118,25 @@ $typeColors  = ['TRAINING' => '#17a2b8', 'MEETING' => '#8e44ad', 'WORKSHOP' => '
         <?php foreach ($activities as $act):
             $color  = $typeColors[$act['type'] ?? 'OTHER'] ?? '#6c757d';
             $active = ($act['status'] ?? '') === 'ACTIVE';
+            $aid = (string)$act['_id'];
+            $needsReg = !empty($act['registration_required']);
+            $regs = [];
+            $regCount = 0;
+            if ($needsReg) {
+                $regs = iterator_to_array($leap_activity_registrations->find(
+                    ['activity_id' => $aid],
+                    ['sort' => ['registered_at' => 1]]
+                ));
+                $regCount = count($regs);
+            }
         ?>
         <div style="background:#fff;border-radius:12px;padding:18px 22px;margin-bottom:14px;box-shadow:0 2px 8px rgba(0,0,0,0.07);border-left:4px solid <?= $color ?>;<?= !$active ? 'opacity:.6;' : '' ?>display:flex;justify-content:space-between;align-items:flex-start;gap:16px;">
-            <div style="flex:1;">
+            <div style="flex:1;min-width:0;">
                 <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
                     <span style="font-size:16px;font-weight:700;color:#1a1a2e;"><?= htmlspecialchars($act['title']) ?></span>
                     <span style="background:<?= $color ?>;color:#fff;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;"><?= htmlspecialchars($act['type']) ?></span>
                     <?php if (!$active): ?><span style="background:#e0e0e0;color:#888;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;">CANCELLED</span><?php endif; ?>
+                    <?php if ($needsReg): ?><span style="background:#e94560;color:#fff;padding:2px 10px;border-radius:12px;font-size:11px;font-weight:700;">📝 Registration (<?= $regCount ?>)</span><?php endif; ?>
                 </div>
                 <?php if (!empty($act['description'])): ?>
                 <div style="font-size:13px;color:#666;margin-top:6px;"><?= htmlspecialchars($act['description']) ?></div>
@@ -134,17 +146,45 @@ $typeColors  = ['TRAINING' => '#17a2b8', 'MEETING' => '#8e44ad', 'WORKSHOP' => '
                     <?php if (!empty($act['end_datetime'])): ?>
                     → <?= date('h:i A', $act['end_datetime']->toDateTime()->getTimestamp()) ?>
                     <?php endif; ?>
+                    <?php if ($needsReg && !empty($act['registration_deadline'])): ?>
+                    &nbsp;·&nbsp; ⏳ Deadline: <?= htmlspecialchars($act['registration_deadline']) ?>
+                    <?php endif; ?>
                 </div>
+                <?php if ($needsReg): ?>
+                <div style="margin-top:12px;background:#f8f9fa;border-radius:10px;padding:12px 16px;">
+                    <div style="font-size:13px;font-weight:700;color:#1a1a2e;margin-bottom:8px;">
+                        👥 Registered Students (<?= $regCount ?>)
+                    </div>
+                    <?php if (empty($regs)): ?>
+                        <div style="font-size:12px;color:#aaa;">No registrations yet.</div>
+                    <?php else: ?>
+                        <?php foreach ($regs as $r):
+                            $rName = $r['student_name'] ?? '';
+                            $rRoll = $r['student_id'] ?? '';
+                            if (!$rName) {
+                                $su = $users->findOne(['roll' => $rRoll]);
+                                $rName = $su['name'] ?? $rRoll;
+                            }
+                        ?>
+                        <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #eee;font-size:13px;">
+                            <span><a href="#" onclick="openLeapStudent('<?= htmlspecialchars($rRoll, ENT_QUOTES) ?>');return false;" style="color:#8e44ad;font-weight:600;text-decoration:none;" title="Click to view full details"><?= htmlspecialchars($rName) ?></a>
+                            <span style="color:#888;">(<?= htmlspecialchars($rRoll) ?>)</span></span>
+                            <span style="font-size:11px;color:#aaa;"><?= isset($r['registered_at']) ? date('d M, h:i A', $r['registered_at']->toDateTime()->getTimestamp()) : '' ?></span>
+                        </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             </div>
             <?php if ($active): ?>
             <a href="mentor_leap_activities.php?delete=<?= (string)$act['_id'] ?>"
-               onclick="return confirm('Cancel this activity?')"
+               onclick="return sgiConfirmLink(this,'Are you sure you want to cancel this activity?','Cancel Activity','Yes, Cancel')"
                style="color:#e94560;font-size:18px;text-decoration:none;flex-shrink:0;">🗑</a>
             <?php endif; ?>
         </div>
         <?php endforeach; ?>
     <?php endif; ?>
 </div>
-<?php leapMentorNotifJS(); leapFooter(); ?>
+<?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 </body>
 </html>

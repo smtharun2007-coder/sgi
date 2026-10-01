@@ -142,8 +142,8 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
                         $isPub    = ($existing['status'] ?? '') === 'PUBLISHED';
                     ?>
                     <div class="res-row">
-                        <div>
-                            <div style="font-weight:600;color:#1a1a2e;font-size:14px;"><?= htmlspecialchars($st['name']) ?></div>
+                        <div style="min-width:0;">
+                            <div style="font-weight:600;font-size:14px;"><a href="#" onclick="openLeapStudent('<?= htmlspecialchars($st['roll'], ENT_QUOTES) ?>');return false;" style="color:#8e44ad;text-decoration:none;" title="Click to view attendance, results, tests"><?= htmlspecialchars($st['name']) ?></a></div>
                             <div style="font-size:12px;color:#888;"><?= htmlspecialchars($st['roll']) ?></div>
                             <?php if ($isPub): ?>
                             <span style="font-size:11px;background:#28a745;color:#fff;padding:2px 8px;border-radius:10px;">Published</span>
@@ -188,19 +188,22 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
         </div>
     </div>
 </div>
-<?php leapMentorNotifJS(); leapFooter(); ?>
+<?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 <script>
 function submitPublish() {
-    const form = document.getElementById('resultsForm');
-    let inp = form.querySelector('input[name="publish"]');
-    if (!inp) {
-        inp = document.createElement('input');
-        inp.type = 'hidden';
-        inp.name = 'publish';
-        form.appendChild(inp);
-    }
-    inp.value = '1';
-    form.submit();
+    sgiConfirm('Publish these results? Students will be notified immediately with their scores.','Publish Results','Yes, Publish').then(ok=>{
+        if (!ok) return;
+        const form = document.getElementById('resultsForm');
+        let inp = form.querySelector('input[name="publish"]');
+        if (!inp) {
+            inp = document.createElement('input');
+            inp.type = 'hidden';
+            inp.name = 'publish';
+            form.appendChild(inp);
+        }
+        inp.value = '1';
+        form.submit();
+    });
 }
 </script>
 </body>

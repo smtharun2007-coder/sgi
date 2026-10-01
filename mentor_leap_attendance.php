@@ -213,8 +213,8 @@ $statusColors = ['SCHEDULED' => '#17a2b8', 'CONDUCTED' => '#28a745', 'SUSPENDED'
                         $current = $existingAtt[$st['roll']] ?? 'PRESENT';
                     ?>
                     <div class="att-row">
-                        <div>
-                            <div style="font-weight:600;color:#1a1a2e;font-size:14px;"><?= htmlspecialchars($st['name']) ?></div>
+                        <div style="min-width:0;">
+                            <div style="font-weight:600;font-size:14px;"><a href="#" onclick="openLeapStudent('<?= htmlspecialchars($st['roll'], ENT_QUOTES) ?>');return false;" style="color:#8e44ad;text-decoration:none;" title="Click to view full details"><?= htmlspecialchars($st['name']) ?></a></div>
                             <div style="font-size:12px;color:#888;"><?= htmlspecialchars($st['roll']) ?> · <?= htmlspecialchars($st['dept']) ?></div>
                         </div>
                         <div class="att-toggle">
@@ -266,7 +266,7 @@ $statusColors = ['SCHEDULED' => '#17a2b8', 'CONDUCTED' => '#28a745', 'SUSPENDED'
         </div>
     </div>
 </div>
-<?php leapMentorNotifJS(); leapFooter(); ?>
+<?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 <script>
 function setAtt(roll, status, btn) {
     document.getElementById('att_' + roll).value = status;

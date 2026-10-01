@@ -123,8 +123,8 @@ $pending = array_filter($apps, fn($a) => ($a['status'] ?? '') === 'PENDING');
         ?>
         <div class="app-card <?= $cardClass ?>">
             <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:12px;">
-                <div>
-                    <div style="font-size:17px;font-weight:700;color:#1a1a2e;"><?= htmlspecialchars($app['name']) ?></div>
+                <div style="min-width:0;">
+                    <div style="font-size:17px;font-weight:700;color:#1a1a2e;overflow-wrap:anywhere;"><a href="#" onclick="openLeapStudent('<?= htmlspecialchars($app['student_id'], ENT_QUOTES) ?>');return false;" style="color:#8e44ad;text-decoration:none;" title="Click to view attendance, results, tests"><?= htmlspecialchars($app['name']) ?></a></div>
                     <div style="font-size:13px;color:#666;margin-top:2px;">
                         <?= htmlspecialchars($app['roll_no']) ?> &nbsp;·&nbsp;
                         <?= htmlspecialchars($app['integrated_no']) ?> &nbsp;·&nbsp;
@@ -153,28 +153,38 @@ $pending = array_filter($apps, fn($a) => ($a['status'] ?? '') === 'PENDING');
                 <?php if ($st === 'PENDING'): ?>
                 <div style="display:flex;gap:10px;align-items:flex-start;">
                     <!-- Accept -->
-                    <form method="POST" onsubmit="return confirm('Accept this LEAP application?')">
+                    <form method="POST" onsubmit="return sgiConfirmFormSubmit(this,'Accept this LEAP application? Student will be notified and added to LEAP.','accept','Accept Application','Yes, Accept')">
                         <input type="hidden" name="app_id" value="<?= (string)$app['_id'] ?>">
-                        <button type="submit" name="accept" style="padding:9px 20px;background:#28a745;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">✅ Accept</button>
+                        <button type="submit" style="padding:9px 20px;background:#28a745;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">✅ Accept</button>
                     </form>
                     <!-- Reject -->
-                    <button onclick="showRejectForm('<?= (string)$app['_id'] ?>')" style="padding:9px 20px;background:#e94560;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">❌ Reject</button>
+                    <button onclick="sgiConfirm('Reject this LEAP application? You can add a reason in the next step.','Reject Application','Reject').then(ok=>{if(ok)showRejectForm('<?= (string)$app['_id'] ?>')})" style="padding:9px 20px;background:#e94560;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">❌ Reject</button>
                 </div>
                 <?php endif; ?>
             </div>
 
-            <!-- Reject form (hidden by default) -->
+            <!-- Reject form (webpage modal) -->
             <?php if ($st === 'PENDING'): ?>
-            <div id="rejectForm_<?= (string)$app['_id'] ?>" style="display:none;margin-top:14px;padding-top:14px;border-top:1px solid #f0f2f5;">
-                <form method="POST">
-                    <input type="hidden" name="app_id" value="<?= (string)$app['_id'] ?>">
-                    <label style="font-size:13px;color:#555;">Rejection reason (optional)</label>
-                    <textarea name="rejection_reason" rows="2" placeholder="Enter reason…" style="margin-top:6px;"></textarea>
-                    <div style="display:flex;gap:10px;margin-top:10px;">
-                        <button type="submit" name="reject" style="padding:9px 20px;background:#e94560;color:#fff;border:none;border-radius:8px;cursor:pointer;font-weight:600;">Confirm Reject</button>
-                        <button type="button" onclick="hideRejectForm('<?= (string)$app['_id'] ?>')" style="padding:9px 20px;background:#eee;color:#555;border:none;border-radius:8px;cursor:pointer;">Cancel</button>
+            <div id="rejectForm_<?= (string)$app['_id'] ?>" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;align-items:center;justify-content:center;backdrop-filter:blur(4px);" onclick="if(event.target===this)hideRejectForm('<?= (string)$app['_id'] ?>')">
+                <div style="background:#fff;border-radius:20px;padding:28px;max-width:440px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+                    <div style="text-align:center;">
+                        <div style="font-size:48px;margin-bottom:12px;">❌</div>
+                        <h3 style="margin-bottom:8px;color:#1a1a2e;font-size:18px;">Reject Application</h3>
+                        <p style="color:#666;margin-bottom:16px;font-size:14px;line-height:1.5;">
+                            Reject <strong><?= htmlspecialchars($app['name']) ?> (<?= htmlspecialchars($app['student_id']) ?>)</strong>?
+                            Student will be notified and can apply again.
+                        </p>
                     </div>
-                </form>
+                    <form method="POST">
+                        <input type="hidden" name="app_id" value="<?= (string)$app['_id'] ?>">
+                        <label style="font-size:13px;color:#555;font-weight:600;">Rejection reason (optional)</label>
+                        <textarea name="rejection_reason" rows="2" placeholder="Enter reason… (shown to student)" style="margin-top:6px;"></textarea>
+                        <div style="display:flex;gap:10px;margin-top:14px;">
+                            <button type="button" onclick="hideRejectForm('<?= (string)$app['_id'] ?>')" style="flex:1;padding:12px;background:#e9ecef;color:#555;border:none;border-radius:10px;cursor:pointer;font-weight:600;">Cancel</button>
+                            <button type="submit" name="reject" style="flex:1;padding:12px;background:#e94560;color:#fff;border:none;border-radius:10px;cursor:pointer;font-weight:600;">Confirm Reject</button>
+                        </div>
+                    </form>
+                </div>
             </div>
             <?php endif; ?>
         </div>
@@ -182,10 +192,11 @@ $pending = array_filter($apps, fn($a) => ($a['status'] ?? '') === 'PENDING');
     <?php endif; ?>
 
 </div>
-<?php leapMentorNotifJS(); leapFooter(); ?>
+<?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 <script>
-function showRejectForm(id) { document.getElementById('rejectForm_' + id).style.display = 'block'; }
-function hideRejectForm(id) { document.getElementById('rejectForm_' + id).style.display = 'none'; }
+function showRejectForm(id) { const el=document.getElementById('rejectForm_' + id); el.style.display='flex'; document.body.style.overflow='hidden'; }
+function hideRejectForm(id) { document.getElementById('rejectForm_' + id).style.display='none'; document.body.style.overflow=''; }
+document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('[id^="rejectForm_"]').forEach(el=>{ if(el.style.display==='flex'){ el.style.display='none'; document.body.style.overflow=''; } }); });
 </script>
 </body>
 </html>

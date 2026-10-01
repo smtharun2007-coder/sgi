@@ -100,7 +100,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
             $badgeClass  = $currentPacc ? 'badge-' . strtolower($currentPacc) : 'badge-none';
         ?>
         <tr>
-            <td><strong><?= htmlspecialchars($st['name']) ?></strong><br><span style="font-size:12px;color:#888;"><?= htmlspecialchars($st['dept']) ?></span></td>
+            <td><a href="#" onclick="openLeapStudent('<?= htmlspecialchars($st['roll'], ENT_QUOTES) ?>');return false;" style="color:#1a1a2e;text-decoration:none;" title="Click to view attendance, results, tests"><strong style="color:#8e44ad;"><?= htmlspecialchars($st['name']) ?></strong><br><span style="font-size:12px;color:#888;"><?= htmlspecialchars($st['dept']) ?></span><br><span style="font-size:11px;color:#8e44ad;">View details →</span></a></td>
             <td><?= htmlspecialchars($st['roll']) ?></td>
             <td><?= htmlspecialchars($st['batch_no'] ?? '—') ?></td>
             <td><span class="<?= $badgeClass ?>"><?= $currentPacc ?? 'Not Assigned' ?></span></td>
@@ -142,6 +142,6 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
     <?php endif; ?>
 
 </div>
-<?php leapMentorNotifJS(); leapFooter(); ?>
+<?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 </body>
 </html>

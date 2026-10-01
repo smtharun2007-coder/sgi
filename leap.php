@@ -84,17 +84,23 @@ $year = ($u['year_from'] ?? '') . ' – ' . ($u['year_to'] ?? '');
         .pacc-super{background:linear-gradient(135deg,#8e44ad,#6c3483);}
         .pacc-advance{background:linear-gradient(135deg,#17a2b8,#117a8b);}
         .pacc-none{background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.4);}
+        .banner-text{min-width:0;}
+        .banner-text h1{overflow-wrap:anywhere;}
+        .banner-text p{overflow-wrap:anywhere;word-break:break-word;}
+        .profile-url{font-size:12px;color:#888;margin-top:2px;overflow-wrap:anywhere;word-break:break-all;max-width:100%;}
         .leap-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-bottom:24px;}
-        .leap-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);}
+        .leap-card{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,0.07);min-width:0;}
         .leap-card-header{padding:14px 20px;font-weight:700;font-size:14px;color:#fff;}
-        .leap-card-body{padding:16px 20px;}
-        .mini-item{padding:10px 0;border-bottom:1px solid #f0f2f5;font-size:13px;color:#444;}
+        .leap-card-body{padding:16px 20px;min-width:0;overflow-wrap:anywhere;}
+        .mini-item{padding:10px 0;border-bottom:1px solid #f0f2f5;font-size:13px;color:#444;overflow-wrap:anywhere;}
         .mini-item:last-child{border-bottom:none;}
-        .mini-item strong{color:#1a1a2e;}
-        .info-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f0f2f5;}
+        .mini-item strong{color:#1a1a2e;overflow-wrap:anywhere;word-break:break-word;}
+        .info-row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f0f2f5;min-width:0;}
         .info-row:last-child{border-bottom:none;}
-        .info-label{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.5px;}
-        .info-value{font-size:14px;font-weight:600;color:#1a1a2e;}
+        .info-label{font-size:12px;color:#888;text-transform:uppercase;letter-spacing:.5px;flex-shrink:0;}
+        .info-value{font-size:14px;font-weight:600;color:#1a1a2e;text-align:right;min-width:0;overflow-wrap:anywhere;word-break:break-word;}
+        .profile-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:0 28px;min-width:0;}
+        @media(max-width:640px){.leap-banner{padding:20px;}.leap-banner h1{font-size:22px;}.info-row{flex-direction:column;gap:2px;}.info-value{text-align:left;}}
     </style>
 </head>
 <body>
@@ -103,9 +109,9 @@ $year = ($u['year_from'] ?? '') . ' – ' . ($u['year_to'] ?? '');
 
     <!-- Banner -->
     <div class="leap-banner">
-        <div style="display:flex;align-items:center;gap:16px;">
+        <div style="display:flex;align-items:center;gap:16px;min-width:0;flex:1;">
             <img src="/LEAP.png" alt="LEAP" style="width:56px;height:56px;object-fit:contain;border-radius:12px;box-shadow:0 4px 14px rgba(0,0,0,0.2);flex-shrink:0;">
-            <div>
+            <div class="banner-text">
                 <h1>LEAP</h1>
                 <p>The Placement Series &nbsp;·&nbsp; Welcome, <?= htmlspecialchars($u['name']) ?></p>
             </div>
@@ -123,7 +129,7 @@ $year = ($u['year_from'] ?? '') . ' – ' . ($u['year_to'] ?? '');
     <div class="leap-card" style="margin-bottom:24px;">
         <div class="leap-card-header" style="background:linear-gradient(135deg,#1a1a2e,#f5a623);">👤 My Profile</div>
         <div class="leap-card-body">
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;">
+            <div class="profile-grid">
                 <div class="info-row"><span class="info-label">Name</span><span class="info-value"><?= htmlspecialchars($u['name']) ?></span></div>
                 <div class="info-row"><span class="info-label">Roll No</span><span class="info-value"><?= htmlspecialchars($u['roll']) ?></span></div>
                 <div class="info-row"><span class="info-label">Department</span><span class="info-value"><?= htmlspecialchars($u['dept']) ?></span></div>
@@ -226,20 +232,20 @@ $year = ($u['year_from'] ?? '') . ' – ' . ($u['year_to'] ?? '');
                 <p class="no-data">No coding profiles added.<br><a href="leap_profile_edit.php" style="color:#f5a623;font-size:13px;">Add profiles →</a></p>
                 <?php else: ?>
                 <?php if ($leetcode): ?>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #f0f2f5;">
-                    <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #f0f2f5;min-width:0;">
+                    <div style="min-width:0;flex:1;">
                         <div style="font-size:13px;font-weight:700;color:#1a1a2e;">LeetCode</div>
-                        <div style="font-size:12px;color:#888;margin-top:2px;word-break:break-all;"><?= htmlspecialchars($leetcode) ?></div>
+                        <div class="profile-url"><?= htmlspecialchars($leetcode) ?></div>
                     </div>
                     <a href="<?= htmlspecialchars($leetcode) ?>" target="_blank" rel="noopener noreferrer"
                        style="flex-shrink:0;margin-left:12px;padding:7px 14px;background:#f5a623;color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">Open Profile</a>
                 </div>
                 <?php endif; ?>
                 <?php if ($hackerrank): ?>
-                <div style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;">
-                    <div>
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:12px 0;min-width:0;">
+                    <div style="min-width:0;flex:1;">
                         <div style="font-size:13px;font-weight:700;color:#1a1a2e;">HackerRank</div>
-                        <div style="font-size:12px;color:#888;margin-top:2px;word-break:break-all;"><?= htmlspecialchars($hackerrank) ?></div>
+                        <div class="profile-url"><?= htmlspecialchars($hackerrank) ?></div>
                     </div>
                     <a href="<?= htmlspecialchars($hackerrank) ?>" target="_blank" rel="noopener noreferrer"
                        style="flex-shrink:0;margin-left:12px;padding:7px 14px;background:#2ec866;color:#fff;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap;">Open Profile</a>

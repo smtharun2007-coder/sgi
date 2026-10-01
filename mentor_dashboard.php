@@ -180,7 +180,7 @@ async function showStudentSemesters(roll) {
         const res = await fetch('mentor_student_semesters.php?roll=' + encodeURIComponent(roll));
         const data = await res.json();
         if (!data || data.status !== 'success') {
-            alert(data?.message || 'Failed to load student semesters');
+            sgiAlert(data?.message || 'Failed to load student semesters', 'Load Failed');
             return;
         }
 
@@ -462,7 +462,7 @@ async function showStudentSemesters(roll) {
         modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
         document.body.appendChild(modal);
     } catch (e) {
-        alert('Error: ' + (e?.message || e));
+        sgiAlert('Error: ' + (e?.message || e), 'Error');
     }
 }
 
@@ -470,7 +470,7 @@ async function showStudentSemesters(roll) {
 function showSemesterDetailBySem(sem) {
     const semData = window._semesterDataMap[sem];
     if (!semData) {
-        alert('Semester data not found');
+        sgiAlert('Semester data not found', 'Not Found');
         return;
     }
     showSemesterDetail(sem, semData);
@@ -682,6 +682,9 @@ document.addEventListener('click', e => {
     if (btn && drop && !btn.contains(e.target) && !drop.contains(e.target))
         drop.classList.remove('open');
 });
+function sgiEnsureDialogStyles(){if(document.getElementById('sgiDialogStyles'))return;const s=document.createElement('style');s.id='sgiDialogStyles';s.textContent='@keyframes sgiModalIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}';document.head.appendChild(s);}
+function sgiAlert(msg,title){sgiEnsureDialogStyles();return new Promise(res=>{const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';const box=document.createElement('div');box.style.cssText='background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:sgiModalIn 0.3s ease;text-align:center;';box.innerHTML='<div style="font-size:48px;margin-bottom:16px;">⚠️</div><h3 data-ttl style="margin-bottom:12px;color:#1a1a2e;font-size:18px;"></h3><p data-msg style="color:#666;margin-bottom:24px;font-size:14px;line-height:1.5;"></p><button type="button" style="width:100%;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a1a2e,#8e44ad);color:#fff;font-size:14px;font-weight:600;cursor:pointer;">OK</button>';box.querySelector('[data-ttl]').textContent=title||'Notice';box.querySelector('[data-msg]').textContent=msg;ov.appendChild(box);document.body.appendChild(ov);const done=()=>{ov.remove();res();};box.querySelector('button').onclick=done;ov.addEventListener('click',e=>{if(e.target===ov)done();});});}
+function sgiConfirm(msg,title,okText){sgiEnsureDialogStyles();return new Promise(res=>{const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);';const box=document.createElement('div');box.style.cssText='background:#fff;border-radius:20px;padding:28px;max-width:400px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.3);animation:sgiModalIn 0.3s ease;text-align:center;';box.innerHTML='<div style="font-size:48px;margin-bottom:16px;">🤔</div><h3 data-ttl style="margin-bottom:12px;color:#1a1a2e;font-size:18px;"></h3><p data-msg style="color:#666;margin-bottom:24px;font-size:14px;line-height:1.5;"></p><div style="display:flex;gap:12px;justify-content:center;"><button type="button" data-x="no" style="flex:1;padding:12px;border-radius:10px;border:none;background:#e9ecef;color:#555;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button><button type="button" data-x="yes" style="flex:1;padding:12px;border-radius:10px;border:none;background:linear-gradient(135deg,#1a1a2e,#8e44ad);color:#fff;font-size:14px;font-weight:600;cursor:pointer;"></button></div>';box.querySelector('[data-ttl]').textContent=title||'Confirm Action';box.querySelector('[data-msg]').textContent=msg;box.querySelector('[data-x="yes"]').textContent=okText||'Confirm';ov.appendChild(box);document.body.appendChild(ov);const done=v=>{ov.remove();res(v);};box.querySelector('[data-x="no"]').onclick=()=>done(false);box.querySelector('[data-x="yes"]').onclick=()=>done(true);ov.addEventListener('click',e=>{if(e.target===ov)done(false);});});}
 </script>
 <div class="copyright-footer">
     &copy; <?= date('Y') ?> Student Growth Index (SGI), All rights reserved by TG.

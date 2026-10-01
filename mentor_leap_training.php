@@ -253,7 +253,7 @@ $statusColors = ['SCHEDULED' => '#17a2b8', 'CONDUCTED' => '#28a745', 'SUSPENDED'
         </div>
     </div>
 </div>
-<?php leapMentorNotifJS(); leapFooter(); ?>
+<?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 <script>
 function toggleSuspendReason(sel, divId) {
     document.getElementById(divId).style.display = sel.value === 'SUSPENDED' ? 'block' : 'none';
