@@ -1,7 +1,11 @@
 <?php
 // mail_helper.php — shared Resend mailer via official SDK (Render-safe)
 
-require_once __DIR__ . '/vendor/autoload.php';
+// config.php.example already loads vendor/autoload.php first.
+// Only load here when used standalone (e.g. test scripts).
+if (!class_exists(\Resend::class) && file_exists(__DIR__ . '/vendor/autoload.php')) {
+    require_once __DIR__ . '/vendor/autoload.php';
+}
 
 if (!function_exists('sgi_env')) {
     function sgi_env($key, $default = '') {

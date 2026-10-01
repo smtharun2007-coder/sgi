@@ -91,6 +91,7 @@ $studentList   = iterator_to_array($studentCursor);
         <a href="mentor_approvals.php">Approvals</a>
         <a href="mentor_calendar.php">Calendar</a>
         <a href="mentor_announcements.php">Announcements</a>
+        <a href="mentor_leap_applications.php" style="color:#f5a623;font-weight:700;"><img src="/LEAP.png" alt="LEAP" style="width:16px;height:16px;object-fit:contain;border-radius:3px;vertical-align:middle;margin-right:4px;">LEAP</a>
         <a href="mentor_update_profile.php">Profile</a>
         <a href="mentor_about.php">About</a>
         <a href="mentor_contact.php">Contact</a>
@@ -140,6 +141,10 @@ $studentList   = iterator_to_array($studentCursor);
         <div class="summary-card" style="background:linear-gradient(135deg,#1a1a2e,#17a2b8);">
             <h3>Attendance</h3>
             <p><a href="mentor_attendance.php" style="color:#fff;text-decoration:none;font-size:14px;">Manage &rarr;</a></p>
+        </div>
+        <div class="summary-card" style="background:linear-gradient(135deg,#1a1a2e,#f5a623);">
+            <h3><img src="/LEAP.png" alt="LEAP" style="width:18px;height:18px;object-fit:contain;border-radius:4px;vertical-align:middle;margin-right:6px;">LEAP</h3>
+            <p><a href="mentor_leap_applications.php" style="color:#fff;text-decoration:none;font-size:14px;">Manage &rarr;</a></p>
         </div>
     </div>
 

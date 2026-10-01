@@ -112,6 +112,13 @@ if (!empty($u['mentor_id'])) {
                 <a href="attendance.php" class="btn-primary" style="width:auto;padding:10px 24px;">Open Attendance</a>
             </div>
         </div>
+        <div class="sem-card">
+            <div class="sem-card-header" style="background:linear-gradient(135deg,#1a1a2e,#f5a623);"><h3><img src="/LEAP.png" alt="LEAP" style="width:18px;height:18px;object-fit:contain;border-radius:4px;vertical-align:middle;margin-right:6px;">LEAP</h3></div>
+            <div class="sem-card-body" style="text-align:center;padding:24px 20px;">
+                <p style="font-size:13px;color:#888;margin-bottom:16px;">The Placement Series — track your placement readiness, training &amp; tests.</p>
+                <a href="leap_apply.php" class="btn-primary" style="width:auto;padding:10px 24px;background:linear-gradient(135deg,#f5a623,#e67e22);">Open LEAP</a>
+            </div>
+        </div>
     </div>
 </div>
 <script>
