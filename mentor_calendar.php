@@ -18,6 +18,7 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['add_event'])) {
     $color = trim($_POST['color'] ?? '#e94560');
     if (!empty($dates) && $title) {
         $students = iterator_to_array($users->find(['mentor_id' => $m['mentor_id']]));
+        $isHolidayType = (strtolower($type) === 'holiday');
         foreach ($dates as $date) {
             $ts = strtotime($date);
             if (!$ts) continue;
@@ -30,6 +31,33 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['add_event'])) {
                 'desc'      => $desc,
                 'created_at'=> new MongoDB\BSON\UTCDateTime()
             ]);
+
+            // Sync with attendance if holiday
+            if ($isHolidayType) {
+                $y = (int)date('Y', $ts);
+                $mon = (int)date('n', $ts);
+                $d = (int)date('j', $ts);
+                $from = new MongoDB\BSON\UTCDateTime(mktime(0,0,0,$mon,$d,$y)*1000);
+                $to   = new MongoDB\BSON\UTCDateTime(mktime(23,59,59,$mon,$d,$y)*1000);
+
+                if ($attendance_exceptions->countDocuments(['type' => 'HOLIDAY', 'date' => ['$gte' => $from, '$lte' => $to]]) === 0) {
+                    $attendance_exceptions->insertOne([
+                        'type'        => 'HOLIDAY',
+                        'date'        => new MongoDB\BSON\UTCDateTime(mktime(0,0,0,$mon,$d,$y)*1000),
+                        'description' => $title,
+                        'batch'       => '*',
+                        'mentor_id'   => $m['mentor_id'],
+                        'created_at'  => new MongoDB\BSON\UTCDateTime(),
+                    ]);
+                }
+
+                // If class was scheduled, mark as cancelled / holiday
+                $attendance_sessions->updateMany(
+                    ['date' => ['$gte' => $from, '$lte' => $to], 'status' => 'SCHEDULED'],
+                    ['$set' => ['status' => 'CANCELLED', 'cancellation_reason' => "Holiday: $title", 'updated_at' => new MongoDB\BSON\UTCDateTime()]]
+                );
+            }
+
             foreach ($students as $st) {
                 $notifications->insertOne([
                     'roll'    => $st['roll'],
@@ -47,7 +75,33 @@ if ($_SERVER['REQUEST_METHOD']==='POST' && isset($_POST['add_event'])) {
 
 // Delete event
 if (isset($_GET['delete'])) {
-    $calendar_events->deleteOne(['_id'=>new MongoDB\BSON\ObjectId($_GET['delete']),'mentor_id'=>$m['mentor_id']]);
+    $evId = new MongoDB\BSON\ObjectId($_GET['delete']);
+    $eventDoc = $calendar_events->findOne(['_id' => $evId, 'mentor_id' => $m['mentor_id']]);
+    if ($eventDoc) {
+        $calendar_events->deleteOne(['_id' => $evId]);
+        if (strtolower($eventDoc['type'] ?? '') === 'holiday') {
+            $ts = $eventDoc['date']->toDateTime()->getTimestamp();
+            $y = (int)date('Y', $ts);
+            $mon = (int)date('n', $ts);
+            $d = (int)date('j', $ts);
+            $from = new MongoDB\BSON\UTCDateTime(mktime(0,0,0,$mon,$d,$y)*1000);
+            $to   = new MongoDB\BSON\UTCDateTime(mktime(23,59,59,$mon,$d,$y)*1000);
+
+            // If no other holiday exists on this day, remove exception and restore cancelled sessions
+            $otherHoliday = $calendar_events->findOne([
+                'type' => ['$in' => ['holiday', 'Holiday']],
+                'date' => ['$gte' => $from, '$lte' => $to]
+            ]);
+            if (!$otherHoliday) {
+                $attendance_exceptions->deleteMany(['type' => 'HOLIDAY', 'date' => ['$gte' => $from, '$lte' => $to]]);
+                // Restore cancelled sessions if they were cancelled due to holiday
+                $attendance_sessions->updateMany(
+                    ['date' => ['$gte' => $from, '$lte' => $to], 'status' => 'CANCELLED', 'cancellation_reason' => ['$regex' => '^Holiday']],
+                    ['$set' => ['status' => 'SCHEDULED', 'cancellation_reason' => null, 'updated_at' => new MongoDB\BSON\UTCDateTime()]]
+                );
+            }
+        }
+    }
     header("Location: mentor_calendar.php?month=$month&year=$year");
     exit;
 }

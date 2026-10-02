@@ -38,13 +38,69 @@ $next = ['month'=>$month+1==13?1:$month+1,'year'=>$month+1==13?$year+1:$year];
         .cal-nav-btn { padding: 8px 18px; background: #f0f2f5; border-radius: 10px; text-decoration: none; color: #333; font-size: 14px; font-weight: 600; transition: all 0.2s; }
         .cal-nav-btn:hover { background: #1a1a2e; color: #fff; }
 
+        .holiday-impact-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px 24px;
+            margin-top: 20px;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            border-left: 5px solid #4f46e5;
+            flex-wrap: wrap;
+        }
+        .h-impact-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+        .h-impact-icon {
+            font-size: 26px;
+            background: #eef2ff;
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .h-impact-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+        .h-impact-lbl {
+            font-size: 12px;
+            color: #718096;
+            margin-top: 2px;
+        }
+        .h-impact-divider {
+            width: 1px;
+            height: 42px;
+            background: #e2e8f0;
+        }
+        .h-impact-note {
+            font-size: 12px;
+            color: #4a5568;
+            max-width: 440px;
+            line-height: 1.45;
+        }
+        @media (max-width: 768px) {
+            .h-impact-divider { display: none; }
+        }
+
         .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
         .cal-day-name { text-align: center; font-size: 12px; font-weight: 600; color: #888; padding: 8px 4px; text-transform: uppercase; }
         .cal-cell { min-height: 80px; border-radius: 10px; border: 2px solid #f0f2f5; padding: 6px; cursor: pointer; transition: all 0.2s; position: relative; }
         .cal-cell.empty { border: none; cursor: default; }
         .cal-cell:hover:not(.empty) { border-color: #e94560; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
         .cal-cell.today { border-color: #e94560; border-width: 3px; }
-        .cal-cell.holiday { background: #f0f0f0; }
+        .cal-cell.holiday { background: #f8fafc; border-color: #cbd5e1; }
+        .cal-cell.holiday .cal-date { color: #64748b; }
+        .cal-cell.holiday .cal-holiday-label { font-size: 10px; color: #4338ca; font-weight: 700; background: #e0e7ff; border-radius: 4px; padding: 2px 4px; margin-top: 4px; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
         .cal-cell.all-present { background: #d4edda; }
         .cal-cell.all-absent { background: #f8d7da; }
         .cal-cell.mixed { background: #fff3cd; }
@@ -73,12 +129,15 @@ $next = ['month'=>$month+1==13?1:$month+1,'year'=>$month+1==13?$year+1:$year];
         .att-badge.OD { background: #d1ecf1; color: #0c5460; }
         .att-badge.LEAVE { background: #fff3cd; color: #856404; }
         .att-badge.SUSPENDED { background: #e2e3e5; color: #383d41; }
-        .att-badge.CANCELLED { background: #f8d7da; color: #721c24; }
+        .att-badge.CANCELLED { background: #f1f5f9; color: #475569; }
+        .att-badge.HOLIDAY { background: #e0e7ff; color: #3730a3; }
+        .att-badge.EXCLUDED { background: #f1f5f9; color: #475569; }
         .sess-badge { padding: 3px 10px; border-radius: 12px; font-size: 11px; font-weight: 600; }
         .sess-badge.CONDUCTED { background: #d4edda; color: #155724; }
         .sess-badge.SCHEDULED { background: #cce5ff; color: #004085; }
         .sess-badge.SUSPENDED { background: #e2e3e5; color: #383d41; }
-        .sess-badge.CANCELLED { background: #f8d7da; color: #721c24; }
+        .sess-badge.CANCELLED { background: #f1f5f9; color: #475569; }
+        .sess-badge.HOLIDAY { background: #e0e7ff; color: #3730a3; }
         .sess-badge.SUBSTITUTION { background: #fff3cd; color: #856404; }
         .sess-badge.RESCHEDULED { background: #d1ecf1; color: #0c5460; }
     </style>
@@ -119,6 +178,32 @@ $next = ['month'=>$month+1==13?1:$month+1,'year'=>$month+1==13?$year+1:$year];
         <a href="attendance_od_request.php" class="att-nav-btn">Apply OD / Leave</a>
     </div>
 
+    <!-- Holiday & Attendance Impact Card -->
+    <div class="holiday-impact-card">
+        <div class="h-impact-item">
+            <div class="h-impact-icon">🏖️</div>
+            <div>
+                <div class="h-impact-val" id="monthHolidayCount">0 Days</div>
+                <div class="h-impact-lbl">Declared Holidays This Month</div>
+            </div>
+        </div>
+        <div class="h-impact-divider"></div>
+        <div class="h-impact-item">
+            <div class="h-impact-icon">🛡️</div>
+            <div>
+                <div class="h-impact-val" style="color:#28a745;">0% Impact (Excluded)</div>
+                <div class="h-impact-lbl">Holiday Impact on Attendance</div>
+            </div>
+        </div>
+        <div class="h-impact-divider"></div>
+        <div class="h-impact-item">
+            <div class="h-impact-icon">ℹ️</div>
+            <div class="h-impact-note">
+                <strong>Attendance Policy:</strong> Declared holidays and suspended sessions are 100% excluded from your attendance calculation. They do not count as absent and have <strong>zero negative impact</strong> on your attendance percentage.
+            </div>
+        </div>
+    </div>
+
     <div class="cal-box">
         <div class="cal-nav">
             <a href="attendance_calendar.php?month=<?= $prev['month'] ?>&year=<?= $prev['year'] ?>" class="cal-nav-btn">&#8592; Prev</a>
@@ -151,7 +236,7 @@ $next = ['month'=>$month+1==13?1:$month+1,'year'=>$month+1==13?$year+1:$year];
             <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#dc3545;"></span>Absent</div>
             <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#17a2b8;"></span>OD</div>
             <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#ffc107;"></span>Leave/Special</div>
-            <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#aaa;"></span>Holiday/Suspended</div>
+            <div class="cal-legend-item"><span class="cal-legend-dot" style="background:#a0aec0;"></span>Holiday / Suspended (0% Impact)</div>
         </div>
     </div>
 </div>
@@ -180,6 +265,10 @@ function loadCalendar() {
         .then(data => {
             if (data.status !== 'success') return;
             calData = data;
+            const hols = data.holidays || {};
+            const hCount = Object.keys(hols).length;
+            const countEl = document.getElementById('monthHolidayCount');
+            if (countEl) countEl.textContent = `${hCount} Day${hCount === 1 ? '' : 's'}`;
             renderCalendar();
         });
 }
@@ -193,7 +282,7 @@ function renderCalendar() {
         if (cell) {
             cell.classList.add('holiday');
             const hDiv = document.getElementById('holiday-' + day);
-            if (hDiv) hDiv.innerHTML = '<div class="cal-holiday-label">' + escapeHtml(holidays[day]) + '</div>';
+            if (hDiv) hDiv.innerHTML = '<div class="cal-holiday-label">🏖️ ' + escapeHtml(holidays[day]) + '</div>';
         }
     });
 
@@ -202,6 +291,18 @@ function renderCalendar() {
         const dotsDiv = document.getElementById('dots-' + day);
         const cell = document.getElementById('cell-' + day);
         if (!dotsDiv || !cell) return;
+
+        const isHoliday = !!holidays[day];
+        if (isHoliday) {
+            // Keep holiday styling firmly and show excluded dots (never red absent dots)
+            cell.className = 'cal-cell holiday' + (cell.classList.contains('today') ? ' today' : '');
+            let dotHtml = '';
+            sessions.forEach(s => {
+                dotHtml += `<span class="cal-status-dot" style="background:#a0aec0;" title="H${s.hour}: ${escapeHtml(s.subject)} (Holiday - Excluded)"></span>`;
+            });
+            dotsDiv.innerHTML = dotHtml;
+            return;
+        }
 
         let allPresent = true, allAbsent = true, allSuspended = true;
         let dotHtml = '';
@@ -214,8 +315,8 @@ function renderCalendar() {
                 color = '#6c757d';
                 allPresent = false;
                 allAbsent = false;
-            } else if (sessSt === 'CANCELLED') {
-                color = '#dc3545';
+            } else if (sessSt === 'CANCELLED' || sessSt === 'HOLIDAY') {
+                color = '#a0aec0'; // Excluded, not red absent!
                 allPresent = false;
                 allAbsent = false;
             } else {
@@ -235,7 +336,7 @@ function renderCalendar() {
                     allAbsent = false;
                 }
             }
-            dotHtml += `<span class="cal-status-dot" style="background:${color};" title="H${s.hour}: ${s.subject} (${att || sessSt})"></span>`;
+            dotHtml += `<span class="cal-status-dot" style="background:${color};" title="H${s.hour}: ${escapeHtml(s.subject)} (${att || sessSt})"></span>`;
         });
         dotsDiv.innerHTML = dotHtml;
 
@@ -257,10 +358,15 @@ function showDayDetail(day) {
 
     let html = '';
     if (holiday) {
-        html += `<div style="background:#f8d7da;color:#721c24;padding:16px;border-radius:12px;margin-bottom:16px;text-align:center;">
-            <div style="font-size:24px;">🏖️</div>
-            <div style="font-weight:700;margin-top:8px;">Holiday: ${escapeHtml(holiday)}</div>
-            <div style="font-size:12px;opacity:0.8;margin-top:4px;">No attendance sessions conducted on this date</div>
+        html += `<div style="background: linear-gradient(135deg, #eef2ff, #f0fdf4); border: 1px solid #c7d2fe; color: #1e1b4b; padding: 18px 20px; border-radius: 14px; margin-bottom: 16px; display: flex; align-items: center; gap: 16px;">
+            <div style="font-size: 32px; line-height: 1;">🏖️</div>
+            <div>
+                <div style="font-size: 16px; font-weight: 700; color: #3730a3;">Holiday: ${escapeHtml(holiday)}</div>
+                <div style="font-size: 13px; color: #475569; margin-top: 4px;">
+                    <span style="display:inline-block; background:#22c55e; color:#fff; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; margin-right:6px;">✓ Zero Penalty</span>
+                    Declared holiday — All periods on this date are fully excluded from attendance calculations. Your attendance percentage is not affected.
+                </div>
+            </div>
         </div>`;
     }
 
@@ -282,7 +388,20 @@ function showDayDetail(day) {
                 ${sessions.map(s => {
                     let attLabel = s.attendance || '—';
                     let attClass = s.attendance || '';
-                    if (s.is_od || s.attendance === 'OD') {
+                    let sessStatusLabel = s.session_status;
+                    let sessBadgeClass = s.session_status;
+
+                    if (holiday || s.is_holiday || s.session_status === 'HOLIDAY') {
+                        sessStatusLabel = 'HOLIDAY';
+                        sessBadgeClass = 'HOLIDAY';
+                        attLabel = 'Excluded (Holiday)';
+                        attClass = 'HOLIDAY';
+                    } else if (s.session_status === 'CANCELLED') {
+                        sessStatusLabel = 'CANCELLED';
+                        sessBadgeClass = 'CANCELLED';
+                        attLabel = 'Cancelled (Excluded)';
+                        attClass = 'EXCLUDED';
+                    } else if (s.is_od || s.attendance === 'OD') {
                         attLabel = 'OD Approved';
                         attClass = 'OD';
                     } else if (s.session_status === 'SUSPENDED') {
@@ -291,7 +410,7 @@ function showDayDetail(day) {
                     }
 
                     const attBadge = `<span class="att-badge ${attClass}">${attLabel}</span>`;
-                    const sessBadge = `<span class="sess-badge ${s.session_status}">${s.session_status}</span>`;
+                    const sessBadge = `<span class="sess-badge ${sessBadgeClass}">${sessStatusLabel}</span>`;
                     const reasonNote = s.suspension_reason ? `<div style="font-size:11px;color:#6c757d;margin-top:3px;">Reason: ${escapeHtml(s.suspension_reason)}</div>` : '';
 
                     return `<tr>

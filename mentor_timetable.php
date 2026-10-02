@@ -122,6 +122,16 @@ $selSem = (int)($_GET['semester'] ?? 1);
                 <?php endfor; ?>
             </select>
         </div>
+        <div style="display:flex;align-items:center;gap:8px;padding-top:24px;">
+            <label style="margin:0;cursor:pointer;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#555;">
+                <input type="checkbox" id="showExtraHours" onchange="renderGrid()"> Show Extra Hours (H8–H12)
+            </label>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+            <button type="button" class="att-nav-btn" onclick="bulkGenerateFromTimetable()" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);color:#fff;border:none;padding:12px 20px;border-radius:10px;cursor:pointer;font-weight:600;display:flex;align-items:center;gap:8px;">
+                ⚡ Auto-Generate Sessions (Skips Holidays)
+            </button>
+        </div>
     </div>
 
     <div class="tt-grid-wrap">
@@ -164,6 +174,11 @@ const HOURS = {
     5: {start: '13:25', end: '14:15'},
     6: {start: '14:15', end: '15:05'},
     7: {start: '15:25', end: '16:15'},
+    8: {start: '16:20', end: '17:10'},
+    9: {start: '17:10', end: '18:00'},
+    10: {start: '18:00', end: '18:50'},
+    11: {start: '18:50', end: '19:40'},
+    12: {start: '19:40', end: '20:30'},
 };
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 let timetable = {};
@@ -184,10 +199,16 @@ function loadTimetable() {
         .then(data => {
             if (data.status !== 'success') { renderGrid(); return; }
             timetable = {};
+            let hasExtra = false;
             data.timetable.forEach(t => {
                 const key = `${t.day}_${t.hour}`;
                 timetable[key] = t;
+                if (parseInt(t.hour) > 7) hasExtra = true;
             });
+            if (hasExtra) {
+                const chk = document.getElementById('showExtraHours');
+                if (chk) chk.checked = true;
+            }
             renderGrid();
         });
 }
@@ -196,13 +217,21 @@ function renderGrid() {
     let html = '<div class="tt-header">Hour</div>';
     DAYS.forEach(d => html += `<div class="tt-header">${d}</div>`);
 
-    for (let h = 1; h <= 7; h++) {
-        html += `<div class="tt-hour-label"><div>H${h}</div><div class="tt-time">${HOURS[h].start}</div></div>`;
+    const showExtra = document.getElementById('showExtraHours')?.checked;
+    const maxHour = showExtra ? 12 : 7;
+
+    for (let h = 1; h <= maxHour; h++) {
+        const hInfo = HOURS[h] || {start: '', end: ''};
+        const isExtra = h > 7;
+        html += `<div class="tt-hour-label" style="${isExtra ? 'background:#fef3c7;color:#92400e;' : ''}">
+            <div>H${h} ${isExtra ? '<span style="font-size:9px;background:#f59e0b;color:#fff;padding:1px 4px;border-radius:4px;">Extra</span>' : ''}</div>
+            <div class="tt-time">${hInfo.start}</div>
+        </div>`;
         for (let d = 0; d <= 6; d++) {
             const key = `${d}_${h}`;
             const slot = timetable[key];
             if (slot) {
-                html += `<div class="tt-slot filled" onclick="editSlot(${d}, ${h}, '${slot._id}')">
+                html += `<div class="tt-slot filled" style="${isExtra ? 'background:#fffbeb;border:1px solid #fde68a;' : ''}" onclick="editSlot(${d}, ${h}, '${slot._id}')">
                     <span class="tt-delete" onclick="event.stopPropagation();deleteSlot('${slot._id}')">&times;</span>
                     <div class="tt-subject">${escapeHtml(slot.subject)}</div>
                     <div class="tt-code">${escapeHtml(slot.subject_code)}</div>
@@ -214,6 +243,36 @@ function renderGrid() {
         }
     }
     document.getElementById('ttGrid').innerHTML = html;
+}
+
+function bulkGenerateFromTimetable() {
+    const batch = document.getElementById('ttBatch').value;
+    const semester = document.getElementById('ttSemester').value;
+    if (!batch) { showToast('Please select a batch first', 'error'); return; }
+
+    sgiConfirm(`Generate attendance class sessions for all working days of the current month? Declared calendar holidays and off-days will be strictly skipped.`, 'Auto-Generate Sessions', 'Generate Now')
+        .then(ok => {
+            if (!ok) return;
+            const now = new Date();
+            const formData = new FormData();
+            formData.append('action', 'generate_timetable_sessions');
+            formData.append('batch', batch);
+            formData.append('semester', semester);
+            formData.append('month', now.getMonth() + 1);
+            formData.append('year', now.getFullYear());
+
+            showToast('Generating sessions for working days...', 'info');
+            fetch('attendance_api.php', { method: 'POST', body: formData })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showToast(data.message, 'success');
+                    } else {
+                        showToast(data.message || 'Generation failed', 'error');
+                    }
+                })
+                .catch(e => showToast('Request failed', 'error'));
+        });
 }
 
 function openModal(day, hour) {

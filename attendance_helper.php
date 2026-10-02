@@ -16,6 +16,11 @@ if (!defined('SGI_ATTENDANCE_HELPER_LOADED')) {
             5 => ['hour' => 5, 'start' => '13:25', 'end' => '14:15', 'label' => 'H5'],
             6 => ['hour' => 6, 'start' => '14:15', 'end' => '15:05', 'label' => 'H6'],
             7 => ['hour' => 7, 'start' => '15:25', 'end' => '16:15', 'label' => 'H7'],
+            8 => ['hour' => 8, 'start' => '16:20', 'end' => '17:10', 'label' => 'H8 (Extra)'],
+            9 => ['hour' => 9, 'start' => '17:10', 'end' => '18:00', 'label' => 'H9 (Extra)'],
+            10 => ['hour' => 10, 'start' => '18:00', 'end' => '18:50', 'label' => 'H10 (Extra)'],
+            11 => ['hour' => 11, 'start' => '18:50', 'end' => '19:40', 'label' => 'H11 (Extra)'],
+            12 => ['hour' => 12, 'start' => '19:40', 'end' => '20:30', 'label' => 'H12 (Extra)'],
         ];
     }
 
@@ -280,25 +285,46 @@ if (!defined('SGI_ATTENDANCE_HELPER_LOADED')) {
             ['upsert' => true]
         );
 
+        // When semester is closed, advance the students in this batch to the next semester if sem < 8
+        $nextSem = ($sem < 8) ? ($sem + 1) : 8;
+        if ($sem < 8) {
+            $activeDb->users->updateMany(
+                ['batch_no' => $batch],
+                ['$set' => [
+                    'semester'   => $nextSem,
+                    'sem'        => $nextSem,
+                    'updated_at' => $now,
+                ]]
+            );
+            if (session_status() === PHP_SESSION_ACTIVE && isset($_SESSION['user']) && ($_SESSION['user']['batch_no'] ?? '') === $batch) {
+                $_SESSION['user']['semester'] = $nextSem;
+                $_SESSION['user']['sem'] = $nextSem;
+            }
+        }
+
         // Notify students in this batch
         $students = iterator_to_array($activeDb->users->find(['batch_no' => $batch]));
         foreach ($students as $stu) {
             $roll = $stu['roll'] ?? '';
             if ($roll) {
+                $notifMsg = ($sem < 8)
+                    ? "🔒 Semester {$sem} Attendance has been closed & finalized. Your active semester is now Semester {$nextSem}."
+                    : "🔒 Semester 8 Attendance has been closed & finalized. Graduation attendance records are complete.";
                 $activeDb->notifications->insertOne([
                     'roll'       => $roll,
-                    'message'    => "🔒 Semester {$sem} Attendance has been closed. Attendance records are now finalized and read-only.",
+                    'message'    => $notifMsg,
                     'type'       => 'attendance',
                     'read'       => false,
-                    'link'       => "attendance.php?semester={$sem}",
+                    'link'       => "attendance.php?semester={$nextSem}",
                     'created_at' => $now,
                 ]);
             }
         }
 
         return [
-            'status'  => 'success',
-            'message' => "Semester {$sem} attendance has been closed successfully. It is now finalized and read-only."
+            'status'        => 'success',
+            'next_semester' => $nextSem,
+            'message'       => "Semester {$sem} attendance has been closed successfully. Active student semester is now Semester {$nextSem}."
         ];
     }
 

@@ -69,7 +69,7 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
         .badge-status.OD, .badge-status.OD_APPROVED { background: #d1ecf1; color: #0c5460; }
         .badge-status.OD_REJECTED { background: #ffeeba; color: #856404; }
         .badge-status.SUSPENDED { background: #e2e3e5; color: #383d41; }
-        .badge-status.HOLIDAY { background: #f8d7da; color: #721c24; }
+        .badge-status.HOLIDAY { background: #e0e7ff; color: #3730a3; }
         .badge-status.FULL_PRESENT { background: #d4edda; color: #155724; }
         .badge-status.HALF_DAY, .badge-status.HALF_PRESENT { background: #fff3cd; color: #856404; }
         .badge-status.FULL_ABSENT { background: #f8d7da; color: #721c24; }
@@ -138,10 +138,16 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     <div class="att-hero">
         <h1>Attendance Management</h1>
         <p>Institutional Daily Attendance (H1/H5 Rule), Subject-wise & Day-wise Tracking</p>
-        <div style="margin-top:14px;display:flex;justify-content:center;gap:10px;align-items:center;flex-wrap:wrap;">
-            <span id="studentSemBadge" style="background:rgba(255,255,255,0.2);padding:6px 16px;border-radius:20px;font-size:13px;font-weight:600;">Semester —</span>
+        <div style="margin-top:14px;display:flex;justify-content:center;gap:12px;align-items:center;flex-wrap:wrap;">
+            <div style="display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.2);padding:4px 14px;border-radius:24px;">
+                <span style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Semester:</span>
+                <select id="studentSemSelect" onchange="onStudentSemChange()" style="background:#fff;color:#1a1a2e;border:none;border-radius:16px;padding:4px 12px;font-weight:700;font-size:13px;cursor:pointer;outline:none;">
+                    <option value="">Current Active</option>
+                </select>
+            </div>
             <span id="studentStatusBadge" style="background:#28a745;padding:6px 16px;border-radius:20px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;">Status: Loading...</span>
         </div>
+        <div id="semAutoNotice" style="display:none;margin-top:10px;font-size:12px;background:rgba(255,255,255,0.25);padding:4px 16px;border-radius:12px;font-weight:600;"></div>
     </div>
 
     <div class="att-nav-links">
@@ -270,23 +276,56 @@ function switchView(tab) {
     }
 }
 
+let currentSelectedSem = '';
+let initializedSemesters = false;
+
+function onStudentSemChange() {
+    currentSelectedSem = document.getElementById('studentSemSelect').value;
+    loadOverview();
+    const dayTab = document.getElementById('viewDaywise');
+    if (dayTab && dayTab.classList.contains('active')) {
+        loadDaywise();
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     loadOverview();
     loadODList();
 });
 
 function loadOverview() {
-    fetch('attendance_api.php?action=student_overview')
+    const semParam = currentSelectedSem ? `&semester=${encodeURIComponent(currentSelectedSem)}` : '';
+    fetch(`attendance_api.php?action=student_overview${semParam}`)
         .then(r => r.json())
         .then(data => {
             if (data.status !== 'success') return;
 
-            if (data.semester) {
-                document.getElementById('studentSemBadge').textContent = `Semester ${data.semester}`;
+            // Populate semester select if not yet initialized
+            if (!initializedSemesters && data.all_semesters && data.all_semesters.length) {
+                const sel = document.getElementById('studentSemSelect');
+                sel.innerHTML = data.all_semesters.map(s => {
+                    const isCur = (s.semester === data.semester);
+                    let label = `Semester ${s.semester}`;
+                    if (s.status === 'CLOSED') label += ' [Closed]';
+                    else if (isCur) label += ' [Active]';
+                    return `<option value="${s.semester}" ${isCur ? 'selected' : ''}>${label}</option>`;
+                }).join('');
+                currentSelectedSem = data.semester;
+                initializedSemesters = true;
             }
+
+            // Check if semester was auto-advanced because previous closed
+            const noticeEl = document.getElementById('semAutoNotice');
+            if (data.auto_advanced && noticeEl) {
+                noticeEl.textContent = `⚡ Previous semester was closed. Current active semester automatically updated to Semester ${data.semester}.`;
+                noticeEl.style.display = 'inline-block';
+            } else if (noticeEl) {
+                noticeEl.style.display = 'none';
+            }
+
             const statusEl = document.getElementById('studentStatusBadge');
             if (data.is_closed) {
-                statusEl.textContent = 'Status: CLOSED (Finalized)';
+                statusEl.textContent = 'Status: CLOSED (Archived)';
                 statusEl.style.background = '#6c757d';
                 statusEl.style.color = '#fff';
             } else if (data.is_locked) {
@@ -310,7 +349,7 @@ function loadOverview() {
 
             const body = document.getElementById('subjBody');
             if (!data.subjects || !data.subjects.length) {
-                body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No attendance sessions conducted yet.</td></tr>';
+                body.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;">No attendance sessions conducted for this semester yet.</td></tr>';
                 return;
             }
             body.innerHTML = data.subjects.map(s => {
@@ -332,7 +371,8 @@ function loadOverview() {
 }
 
 function loadDaywise() {
-    fetch('attendance_api.php?action=student_daywise')
+    const semParam = currentSelectedSem ? `&semester=${encodeURIComponent(currentSelectedSem)}` : '';
+    fetch(`attendance_api.php?action=student_daywise${semParam}`)
         .then(r => r.json())
         .then(data => {
             const body = document.getElementById('daywiseBody');
@@ -359,8 +399,12 @@ function loadDaywise() {
                 const periodPills = sessions.map(s => {
                     let pillBg = '#f0f2f5', pillColor = '#555';
                     let st = s.effective || s.student_status;
-                    if (s.session_status === 'SUSPENDED') {
+                    if (s.session_status === 'HOLIDAY' || st === 'HOLIDAY') {
+                        pillBg = '#e0e7ff'; pillColor = '#3730a3'; st = 'Holiday (Excluded)';
+                    } else if (s.session_status === 'SUSPENDED') {
                         pillBg = '#e2e3e5'; pillColor = '#383d41'; st = 'SUSPENDED';
+                    } else if (s.session_status === 'CANCELLED' || st === 'CANCELLED') {
+                        pillBg = '#f1f5f9'; pillColor = '#475569'; st = 'Cancelled (Excluded)';
                     } else if (st === 'PRESENT') {
                         pillBg = '#d4edda'; pillColor = '#155724';
                     } else if (st === 'OD') {

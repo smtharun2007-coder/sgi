@@ -59,48 +59,82 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     $action = $_GET['action'] ?? '';
 
     // ── Student: Overview ──
+    // ── Student: Overview ──
     if ($action === 'student_overview' && $isStudent) {
         $roll = $_SESSION['user']['roll'];
-        $attData = calculateStudentAttendance($roll, $db);
-
         $stuUser = $users->findOne(['roll' => $roll]);
         $stuBatch = $stuUser['batch_no'] ?? '';
         $stuSem = (int)($stuUser['semester'] ?? 1);
-        $semStatus = ($stuBatch && $stuSem) ? sgiGetSemesterAttendanceStatus($stuBatch, $stuSem, $db) : ['status' => 'OPEN', 'can_mark' => true];
+
+        // Fetch semester statuses for all 8 semesters to find current active semester and allow switching
+        $allSemStatus = [];
+        $activeSem = $stuSem;
+        for ($s = 1; $s <= 8; $s++) {
+            $st = sgiGetSemesterAttendanceStatus($stuBatch, $s, $db);
+            $allSemStatus[$s] = $st['status'];
+            if ($st['is_closed'] && $activeSem <= $s && $s < 8) {
+                $activeSem = $s + 1;
+            }
+        }
+
+        // Selected semester from query or active semester
+        $reqSem = isset($_GET['semester']) ? (int)$_GET['semester'] : 0;
+        $viewSem = ($reqSem >= 1 && $reqSem <= 8) ? $reqSem : $activeSem;
+
+        // Ensure user record in DB reflects the active semester if it advanced
+        if ($stuSem < $activeSem) {
+            $users->updateOne(['roll' => $roll], ['$set' => ['semester' => $activeSem, 'sem' => $activeSem, 'updated_at' => new MongoDB\BSON\UTCDateTime()]]);
+            $_SESSION['user']['semester'] = $activeSem;
+            $_SESSION['user']['sem'] = $activeSem;
+            $stuSem = $activeSem;
+        }
+
+        $attData = calculateStudentAttendance($roll, $db, ['semester' => $viewSem, 'batch' => $stuBatch]);
+        $semStatus = ($stuBatch && $viewSem) ? sgiGetSemesterAttendanceStatus($stuBatch, $viewSem, $db) : ['status' => 'OPEN', 'can_mark' => true];
 
         jsonOut([
-            'status'            => 'success',
-            'overall'           => $attData['attendance_percentage'],
-            'discipline_score'  => $attData['discipline_score'],
-            'daily_percentage'  => $attData['daily_percentage'],
-            'session_percentage'=> $attData['session_percentage'],
-            'present_days'      => $attData['total_days_present'],
-            'absent_days'       => $attData['total_days_absent'],
-            'total_days'        => $attData['total_days_conducted'],
-            'present'           => $attData['total_attended'],
-            'absent'            => $attData['total_absent'],
-            'od'                => $attData['total_od_approved'],
-            'suspended'         => $attData['total_suspended'],
-            'total_sessions'    => $attData['total_conducted'],
-            'attended_sessions' => $attData['total_attended'],
-            'subjects'          => $attData['subjects'],
-            'semester'          => $stuSem,
-            'batch'             => $stuBatch,
-            'semester_status'   => $semStatus['status'] ?? 'OPEN',
-            'is_closed'         => ($semStatus['status'] ?? '') === 'CLOSED',
-            'is_locked'         => ($semStatus['status'] ?? '') === 'LOCKED',
-            'closed_by'         => $semStatus['closed_by_name'] ?? $semStatus['closed_by'] ?? null,
-            'closed_at'         => isset($semStatus['closed_at']) && ($semStatus['closed_at'] instanceof MongoDB\BSON\UTCDateTime) ? date('d M Y, h:i A', $semStatus['closed_at']->toDateTime()->getTimestamp()) : null,
+            'status'             => 'success',
+            'overall'            => $attData['attendance_percentage'],
+            'discipline_score'   => $attData['discipline_score'],
+            'daily_percentage'   => $attData['daily_percentage'],
+            'session_percentage' => $attData['session_percentage'],
+            'present_days'       => $attData['total_days_present'],
+            'absent_days'        => $attData['total_days_absent'],
+            'total_days'         => $attData['total_days_conducted'],
+            'present'            => $attData['total_attended'],
+            'absent'             => $attData['total_absent'],
+            'od'                 => $attData['total_od_approved'],
+            'suspended'          => $attData['total_suspended'],
+            'total_sessions'     => $attData['total_conducted'],
+            'attended_sessions'  => $attData['total_attended'],
+            'subjects'           => $attData['subjects'],
+            'semester'           => $viewSem,
+            'current_semester'   => $activeSem,
+            'user_semester'      => $stuSem,
+            'all_semesters'      => $allSemStatus,
+            'batch'              => $stuBatch,
+            'semester_status'    => $semStatus['status'] ?? 'OPEN',
+            'is_closed'          => ($semStatus['status'] ?? '') === 'CLOSED',
+            'is_locked'          => ($semStatus['status'] ?? '') === 'LOCKED',
+            'closed_by'          => $semStatus['closed_by_name'] ?? $semStatus['closed_by'] ?? null,
+            'closed_at'          => isset($semStatus['closed_at']) && ($semStatus['closed_at'] instanceof MongoDB\BSON\UTCDateTime) ? date('d M Y, h:i A', $semStatus['closed_at']->toDateTime()->getTimestamp()) : null,
         ]);
     }
 
     // ── Student: Day-wise Attendance ──
     if ($action === 'student_daywise' && $isStudent) {
         $roll = $_SESSION['user']['roll'];
-        $attData = calculateStudentAttendance($roll, $db);
+        $stuUser = $users->findOne(['roll' => $roll]);
+        $stuBatch = $stuUser['batch_no'] ?? '';
+        $stuSem = (int)($stuUser['semester'] ?? 1);
+        $reqSem = isset($_GET['semester']) ? (int)$_GET['semester'] : 0;
+        $viewSem = ($reqSem >= 1 && $reqSem <= 8) ? $reqSem : $stuSem;
+
+        $attData = calculateStudentAttendance($roll, $db, ['semester' => $viewSem, 'batch' => $stuBatch]);
 
         jsonOut([
             'status'          => 'success',
+            'semester'        => $viewSem,
             'overall'         => $attData['attendance_percentage'],
             'daily_breakdown' => $attData['daily_breakdown'],
         ]);
@@ -129,11 +163,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $attBySession[$a['attendance_session_id']] = $a;
         }
 
-        // Check for holidays
-        $exceptions = iterator_to_array($attendance_exceptions->find([
+        $stuUser = $users->findOne(['roll' => $roll]);
+        $mentorId = $stuUser['mentor_id'] ?? '';
+        $stuBatch = $stuUser['batch_no'] ?? '';
+
+        // Check for holidays scoped to batch
+        $exQuery = [
             'type' => 'HOLIDAY',
             'date' => ['$gte' => $from, '$lte' => $to]
-        ]));
+        ];
+        if (!empty($stuBatch)) {
+            $exQuery['$or'] = [
+                ['batch' => $stuBatch],
+                ['batch' => '*'],
+                ['batch' => ['$exists' => false]],
+            ];
+        }
+        $exceptions = iterator_to_array($attendance_exceptions->find($exQuery));
         $holidayMap = [];
         foreach ($exceptions as $ex) {
             if (isset($ex['date']) && $ex['date'] instanceof MongoDB\BSON\UTCDateTime) {
@@ -143,10 +189,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
 
         // Also check mentor calendar events for holidays
-        $calEvents = iterator_to_array($calendar_events->find([
+        $cevQuery = [
             'type' => ['$in' => ['holiday', 'Holiday']],
             'date' => ['$gte' => $from, '$lte' => $to]
-        ]));
+        ];
+        if (!empty($mentorId)) {
+            $cevQuery['mentor_id'] = $mentorId;
+        }
+        $calEvents = iterator_to_array($calendar_events->find($cevQuery));
         foreach ($calEvents as $cev) {
             if (isset($cev['date']) && $cev['date'] instanceof MongoDB\BSON\UTCDateTime) {
                 $day = (int)date('j', $cev['date']->toDateTime()->getTimestamp());
@@ -173,12 +223,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 $isOD = (!empty($att['od_approved']) || $effStatus === 'OD');
             }
 
-            // Student calendar display status
-            $displayAtt = $effStatus;
-            if ($sessStatus === 'SUSPENDED') {
+            // Student calendar display status: Holidays are strictly excluded with zero penalty
+            $isHoliday = isset($holidayMap[$day]);
+            if ($isHoliday) {
+                $displayAtt = 'HOLIDAY';
+                $sessStatus = 'HOLIDAY';
+                $reasonNote = 'Holiday: ' . $holidayMap[$day];
+            } elseif ($sessStatus === 'SUSPENDED') {
                 $displayAtt = 'SUSPENDED';
+                $reasonNote = $sess['suspension_reason'] ?? 'Suspended';
             } elseif ($sessStatus === 'CANCELLED') {
                 $displayAtt = 'CANCELLED';
+                $reasonNote = $sess['cancellation_reason'] ?? 'Cancelled (Excluded)';
+            } else {
+                $displayAtt = $effStatus;
+                $reasonNote = $sess['suspension_reason'] ?? '';
             }
 
             $dayMap[$day][] = [
@@ -192,7 +251,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
                 'original_status' => $origStatus,
                 'effective_status'=> $effStatus,
                 'is_od'           => $isOD,
-                'suspension_reason'=> $sess['suspension_reason'] ?? '',
+                'is_holiday'      => $isHoliday,
+                'suspension_reason'=> $reasonNote,
                 'start_time'      => $sess['start_time'] ?? '',
                 'end_time'        => $sess['end_time'] ?? '',
                 'session_type'    => $sess['session_type'] ?? 'REGULAR',
@@ -200,9 +260,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         }
 
         jsonOut([
-            'status'   => 'success',
-            'days'     => $dayMap,
-            'holidays' => $holidayMap,
+            'status'         => 'success',
+            'days'           => $dayMap,
+            'holidays'       => $holidayMap,
+            'holiday_count'  => count($holidayMap),
+            'impact_penalty' => '0%',
+            'impact_message' => 'Holidays are non-instructional days and are excluded from attendance calculations (0% penalty).',
         ]);
     }
 
@@ -340,6 +403,147 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             'status'   => 'success',
             'sessions' => $result,
             'holiday'  => $holiday ? ['description' => $holiday['description'] ?? 'Holiday', '_id' => (string)$holiday['_id']] : null,
+        ]);
+    }
+
+    // ── Mentor: Month Calendar Overview (Color-coded by marked/pending/holiday) ──
+    if ($action === 'mentor_month_calendar' && $isMentor) {
+        $mentorId = $_SESSION['mentor']['mentor_id'];
+        $month = (int)($_GET['month'] ?? date('n'));
+        $year  = (int)($_GET['year']  ?? date('Y'));
+        if ($month < 1) { $month = 12; $year--; }
+        if ($month > 12) { $month = 1; $year++; }
+
+        $daysInMonth = (int)date('t', mktime(0, 0, 0, $month, 1, $year));
+        $from = new MongoDB\BSON\UTCDateTime(mktime(0, 0, 0, $month, 1, $year) * 1000);
+        $to   = new MongoDB\BSON\UTCDateTime(mktime(23, 59, 59, $month, $daysInMonth, $year) * 1000);
+
+        // Fetch all sessions for this mentor in this month
+        $sessions = iterator_to_array($attendance_sessions->find([
+            'mentor_id' => $mentorId,
+            'date'      => ['$gte' => $from, '$lte' => $to]
+        ]));
+
+        // Fetch holiday exceptions
+        $exceptions = iterator_to_array($attendance_exceptions->find([
+            'type' => 'HOLIDAY',
+            'date' => ['$gte' => $from, '$lte' => $to]
+        ]));
+        $holidayMap = [];
+        foreach ($exceptions as $ex) {
+            if (isset($ex['date']) && $ex['date'] instanceof MongoDB\BSON\UTCDateTime) {
+                $d = (int)date('j', $ex['date']->toDateTime()->getTimestamp());
+                $holidayMap[$d] = [
+                    'id'   => (string)$ex['_id'],
+                    'desc' => $ex['description'] ?? 'Holiday',
+                ];
+            }
+        }
+
+        // Fetch calendar events holidays as well
+        $calEvents = iterator_to_array($calendar_events->find([
+            'mentor_id' => $mentorId,
+            'type'      => ['$in' => ['holiday', 'Holiday']],
+            'date'      => ['$gte' => $from, '$lte' => $to]
+        ]));
+        foreach ($calEvents as $cev) {
+            if (isset($cev['date']) && $cev['date'] instanceof MongoDB\BSON\UTCDateTime) {
+                $d = (int)date('j', $cev['date']->toDateTime()->getTimestamp());
+                if (!isset($holidayMap[$d])) {
+                    $holidayMap[$d] = [
+                        'id'   => (string)$cev['_id'],
+                        'desc' => $cev['title'] ?? 'Holiday',
+                    ];
+                }
+            }
+        }
+
+        // Group sessions by day
+        $days = [];
+        foreach ($sessions as $s) {
+            $d = (int)date('j', $s['date']->toDateTime()->getTimestamp());
+            if (!isset($days[$d])) {
+                $days[$d] = [
+                    'total'      => 0,
+                    'conducted'  => 0, // Marked
+                    'scheduled'  => 0, // Unmarked / Pending
+                    'suspended'  => 0,
+                    'cancelled'  => 0,
+                ];
+            }
+            $days[$d]['total']++;
+            $st = strtoupper($s['status'] ?? 'SCHEDULED');
+            if ($st === 'CONDUCTED') $days[$d]['conducted']++;
+            elseif ($st === 'SCHEDULED') $days[$d]['scheduled']++;
+            elseif ($st === 'SUSPENDED') $days[$d]['suspended']++;
+            elseif ($st === 'CANCELLED') $days[$d]['cancelled']++;
+        }
+
+        // Determine status and color for each day
+        $dayStatus = [];
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $isHol = isset($holidayMap[$d]);
+            $sess = $days[$d] ?? null;
+
+            if ($isHol) {
+                $dayStatus[$d] = [
+                    'type'  => 'holiday',
+                    'color' => '#f8fafc',
+                    'label' => '🏖️ ' . $holidayMap[$d]['desc'],
+                    'desc'  => $holidayMap[$d]['desc'],
+                    'badge' => 'HOLIDAY',
+                ];
+            } elseif ($sess && $sess['total'] > 0) {
+                if ($sess['conducted'] > 0 && $sess['scheduled'] === 0) {
+                    // ALL MARKED -> GREEN!
+                    $dayStatus[$d] = [
+                        'type'  => 'marked',
+                        'color' => '#d4edda',
+                        'label' => "✓ {$sess['conducted']} Marked",
+                        'badge' => 'MARKED',
+                        'count' => $sess['conducted'],
+                    ];
+                } elseif ($sess['conducted'] > 0 && $sess['scheduled'] > 0) {
+                    // PARTIALLY MARKED -> ORANGE / AMBER
+                    $dayStatus[$d] = [
+                        'type'  => 'partial',
+                        'color' => '#fff3cd',
+                        'label' => "⚡ {$sess['conducted']}/{$sess['total']} Marked",
+                        'badge' => 'PARTIAL',
+                        'count' => $sess['conducted'],
+                    ];
+                } elseif ($sess['scheduled'] > 0) {
+                    // SCHEDULED / PENDING -> BLUE
+                    $dayStatus[$d] = [
+                        'type'  => 'scheduled',
+                        'color' => '#e7f3ff',
+                        'label' => "⏳ {$sess['scheduled']} Pending",
+                        'badge' => 'PENDING',
+                        'count' => $sess['scheduled'],
+                    ];
+                } elseif ($sess['suspended'] > 0 || $sess['cancelled'] > 0) {
+                    // SUSPENDED / CANCELLED -> GRAY
+                    $dayStatus[$d] = [
+                        'type'  => 'suspended',
+                        'color' => '#e2e3e5',
+                        'label' => 'Suspended',
+                        'badge' => 'SUSPENDED',
+                    ];
+                }
+            } else {
+                $dayStatus[$d] = [
+                    'type'  => 'empty',
+                    'label' => '',
+                ];
+            }
+        }
+
+        jsonOut([
+            'status'     => 'success',
+            'month'      => $month,
+            'year'       => $year,
+            'days'       => $dayStatus,
+            'holidays'   => $holidayMap,
         ]);
     }
 
@@ -618,8 +822,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $faculty = trim($_POST['faculty'] ?? '');
         $classSection = trim($_POST['class_section'] ?? '');
 
-        if (!$batch || !$semester || $day < 0 || $day > 6 || $hour < 1 || $hour > 7 || !$subject) {
-            jsonOut(['status' => 'error', 'message' => 'All required timetable fields must be filled']);
+        if (!$batch || !$semester || $day < 0 || $day > 6 || $hour < 1 || $hour > 12 || !$subject) {
+            jsonOut(['status' => 'error', 'message' => 'All required timetable fields must be filled (Hour 1-12)']);
         }
 
         $existing = $timetables->findOne([
@@ -636,8 +840,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'semester'     => $semester,
             'day'          => $day,
             'hour'         => $hour,
-            'start_time'   => $HOURS[$hour]['start'],
-            'end_time'     => $HOURS[$hour]['end'],
+            'start_time'   => $HOURS[$hour]['start'] ?? '16:20',
+            'end_time'     => $HOURS[$hour]['end'] ?? '17:10',
             'subject'      => $subject,
             'subject_code' => $subjectCode,
             'faculty'      => $faculty,
@@ -652,7 +856,188 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $timetables->insertOne($entry);
         }
 
-        jsonOut(['status' => 'success', 'message' => 'Timetable entry saved successfully']);
+        // Auto-generate hours for all working days of the month except holidays
+        $month = (int)date('n');
+        $year  = (int)date('Y');
+        $daysInMonth = (int)date('t', mktime(0, 0, 0, $month, 1, $year));
+        $autoGenCount = 0;
+        $holidaySkipCount = 0;
+
+        $studentCursor = $users->find(['mentor_id' => $mentorId, 'batch_no' => $batch]);
+        $studentRolls = [];
+        foreach ($studentCursor as $s) {
+            $studentRolls[] = $s['roll'];
+        }
+        if (empty($studentRolls)) {
+            $allStu = $users->find(['batch_no' => $batch]);
+            foreach ($allStu as $s) $studentRolls[] = $s['roll'];
+        }
+
+        if (!empty($studentRolls)) {
+            for ($d = 1; $d <= $daysInMonth; $d++) {
+                $ts = mktime(0, 0, 0, $month, $d, $year);
+                if ((int)date('w', $ts) !== $day) continue;
+
+                // Check holiday
+                if (sgiIsHoliday($db, $ts, $batch)) {
+                    $holidaySkipCount++;
+                    continue;
+                }
+
+                $dateObj = new MongoDB\BSON\UTCDateTime($ts * 1000);
+                $existingSess = $attendance_sessions->findOne([
+                    'date'  => $dateObj,
+                    'batch' => $batch,
+                    'hour'  => $hour,
+                ]);
+
+                if (!$existingSess) {
+                    $attendance_sessions->insertOne([
+                        'attendance_session_id' => genSessionId(),
+                        'date'             => $dateObj,
+                        'mentor_id'        => $mentorId,
+                        'batch'            => $batch,
+                        'semester'         => $semester,
+                        'hour'             => $hour,
+                        'subject'          => $subject,
+                        'subject_code'     => $subjectCode,
+                        'original_faculty' => $faculty,
+                        'actual_faculty'   => $faculty,
+                        'rolls'            => $studentRolls,
+                        'status'           => 'SCHEDULED',
+                        'start_time'       => $entry['start_time'],
+                        'end_time'         => $entry['end_time'],
+                        'session_type'     => 'REGULAR',
+                        'created_at'       => new MongoDB\BSON\UTCDateTime(),
+                        'updated_at'       => new MongoDB\BSON\UTCDateTime(),
+                    ]);
+                    $autoGenCount++;
+                }
+            }
+        }
+
+        $msg = 'Timetable slot saved successfully.';
+        if ($autoGenCount > 0) {
+            $msg .= " Generated {$autoGenCount} session(s) for working days ({$holidaySkipCount} holidays skipped).";
+        }
+        jsonOut(['status' => 'success', 'message' => $msg, 'generated_count' => $autoGenCount, 'holidays_skipped' => $holidaySkipCount]);
+    }
+
+    // ── Mentor: Bulk Generate Sessions from Timetable for All Days (skipping holidays) ──
+    if ($action === 'generate_timetable_sessions' && $isMentor) {
+        $batch = trim($_POST['batch'] ?? '');
+        $semester = (int)($_POST['semester'] ?? 0);
+        $month = (int)($_POST['month'] ?? date('n'));
+        $year  = (int)($_POST['year']  ?? date('Y'));
+        if ($month < 1) $month = 1;
+        if ($month > 12) $month = 12;
+
+        if (!$batch || !$semester) {
+            jsonOut(['status' => 'error', 'message' => 'Batch and semester required']);
+        }
+
+        // SEMESTER ATTENDANCE LOCK ENFORCEMENT
+        $statusCheck = sgiCanMarkAttendance($batch, $semester, $db);
+        if (!$statusCheck['allowed']) {
+            jsonOut(['status' => 'error', 'message' => $statusCheck['message']], 403);
+        }
+
+        // Fetch all timetable slots for this batch + semester
+        $ttEntries = iterator_to_array($timetables->find([
+            'mentor_id' => $mentorId,
+            'batch'     => $batch,
+            'semester'  => $semester,
+        ], ['sort' => ['day' => 1, 'hour' => 1]]));
+
+        if (empty($ttEntries)) {
+            jsonOut(['status' => 'error', 'message' => "No timetable found for {$batch} Semester {$semester}. Please add timetable slots first."]);
+        }
+
+        // Group timetable by day-of-week (0=Sun, 1=Mon, ..., 6=Sat)
+        $ttByDay = [];
+        foreach ($ttEntries as $tt) {
+            $ttByDay[$tt['day']][] = $tt;
+        }
+
+        // Get students linked to this batch
+        $studentCursor = $users->find(['mentor_id' => $mentorId, 'batch_no' => $batch]);
+        $studentRolls = [];
+        foreach ($studentCursor as $s) {
+            $studentRolls[] = $s['roll'];
+        }
+        if (empty($studentRolls)) {
+            $allStu = $users->find(['batch_no' => $batch]);
+            foreach ($allStu as $s) {
+                $studentRolls[] = $s['roll'];
+            }
+        }
+        if (empty($studentRolls)) {
+            jsonOut(['status' => 'error', 'message' => "No students found linked to batch {$batch}."]);
+        }
+
+        $daysInMonth = (int)date('t', mktime(0, 0, 0, $month, 1, $year));
+        $generatedCount = 0;
+        $holidaySkipCount = 0;
+        $workingDaysWithClasses = 0;
+
+        for ($d = 1; $d <= $daysInMonth; $d++) {
+            $ts = mktime(0, 0, 0, $month, $d, $year);
+            $dayOfWeek = (int)date('w', $ts);
+            $dateObj = new MongoDB\BSON\UTCDateTime($ts * 1000);
+
+            // If no timetable on this day of week, skip
+            if (empty($ttByDay[$dayOfWeek])) continue;
+
+            // Check if this date is a declared holiday or calendar holiday
+            $holidayName = sgiIsHoliday($db, $ts, $batch);
+            if ($holidayName) {
+                $holidaySkipCount++;
+                continue; // CRITICAL: Strict holiday exclusion
+            }
+
+            $dayHadClasses = false;
+            foreach ($ttByDay[$dayOfWeek] as $tt) {
+                // Prevent duplicate session for same date, batch and hour
+                $existing = $attendance_sessions->findOne([
+                    'date'  => $dateObj,
+                    'batch' => $batch,
+                    'hour'  => $tt['hour'],
+                ]);
+                if ($existing) continue;
+
+                $sessionId = genSessionId();
+                $attendance_sessions->insertOne([
+                    'attendance_session_id' => $sessionId,
+                    'date'             => $dateObj,
+                    'mentor_id'        => $mentorId,
+                    'batch'            => $batch,
+                    'semester'         => $semester,
+                    'hour'             => $tt['hour'],
+                    'subject'          => $tt['subject'],
+                    'subject_code'     => $tt['subject_code'] ?? '',
+                    'original_faculty' => $tt['faculty'] ?? '',
+                    'actual_faculty'   => $tt['faculty'] ?? '',
+                    'rolls'            => $studentRolls,
+                    'status'           => 'SCHEDULED',
+                    'start_time'       => $tt['start_time'] ?? ($HOURS[$tt['hour']]['start'] ?? ''),
+                    'end_time'         => $tt['end_time']   ?? ($HOURS[$tt['hour']]['end'] ?? ''),
+                    'session_type'     => 'REGULAR',
+                    'created_at'       => new MongoDB\BSON\UTCDateTime(),
+                    'updated_at'       => new MongoDB\BSON\UTCDateTime(),
+                ]);
+                $generatedCount++;
+                $dayHadClasses = true;
+            }
+            if ($dayHadClasses) $workingDaysWithClasses++;
+        }
+
+        jsonOut([
+            'status'             => 'success',
+            'generated_count'    => $generatedCount,
+            'holidays_skipped'   => $holidaySkipCount,
+            'days_with_classes'  => $workingDaysWithClasses,
+            'message'            => "Generated {$generatedCount} sessions across {$workingDaysWithClasses} working days for " . date('F Y', mktime(0,0,0,$month,1,$year)) . " ({$holidaySkipCount} holidays skipped).",
+        ]);
     }
 
     // ── Mentor: Delete Timetable Slot ──
@@ -1051,17 +1436,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $reason = trim($_POST['reason'] ?? 'Working Day adjustment');
 
         if ($id && validObjectId($id)) {
+            $exDoc = $attendance_exceptions->findOne(['_id' => new MongoDB\BSON\ObjectId($id)]);
+            if ($exDoc && isset($exDoc['date'])) {
+                $ts = $exDoc['date']->toDateTime()->getTimestamp();
+                $from = new MongoDB\BSON\UTCDateTime(mktime(0,0,0,(int)date('n',$ts),(int)date('j',$ts),(int)date('Y',$ts))*1000);
+                $to   = new MongoDB\BSON\UTCDateTime(mktime(23,59,59,(int)date('n',$ts),(int)date('j',$ts),(int)date('Y',$ts))*1000);
+                $attendance_sessions->updateMany(
+                    ['date' => ['$gte' => $from, '$lte' => $to], 'status' => 'CANCELLED', 'cancellation_reason' => ['$regex' => '^Holiday']],
+                    ['$set' => ['status' => 'SCHEDULED', 'cancellation_reason' => null, 'updated_at' => new MongoDB\BSON\UTCDateTime()]]
+                );
+            }
             $attendance_exceptions->deleteOne(['_id' => new MongoDB\BSON\ObjectId($id)]);
         } elseif ($dateStr) {
             $ts = strtotime($dateStr);
             $from = new MongoDB\BSON\UTCDateTime(mktime(0,0,0,(int)date('n',$ts),(int)date('j',$ts),(int)date('Y',$ts))*1000);
             $to   = new MongoDB\BSON\UTCDateTime(mktime(23,59,59,(int)date('n',$ts),(int)date('j',$ts),(int)date('Y',$ts))*1000);
             $attendance_exceptions->deleteMany(['type' => 'HOLIDAY', 'date' => ['$gte' => $from, '$lte' => $to]]);
+            // Restore sessions that were cancelled due to holiday
+            $attendance_sessions->updateMany(
+                ['date' => ['$gte' => $from, '$lte' => $to], 'status' => 'CANCELLED', 'cancellation_reason' => ['$regex' => '^Holiday']],
+                ['$set' => ['status' => 'SCHEDULED', 'cancellation_reason' => null, 'updated_at' => new MongoDB\BSON\UTCDateTime()]]
+            );
         } else {
             jsonOut(['status' => 'error', 'message' => 'Holiday ID or date required']);
         }
 
-        jsonOut(['status' => 'success', 'message' => 'Holiday removed. Date is now a working day.']);
+        jsonOut(['status' => 'success', 'message' => 'Holiday removed. Date is now a working day and scheduled classes restored.']);
     }
 
     // ── Mentor: Substitute Faculty ──
@@ -1189,8 +1589,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $semester = (int)($_POST['semester'] ?? 0);
         $classType = $_POST['class_type'] ?? 'SPECIAL';
 
-        if (!$dateStr || $hour < 1 || $hour > 7 || !$subject || !$batch || !$semester) {
-            jsonOut(['status' => 'error', 'message' => 'All fields are required']);
+        $customStart = trim($_POST['start_time'] ?? '');
+        $customEnd   = trim($_POST['end_time'] ?? '');
+
+        if (!$dateStr || $hour < 1 || $hour > 15 || !$subject || !$batch || !$semester) {
+            jsonOut(['status' => 'error', 'message' => 'Date, valid hour (H1-H15), subject, batch and semester are required']);
         }
 
         // SEMESTER ATTENDANCE LOCK ENFORCEMENT
@@ -1203,20 +1606,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $dateObj = new MongoDB\BSON\UTCDateTime(mktime(0,0,0,(int)date('n',$ts),(int)date('j',$ts),(int)date('Y',$ts))*1000);
         $dayOfWeek = (int)date('w', $ts);
 
-        $validTypes = ['SPECIAL', 'EXTRA', 'SATURDAY', 'SUNDAY'];
-        if (!in_array($classType, $validTypes)) $classType = 'SPECIAL';
-        if ($dayOfWeek === 6) $classType = 'SATURDAY';
-        if ($dayOfWeek === 0) $classType = 'SUNDAY';
+        $validTypes = ['SPECIAL', 'EXTRA', 'SATURDAY', 'SUNDAY', 'REMEDIAL', 'LAB_EXTRA'];
+        if (!in_array($classType, $validTypes)) $classType = 'EXTRA';
+        if ($dayOfWeek === 6 && $classType === 'SPECIAL') $classType = 'SATURDAY';
+        if ($dayOfWeek === 0 && $classType === 'SPECIAL') $classType = 'SUNDAY';
 
         $studentCursor = $users->find(['mentor_id' => $mentorId, 'batch_no' => $batch]);
         $studentRolls = [];
         foreach ($studentCursor as $s) {
             $studentRolls[] = $s['roll'];
         }
+        if (empty($studentRolls)) {
+            $allStu = $users->find(['batch_no' => $batch]);
+            foreach ($allStu as $s) $studentRolls[] = $s['roll'];
+        }
 
         if (empty($studentRolls)) {
             jsonOut(['status' => 'error', 'message' => 'No students found linked to this batch']);
         }
+
+        $startTime = $customStart ?: ($HOURS[$hour]['start'] ?? '16:20');
+        $endTime   = $customEnd   ?: ($HOURS[$hour]['end']   ?? '17:10');
 
         $sessionId = genSessionId();
         $attendance_sessions->insertOne([
@@ -1226,8 +1636,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'batch'            => $batch,
             'semester'         => $semester,
             'hour'             => $hour,
-            'start_time'       => $HOURS[$hour]['start'],
-            'end_time'         => $HOURS[$hour]['end'],
+            'start_time'       => $startTime,
+            'end_time'         => $endTime,
             'subject'          => $subject,
             'subject_code'     => $subjectCode,
             'original_faculty' => $faculty,
@@ -1239,14 +1649,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'updated_at'       => new MongoDB\BSON\UTCDateTime(),
         ]);
 
-        $typeLabel = strtolower($classType);
+        $typeLabel = strtolower(str_replace('_', ' ', $classType));
         notifyStudents($users, $notifications, $studentRolls,
-            "New $typeLabel class: $subject (H$hour) on " . date('d M Y', $ts),
+            "New $typeLabel class: $subject (H$hour $startTime-$endTime) on " . date('d M Y', $ts),
             'SPECIAL',
             ['attendance_session_id' => $sessionId, 'subject' => $subject, 'hour' => $hour, 'link' => 'attendance.php']
         );
 
-        jsonOut(['status' => 'success', 'message' => ucfirst($typeLabel) . ' class created successfully']);
+        jsonOut(['status' => 'success', 'message' => ucfirst($typeLabel) . " class (H{$hour}) created successfully"]);
+    }
+
+    // ── Mentor: Edit / Change Scheduled Session ──
+    if ($action === 'update_session' && $isMentor) {
+        $sessionId = $_POST['session_id'] ?? '';
+        $subject = trim($_POST['subject'] ?? '');
+        $subjectCode = trim($_POST['subject_code'] ?? '');
+        $faculty = trim($_POST['faculty'] ?? '');
+        $hour = (int)($_POST['hour'] ?? 0);
+        $startTime = trim($_POST['start_time'] ?? '');
+        $endTime = trim($_POST['end_time'] ?? '');
+        $status = strtoupper(trim($_POST['status'] ?? ''));
+
+        if (!$sessionId) jsonOut(['status' => 'error', 'message' => 'Session ID required']);
+
+        $sess = $attendance_sessions->findOne(['attendance_session_id' => $sessionId]);
+        if (!$sess) jsonOut(['status' => 'error', 'message' => 'Session not found'], 404);
+
+        $update = ['updated_at' => new MongoDB\BSON\UTCDateTime()];
+        if ($subject) $update['subject'] = $subject;
+        if ($subjectCode !== '') $update['subject_code'] = $subjectCode;
+        if ($faculty) {
+            $update['actual_faculty'] = $faculty;
+            $update['original_faculty'] = $faculty;
+        }
+        if ($hour >= 1 && $hour <= 15) {
+            $update['hour'] = $hour;
+            if (!$startTime && isset($HOURS[$hour])) $update['start_time'] = $HOURS[$hour]['start'];
+            if (!$endTime && isset($HOURS[$hour])) $update['end_time'] = $HOURS[$hour]['end'];
+        }
+        if ($startTime) $update['start_time'] = $startTime;
+        if ($endTime) $update['end_time'] = $endTime;
+        if ($status && in_array($status, ['SCHEDULED', 'SUSPENDED', 'CANCELLED'])) {
+            $update['status'] = $status;
+            if ($status === 'SCHEDULED') {
+                $update['cancellation_reason'] = null;
+                $update['suspension_reason'] = null;
+            }
+        }
+
+        $attendance_sessions->updateOne(['attendance_session_id' => $sessionId], ['$set' => $update]);
+        jsonOut(['status' => 'success', 'message' => 'Class updated successfully']);
     }
 
     // ── Student: Submit OD / Leave Request ──
