@@ -22,11 +22,9 @@ if (file_exists(__DIR__ . '/.env')) {
         if (strlen($v) >= 2 && (($v[0] === '"' && substr($v, -1) === '"') || ($v[0] === "'" && substr($v, -1) === "'"))) {
             $v = substr($v, 1, -1);
         }
-        if (!getenv($k)) {
-            putenv("{$k}={$v}");
-            $_ENV[$k] = $v;
-            $_SERVER[$k] = $v;
-        }
+        putenv("{$k}={$v}");
+        $_ENV[$k] = $v;
+        $_SERVER[$k] = $v;
     }
 }
 
