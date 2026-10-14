@@ -17,10 +17,22 @@ if ($port443) fclose($port443);
 
 // Try MongoDB connection
 require 'vendor/autoload.php';
+if (file_exists(__DIR__ . '/.env')) {
+    $envLines = file(__DIR__ . '/.env', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+    foreach ($envLines as $line) {
+        if (strpos($line, '=') === false || strpos($line, '#') === 0) continue;
+        list($k, $v) = explode('=', $line, 2);
+        $k = trim($k);
+        $v = trim(trim($v), "\"'");
+        if (!getenv($k)) {
+            putenv("{$k}={$v}");
+        }
+    }
+}
+$uri = getenv('MONGODB_URI') ?: "mongodb+srv://smt2007:WRzMvWh5x8whcWZx@smt2007.bwry6zp.mongodb.net/?appName=smt2007&tls=true&tlsAllowInvalidCertificates=true";
+
 try {
-    $client = new MongoDB\Client(
-        "mongodb+srv://smt2007:1561%40SPSslm@smt2007.bwry6zp.mongodb.net/?appName=smt2007&tls=true&tlsAllowInvalidCertificates=true&connectTimeoutMS=10000&serverSelectionTimeoutMS=10000"
-    );
+    $client = new MongoDB\Client($uri);
     $client->selectDatabase('sgi_db')->command(['ping' => 1]);
     echo "<h2 style='color:green'>✅ MongoDB Connected Successfully!</h2>";
 } catch (Exception $e) {
