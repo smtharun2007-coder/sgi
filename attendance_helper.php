@@ -30,6 +30,13 @@ if (!defined('SGI_ATTENDANCE_HELPER_LOADED')) {
     function ensureAttendanceIndexes($db) {
         static $ensured = false;
         if ($ensured || !$db) return;
+
+        $flagFile = sys_get_temp_dir() . '/sgi_attendance_indexes_v2.flag';
+        if (file_exists($flagFile)) {
+            $ensured = true;
+            return;
+        }
+
         try {
             // Compound unique index on student_attendance: 1 record per student per session
             $db->student_attendance->createIndex(
@@ -73,6 +80,7 @@ if (!defined('SGI_ATTENDANCE_HELPER_LOADED')) {
                 ['unique' => true, 'background' => true]
             );
 
+            @touch($flagFile);
             $ensured = true;
         } catch (Exception $e) {
             error_log("SGI Attendance index creation error: " . $e->getMessage());

@@ -56,7 +56,6 @@ $od_requests           = $db->od_requests;
 
 // SGI Attendance Helper & Calculation Service
 require_once __DIR__ . '/attendance_helper.php';
-ensureAttendanceIndexes($db);
 
 // LEAP collections
 $leap_applications      = $db->leap_applications;
