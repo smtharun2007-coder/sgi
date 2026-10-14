@@ -12,8 +12,13 @@ if (file_exists($envFile)) {
     foreach ($lines as $line) {
         if (strpos($line, '=') === false || strpos($line, '#') === 0) continue;
         list($key, $value) = explode('=', $line, 2);
-        if (!getenv(trim($key))) {
-            putenv(trim($key) . '=' . trim($value));
+        $k = trim($key);
+        $v = trim($value);
+        if (strlen($v) >= 2 && (($v[0] === '"' && substr($v, -1) === '"') || ($v[0] === "'" && substr($v, -1) === "'"))) {
+            $v = substr($v, 1, -1);
+        }
+        if (!getenv($k)) {
+            putenv($k . '=' . $v);
         }
     }
     echo "<p>✅ .env file loaded</p>";
