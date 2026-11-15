@@ -106,6 +106,7 @@ function leapStudentNav($u, $unreadCount, $active = '') {
         'leap_tests.php'        => 'Tests',
         'leap_progress.php'     => 'My Progress',
         'leap_results.php'      => 'Results',
+        'leap_profile_edit.php' => '💻 Profile',
     ];
     $links = '';
     foreach ($pages as $href => $label) {
@@ -140,8 +141,14 @@ HTML;
 
 // Render mentor LEAP navbar
 function leapMentorNav($m, $unreadCount) {
+    global $leap_applications;
+    $pendingAppCount = $leap_applications->countDocuments(['mentor_id' => $m['mentor_id'], 'status' => 'PENDING']);
+    $appLabel = 'Applications' . ($pendingAppCount > 0
+        ? ' <span style="background:#e94560;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">' . $pendingAppCount . '</span>'
+        : '');
     $pages = [
-        'mentor_leap_applications.php' => 'Applications',
+        'mentor_leap_dashboard.php'    => '🏠 Dashboard',
+        'mentor_leap_applications.php' => $appLabel,
         'mentor_leap_pacc.php'         => 'PACC',
         'mentor_leap_announcements.php'=> 'Announcements',
         'mentor_leap_activities.php'   => 'Activities',

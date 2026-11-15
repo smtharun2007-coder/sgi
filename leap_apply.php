@@ -83,7 +83,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_leap'])) {
             $mentor = $mentors->findOne(['mentor_id' => $mentor_id]);
             if (!$mentor) { $error = 'Invalid Mentor ID. Please verify first.'; }
             else {
-                $leap_applications->insertOne([
+                // Block if a PENDING application already exists
+                $pendingApp = $leap_applications->findOne(['student_id' => $u['roll'], 'status' => 'PENDING']);
+                if ($pendingApp) {
+                    $error = 'You already have a pending LEAP application awaiting mentor review. Please wait or contact your mentor directly.';
+                } else {
+                        $leap_applications->insertOne([
                     'student_id'         => $u['roll'],
                     'name'               => $u['name'],
                     'roll_no'            => $u['roll'],
@@ -108,6 +113,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['submit_leap'])) {
                 );
                 header('Location: leap_apply.php?submitted=1');
                 exit;
+                } // end else (no pending app)
             }
         }
     }

@@ -13,27 +13,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_results'])) {
     if ($test) {
         foreach ($results as $roll => $data) {
             $marks   = isset($data['marks']) && $data['marks'] !== '' ? (int)$data['marks'] : null;
+            $absent  = !empty($data['absent']);
             $remarks = trim($data['remarks'] ?? '');
-            if ($marks === null) continue;
+            if ($marks === null && !$absent) continue;
 
-            $status = $publish ? 'PUBLISHED' : 'DRAFT';
+            $result_status = $absent ? 'ABSENT' : ($publish ? 'PUBLISHED' : 'DRAFT');
             $leap_test_results->updateOne(
                 ['test_id' => $test_id, 'student_id' => $roll],
                 ['$set' => [
                     'test_id'        => $test_id,
                     'student_id'     => $roll,
-                    'marks_obtained' => $marks,
+                    'marks_obtained' => $absent ? null : $marks,
                     'maximum_marks'  => (int)$test['maximum_marks'],
                     'remarks'        => $remarks,
+                    'absent'         => $absent,
                     'published_by'   => $m['mentor_id'],
-                    'published_at'   => $publish ? new MongoDB\BSON\UTCDateTime() : null,
-                    'status'         => $status,
+                    'published_at'   => ($publish && !$absent) ? new MongoDB\BSON\UTCDateTime() : null,
+                    'status'         => $result_status,
                 ]],
                 ['upsert' => true]
             );
-            if ($publish) {
+            if ($publish && !$absent) {
                 leapNotifyStudent($roll,
                     "🏆 Your LEAP result for \"{$test['title']}\" has been published. Score: {$marks}/{$test['maximum_marks']}",
+                    'leap_results.php'
+                );
+            }
+            if ($publish && $absent) {
+                leapNotifyStudent($roll,
+                    "📝 You were marked ABSENT for LEAP test \"{$test['title']}\".",
                     'leap_results.php'
                 );
             }
@@ -86,7 +94,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
     <style>
         .test-tab{padding:9px 16px;border-radius:8px;font-size:13px;font-weight:600;border:2px solid #e0e0e0;background:#fff;color:#555;cursor:pointer;transition:all .2s;display:block;margin-bottom:6px;text-decoration:none;}
         .test-tab.active{background:linear-gradient(135deg,#1a1a2e,#f39c12);color:#fff;border-color:transparent;}
-        .res-row{display:grid;grid-template-columns:1fr 110px 1fr;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #f0f2f5;}
+        .res-row{display:grid;grid-template-columns:1fr 110px 80px 1fr;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #f0f2f5;}
         .res-row:last-child{border-bottom:none;}
     </style>
 </head>
@@ -132,9 +140,10 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
                 <?php else: ?>
                 <form method="POST" id="resultsForm">
                     <input type="hidden" name="test_id" value="<?= $activeTestId ?>">
-                    <div style="display:grid;grid-template-columns:1fr 110px 1fr;gap:10px;padding:10px 0;border-bottom:2px solid #f0f2f5;margin-bottom:4px;">
+                    <div style="display:grid;grid-template-columns:1fr 110px 80px 1fr;gap:10px;padding:10px 0;border-bottom:2px solid #f0f2f5;margin-bottom:4px;">
                         <span style="font-size:12px;color:#888;text-transform:uppercase;font-weight:700;">Student</span>
                         <span style="font-size:12px;color:#888;text-transform:uppercase;font-weight:700;">Marks /<?= $activeTest['maximum_marks'] ?></span>
+                        <span style="font-size:12px;color:#888;text-transform:uppercase;font-weight:700;text-align:center;">Absent</span>
                         <span style="font-size:12px;color:#888;text-transform:uppercase;font-weight:700;">Remarks</span>
                     </div>
                     <?php foreach ($students as $st):
@@ -154,8 +163,18 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
                         <input type="number"
                                name="results[<?= htmlspecialchars($st['roll']) ?>][marks]"
                                placeholder="—" min="0" max="<?= $activeTest['maximum_marks'] ?>"
-                               value="<?= $existing ? htmlspecialchars($existing['marks_obtained']) : '' ?>"
-                               style="margin:0;text-align:center;font-weight:700;font-size:16px;">
+                               value="<?= $existing ? htmlspecialchars($existing['marks_obtained'] ?? '') : '' ?>"
+                               id="marks_<?= htmlspecialchars($st['roll']) ?>"
+                               style="margin:0;text-align:center;font-weight:700;font-size:16px;"
+                               <?= !empty($existing['absent']) ? 'disabled' : '' ?>>
+                        <div style="text-align:center;">
+                            <input type="checkbox"
+                                   name="results[<?= htmlspecialchars($st['roll']) ?>][absent]"
+                                   value="1"
+                                   <?= !empty($existing['absent']) ? 'checked' : '' ?>
+                                   onchange="toggleAbsent(this,'marks_<?= htmlspecialchars($st['roll']) ?>')"
+                                   style="width:20px;height:20px;cursor:pointer;accent-color:#e94560;">
+                        </div>
                         <input type="text"
                                name="results[<?= htmlspecialchars($st['roll']) ?>][remarks]"
                                placeholder="Remarks (optional)"
@@ -190,6 +209,12 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
 </div>
 <?php leapMentorNotifJS(); leapStudentDetailModal(); leapFooter(); ?>
 <script>
+function toggleAbsent(cb, marksId) {
+    const marks = document.getElementById(marksId);
+    if (!marks) return;
+    marks.disabled = cb.checked;
+    if (cb.checked) marks.value = '';
+}
 function submitPublish() {
     sgiConfirm('Publish these results? Students will be notified immediately with their scores.','Publish Results','Yes, Publish').then(ok=>{
         if (!ok) return;

@@ -73,6 +73,26 @@ foreach ($allResults as $r) {
     $totalMax   += (int)($r['maximum_marks']  ?? 0);
 }
 $avgPct = $totalMax > 0 ? round(($totalMarks / $totalMax) * 100) : null;
+
+// ── Build per-test trend (sorted chronologically) ─────────────────────────────
+$testTrend = [];
+foreach ($allResults as $r) {
+    $t      = $leap_tests->findOne(['_id' => new MongoDB\BSON\ObjectId($r['test_id'])]);
+    $absent = !empty($r['absent']);
+    $mo     = (int)($r['marks_obtained'] ?? 0);
+    $mx     = (int)($r['maximum_marks']  ?? 0);
+    $p      = (!$absent && $mx > 0) ? round(($mo / $mx) * 100) : null;
+    $testTrend[] = [
+        'title'   => $t['title'] ?? 'Test',
+        'date'    => $t['date']  ?? '',
+        'score'   => $absent ? null : $mo,
+        'max'     => $mx,
+        'pct'     => $p,
+        'absent'  => $absent,
+        'remarks' => $r['remarks'] ?? '',
+    ];
+}
+usort($testTrend, fn($a, $b) => strcmp($a['date'], $b['date']));
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -177,15 +197,29 @@ $avgPct = $totalMax > 0 ? round(($totalMarks / $totalMax) * 100) : null;
         </div>
         <?php endif; ?>
         <div style="margin-top:12px;">
-            <?php foreach ($allResults as $r):
-                $test = $leap_tests->findOne(['_id' => new MongoDB\BSON\ObjectId($r['test_id'])]);
-                $p = $r['maximum_marks'] > 0 ? round(($r['marks_obtained'] / $r['maximum_marks']) * 100) : 0;
-            ?>
-            <div class="stat-row">
-                <span class="stat-label"><?= htmlspecialchars($test['title'] ?? 'Test') ?></span>
-                <span class="stat-val" style="color:<?= $p >= 75 ? '#28a745' : ($p >= 50 ? '#f5a623' : '#e94560') ?>;">
-                    <?= $r['marks_obtained'] ?>/<?= $r['maximum_marks'] ?> (<?= $p ?>%)
-                </span>
+            <?php foreach ($testTrend as $tr): ?>
+            <div style="margin-bottom:14px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                    <span style="font-size:14px;font-weight:600;color:#1a1a2e;">
+                        <?= htmlspecialchars($tr['title']) ?>
+                        <?php if ($tr['date']): ?><span style="font-size:11px;color:#aaa;margin-left:6px;"><?= htmlspecialchars($tr['date']) ?></span><?php endif; ?>
+                    </span>
+                    <?php if ($tr['absent']): ?>
+                    <span style="font-size:12px;font-weight:700;color:#e94560;background:#fde8ec;padding:3px 10px;border-radius:12px;">ABSENT</span>
+                    <?php else: ?>
+                    <span style="font-size:14px;font-weight:700;color:<?= ($tr['pct'] ?? 0) >= 75 ? '#28a745' : (($tr['pct'] ?? 0) >= 50 ? '#f5a623' : '#e94560') ?>;">
+                        <?= $tr['score'] ?>/<?= $tr['max'] ?> (<?= $tr['pct'] ?>%)
+                    </span>
+                    <?php endif; ?>
+                </div>
+                <?php if (!$tr['absent']): ?>
+                <div class="progress-bar-wrap">
+                    <div class="progress-bar-fill" style="width:<?= $tr['pct'] ?>%;background:<?= ($tr['pct'] ?? 0) >= 75 ? '#28a745' : (($tr['pct'] ?? 0) >= 50 ? '#f5a623' : '#e94560') ?>;"></div>
+                </div>
+                <?php endif; ?>
+                <?php if (!empty($tr['remarks'])): ?>
+                <div style="font-size:12px;color:#888;margin-top:3px;font-style:italic;"><?= htmlspecialchars($tr['remarks']) ?></div>
+                <?php endif; ?>
             </div>
             <?php endforeach; ?>
         </div>

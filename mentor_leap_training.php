@@ -65,6 +65,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_session'])) {
     }
 }
 
+// Edit session details
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['edit_session'])) {
+    $sess_id = trim($_POST['session_id'] ?? '');
+    $title   = trim($_POST['edit_title'] ?? '');
+    $date    = trim($_POST['edit_date'] ?? '');
+    $start   = trim($_POST['edit_start_time'] ?? '');
+    $end     = trim($_POST['edit_end_time'] ?? '');
+    $desc    = trim($_POST['edit_desc'] ?? '');
+    if ($sess_id && $title) {
+        $sess = $leap_training_sessions->findOne(['_id' => new MongoDB\BSON\ObjectId($sess_id), 'mentor_id' => $m['mentor_id']]);
+        if ($sess) {
+            $leap_training_sessions->updateOne(
+                ['_id' => new MongoDB\BSON\ObjectId($sess_id)],
+                ['$set' => ['title' => $title, 'date' => $date, 'start_time' => $start, 'end_time' => $end, 'description' => $desc]]
+            );
+            header('Location: mentor_leap_training.php?tr=' . $sess['training_id'] . '&edited=1');
+            exit;
+        }
+    }
+}
+
 // Update session status (CONDUCTED / SUSPENDED / CANCELLED)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_session'])) {
     $sess_id = trim($_POST['session_id'] ?? '');
@@ -148,6 +169,7 @@ $statusColors = ['SCHEDULED' => '#17a2b8', 'CONDUCTED' => '#28a745', 'SUSPENDED'
     <?php if (isset($_GET['created'])): ?><p class="success" style="margin-bottom:12px;">✅ Training program created.</p><?php endif; ?>
     <?php if (isset($_GET['added'])): ?><p class="success" style="margin-bottom:12px;">✅ Session added and students notified.</p><?php endif; ?>
     <?php if (isset($_GET['updated'])): ?><p class="success" style="margin-bottom:12px;">✅ Session status updated.</p><?php endif; ?>
+    <?php if (isset($_GET['edited'])): ?><p class="success" style="margin-bottom:12px;">✅ Session details updated.</p><?php endif; ?>
     <?php if (isset($_GET['err']) && $_GET['err'] === 'reason'): ?><p class="error" style="margin-bottom:12px;">A suspension reason is required.</p><?php endif; ?>
 
     <div style="display:grid;grid-template-columns:280px 1fr;gap:24px;align-items:flex-start;">
@@ -240,6 +262,21 @@ $statusColors = ['SCHEDULED' => '#17a2b8', 'CONDUCTED' => '#28a745', 'SUSPENDED'
                                 <button type="submit" name="update_session" style="padding:5px 12px;background:#f5a623;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;white-space:nowrap;">Save Reason</button>
                             </form>
                         </div>
+                        <!-- Inline edit form -->
+                        <details style="margin-top:8px;width:100%;">
+                            <summary style="font-size:11px;color:#8e44ad;cursor:pointer;font-weight:600;list-style:none;">✏️ Edit details</summary>
+                            <form method="POST" style="margin-top:8px;display:grid;gap:6px;">
+                                <input type="hidden" name="session_id" value="<?= (string)$sess['_id'] ?>">
+                                <input type="text" name="edit_title" value="<?= htmlspecialchars($sess['title']) ?>" placeholder="Session title" style="font-size:12px;padding:5px 8px;margin:0;" required>
+                                <input type="date" name="edit_date" value="<?= htmlspecialchars($sess['date'] ?? '') ?>" style="font-size:12px;padding:5px 8px;margin:0;">
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+                                    <input type="time" name="edit_start_time" value="<?= htmlspecialchars($sess['start_time'] ?? '') ?>" style="font-size:12px;padding:5px 8px;margin:0;">
+                                    <input type="time" name="edit_end_time" value="<?= htmlspecialchars($sess['end_time'] ?? '') ?>" style="font-size:12px;padding:5px 8px;margin:0;">
+                                </div>
+                                <textarea name="edit_desc" rows="2" placeholder="Description" style="font-size:12px;padding:5px 8px;margin:0;"><?= htmlspecialchars($sess['description'] ?? '') ?></textarea>
+                                <button type="submit" name="edit_session" style="padding:5px 14px;background:#8e44ad;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;width:fit-content;">Save Changes</button>
+                            </form>
+                        </details>
                     </div>
                 </div>
                 <?php endforeach; ?>

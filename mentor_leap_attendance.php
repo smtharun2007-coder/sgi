@@ -33,6 +33,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_attendance'])) {
                     'leap_training.php'
                 );
             }
+            // Notify present students
+            if ($status === 'PRESENT') {
+                leapNotifyStudent($roll,
+                    "✅ Your attendance has been marked PRESENT for LEAP training session \"{$sess['title']}\".",
+                    'leap_training.php'
+                );
+            }
         }
         header('Location: mentor_leap_attendance.php?tr=' . $sess['training_id'] . '&sess=' . $sess_id . '&saved=1');
         exit;
