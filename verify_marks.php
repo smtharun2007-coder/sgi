@@ -24,15 +24,9 @@ foreach ($subList as $sub) {
     $cat3Total += (float)($sub['cat3'] ?? 0);
 }
 
-// Auto-fetch attendance from attendance module
-$attData = calculateStudentAttendance($roll, $db, ['semester' => (int)($sem['sem'] ?? 0)]);
-$autoAttendance = (($attData['total_conducted'] ?? 0) > 0 || ($attData['total_days_conducted'] ?? 0) > 0)
-    ? (float)$attData['attendance_percentage']
-    : (isset($sem['attendance']) ? (float)$sem['attendance'] : '');
-
 if (isset($_POST['verify'])) {
     $prev_gpa   = (float)$_POST['prev_gpa'];
-    $attendance = ($autoAttendance !== '') ? (float)$autoAttendance : (float)$_POST['attendance'];
+    $attendance = (float)$_POST['attendance'];
     
     // Check if there's already a pending approval for this
     $existingApproval = $approvals->findOne([
@@ -177,8 +171,8 @@ if (isset($_POST['verify'])) {
     <form method="POST">
         <label>Previous Semester GPA (out of 10)</label>
         <input type="number" name="prev_gpa" step="0.01" min="0" max="10" value="<?= $sem['prev_gpa'] ?? '' ?>" required>
-        <label>Attendance % <?= ($autoAttendance !== '') ? '<span style="font-size:11px;color:#27ae60;font-weight:600;">(Auto-calculated from Attendance Module)</span>' : '' ?></label>
-        <input type="number" name="attendance" step="0.01" min="0" max="100" value="<?= $autoAttendance !== '' ? $autoAttendance : ($sem['attendance'] ?? '') ?>" <?= ($autoAttendance !== '') ? 'readonly style="background:#eef9f1;font-weight:700;"' : '' ?> required>
+        <label>Attendance %</label>
+        <input type="number" name="attendance" step="0.01" min="0" max="100" value="<?= $sem['attendance'] ?? '' ?>" required>
         <div class="declaration-box">
             <label class="declaration-label">
                 <input type="checkbox" id="declaration" onchange="toggleSubmit()" required>

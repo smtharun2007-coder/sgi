@@ -48,14 +48,6 @@ $announcements   = $db->announcements;
 $calendar_events = $db->calendar_events;
 $notifications   = $db->notifications;
 $approvals       = $db->approvals;
-$timetables            = $db->timetables;
-$attendance_sessions   = $db->attendance_sessions;
-$student_attendance    = $db->student_attendance;
-$attendance_exceptions = $db->attendance_exceptions;
-$od_requests           = $db->od_requests;
-
-// SGI Attendance Helper & Calculation Service
-require_once __DIR__ . '/attendance_helper.php';
 
 // LEAP collections
 $leap_applications      = $db->leap_applications;

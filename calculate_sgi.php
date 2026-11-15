@@ -37,16 +37,7 @@ $gpa        = (float)($sem['gpa'] ?? 0);
 $cgpa       = (float)($sem['cgpa'] ?? 0);
 $prev_gpa   = (float)($sem['prev_gpa'] ?? 0);
 
-// Auto-fetch attendance from the attendance module using centralized SGI calculation
 $attendance = (float)($sem['attendance'] ?? 0);
-try {
-    $attData = calculateStudentAttendance($roll, $db, ['semester' => (int)($sem['sem'] ?? 0)]);
-    if (($attData['total_conducted'] ?? 0) > 0 || ($attData['total_days_conducted'] ?? 0) > 0) {
-        $attendance = (float)$attData['attendance_percentage'];
-    }
-} catch (Exception $e) {
-    // Fall back to semester attendance if attendance module not available
-}
 
 $error = '';
 
