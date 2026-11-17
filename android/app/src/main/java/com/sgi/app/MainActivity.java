@@ -274,10 +274,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onProgressChanged(WebView view, int newProgress) {
                 if (newProgress < 100) {
+                    progressBar.setAlpha(1f);
                     progressBar.setVisibility(View.VISIBLE);
                     progressBar.setProgress(newProgress);
                 } else {
-                    progressBar.setVisibility(View.GONE);
+                    progressBar.setProgress(100);
+                    progressBar.animate()
+                            .alpha(0f)
+                            .setDuration(250)
+                            .withEndAction(() -> progressBar.setVisibility(View.GONE));
                 }
             }
 

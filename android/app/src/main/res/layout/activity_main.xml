@@ -20,10 +20,10 @@
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="match_parent"
-        android:layout_height="4dp"
+        android:layout_height="2.5dp"
         android:indeterminate="false"
         android:max="100"
-        android:progressDrawable="@android:drawable/progress_horizontal"
+        android:progressDrawable="@drawable/custom_progress_bar"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent" />
 
