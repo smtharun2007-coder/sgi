@@ -18,14 +18,22 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI
 </a>
     <div class="nav-links">
-        <a href="dashboard.php">Home</a>
-        <a href="update_profile.php">Profile</a>
-        <a href="about.php">About</a>
-        <a href="contact.php">Contact</a>
-        <a href="print_select.php">Print</a>
+        <a href="dashboard.php">🏠 Home</a>
+        <a href="leap.php" style="color:#f5a623;font-weight:700;"><img src="/LEAP.png" alt="LEAP" style="width:16px;height:16px;object-fit:contain;border-radius:3px;vertical-align:middle;margin-right:4px;">LEAP</a>
+        <a href="print_select.php">🖨️ Print</a>
+
+        <div class="nav-dropdown">
+            <button class="nav-dropdown-btn">ℹ️ More <span class="caret">▾</span></button>
+            <div class="nav-dropdown-menu">
+                <a href="update_profile.php"><span>👤</span> Edit Profile</a>
+                <a href="about.php"><span>📖</span> About SGI</a>
+                <a href="contact.php"><span>✉️</span> Contact Support</a>
+            </div>
+        </div>
+
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
-                &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
+                🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
             </button>
             <div class="notif-dropdown" id="notifDrop">
                 <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>

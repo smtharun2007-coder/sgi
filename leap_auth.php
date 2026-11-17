@@ -112,23 +112,17 @@ function sanitizeLeapNotifLink($raw) {
 
 // Render student LEAP navbar (call after $u and $unreadCount are set)
 function leapStudentNav($u, $unreadCount, $active = '') {
-    $pages = [
-        'leap.php'              => 'Home',
-        'leap_announcements.php'=> 'Announcements',
-        'leap_activities.php'   => 'Activities',
-        'leap_training.php'     => 'Training',
-        'leap_tests.php'        => 'Tests',
-        'leap_progress.php'     => 'My Progress',
-        'leap_results.php'      => 'Results',
-        'leap_profile_edit.php' => '💻 Profile',
-    ];
-    $links = '';
-    foreach ($pages as $href => $label) {
-        $isCurrent = (basename($active) === $href || basename($_SERVER['PHP_SELF']) === $href);
-        $style = $isCurrent ? 'color:#fff;font-weight:700;border-bottom:2px solid #f5a623;padding-bottom:2px;' : '';
-        $links .= "<a href=\"$href\" style=\"$style\">$label</a>";
-    }
+    $current = basename($active ?: $_SERVER['PHP_SELF']);
     $badge = $unreadCount > 0 ? "<span class=\"notif-badge\">$unreadCount</span>" : '';
+
+    $isHome = ($current === 'leap.php');
+    $isLearning = in_array($current, ['leap_announcements.php', 'leap_activities.php', 'leap_training.php']);
+    $isPerf = in_array($current, ['leap_tests.php', 'leap_progress.php', 'leap_results.php']);
+    $isProfile = ($current === 'leap_profile_edit.php');
+
+    $homeStyle = $isHome ? 'color:#fff;font-weight:700;border-bottom:2px solid #f5a623;padding-bottom:2px;' : '';
+    $profileStyle = $isProfile ? 'color:#fff;font-weight:700;border-bottom:2px solid #f5a623;padding-bottom:2px;' : '';
+
     echo <<<HTML
 <nav class="navbar" style="background:linear-gradient(135deg,#1a1a2e,#f5a623);">
     <a href="leap.php" class="nav-brand" style="color:#fff;">
@@ -136,8 +130,29 @@ function leapStudentNav($u, $unreadCount, $active = '') {
         <span style="color:#f5a623;font-weight:800;">LEAP</span><span style="font-size:12px;opacity:0.7;margin-left:4px;">The Placement Series</span>
     </a>
     <div class="nav-links">
-        $links
-        <a href="dashboard.php" style="opacity:0.7;font-size:12px;">← SGI</a>
+        <a href="leap.php" style="$homeStyle">🏠 Home</a>
+
+        <div class="nav-dropdown">
+            <button class="nav-dropdown-btn" style="color:#fff;">📚 Learning <span class="caret">▾</span></button>
+            <div class="nav-dropdown-menu">
+                <a href="leap_announcements.php" class="{$isLearning}"><span style="font-size:15px;">📢</span> Announcements</a>
+                <a href="leap_activities.php"><span style="font-size:15px;">🎯</span> Activities</a>
+                <a href="leap_training.php"><span style="font-size:15px;">🏋️</span> Training Sessions</a>
+            </div>
+        </div>
+
+        <div class="nav-dropdown">
+            <button class="nav-dropdown-btn" style="color:#fff;">📊 Performance <span class="caret">▾</span></button>
+            <div class="nav-dropdown-menu">
+                <a href="leap_tests.php"><span style="font-size:15px;">📝</span> Tests & Mock Drives</a>
+                <a href="leap_progress.php"><span style="font-size:15px;">📈</span> My Progress</a>
+                <a href="leap_results.php"><span style="font-size:15px;">🏆</span> Test Results</a>
+            </div>
+        </div>
+
+        <a href="leap_profile_edit.php" style="$profileStyle">💻 Profile</a>
+        <a href="dashboard.php" style="opacity:0.75;font-size:13px;">← SGI</a>
+
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
                 🔔$badge
@@ -156,37 +171,50 @@ HTML;
 // Render mentor LEAP navbar
 function leapMentorNav($m, $unreadCount) {
     global $leap_applications;
+    $current = basename($_SERVER['PHP_SELF']);
     $pendingAppCount = $leap_applications->countDocuments(['mentor_id' => $m['mentor_id'], 'status' => 'PENDING']);
-    $appLabel = 'Applications' . ($pendingAppCount > 0
+    $appBadge = ($pendingAppCount > 0)
         ? ' <span style="background:#e94560;color:#fff;border-radius:10px;padding:1px 7px;font-size:11px;margin-left:4px;">' . $pendingAppCount . '</span>'
-        : '');
-    $pages = [
-        'mentor_leap_dashboard.php'    => '🏠 Dashboard',
-        'mentor_leap_applications.php' => $appLabel,
-        'mentor_leap_pacc.php'         => 'PACC',
-        'mentor_leap_announcements.php'=> 'Announcements',
-        'mentor_leap_activities.php'   => 'Activities',
-        'mentor_leap_training.php'     => 'Training',
-        'mentor_leap_attendance.php'   => 'Attendance',
-        'mentor_leap_tests.php'        => 'Tests',
-        'mentor_leap_results.php'      => 'Results',
-    ];
-    $links = '';
-    foreach ($pages as $href => $label) {
-        $isCurrent = (basename($_SERVER['PHP_SELF']) === $href);
-        $style = $isCurrent ? 'color:#fff;font-weight:700;border-bottom:2px solid #f5a623;padding-bottom:2px;' : '';
-        $links .= "<a href=\"$href\" style=\"$style\">$label</a>";
-    }
+        : '';
+
+    $isDash = ($current === 'mentor_leap_dashboard.php');
+    $isApp = ($current === 'mentor_leap_applications.php');
+    $dashStyle = $isDash ? 'color:#fff;font-weight:700;border-bottom:2px solid #f5a623;padding-bottom:2px;' : '';
+    $appStyle = $isApp ? 'color:#fff;font-weight:700;border-bottom:2px solid #f5a623;padding-bottom:2px;' : '';
+
     $badge = $unreadCount > 0 ? "<span class=\"notif-badge\">$unreadCount</span>" : '';
+
     echo <<<HTML
 <nav class="navbar" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);">
-    <a href="mentor_dashboard.php" class="nav-brand" style="color:#fff;">
+    <a href="mentor_leap_dashboard.php" class="nav-brand" style="color:#fff;">
         <img src="/LEAP.png" alt="LEAP" class="nav-logo" style="width:32px;height:32px;object-fit:contain;border-radius:6px;">
         <span style="color:#f5a623;font-weight:800;">LEAP</span><span style="font-size:12px;opacity:0.7;margin-left:4px;">Mentor Portal</span>
     </a>
     <div class="nav-links">
-        $links
-        <a href="mentor_dashboard.php" style="opacity:0.7;font-size:12px;">← Dashboard</a>
+        <a href="mentor_leap_dashboard.php" style="$dashStyle">🏠 Dashboard</a>
+        <a href="mentor_leap_applications.php" style="$appStyle">📋 Applications$appBadge</a>
+
+        <div class="nav-dropdown">
+            <button class="nav-dropdown-btn" style="color:#fff;">👥 Management <span class="caret">▾</span></button>
+            <div class="nav-dropdown-menu">
+                <a href="mentor_leap_pacc.php"><span style="font-size:15px;">👥</span> PACC Members</a>
+                <a href="mentor_leap_attendance.php"><span style="font-size:15px;">📅</span> Attendance</a>
+                <a href="mentor_leap_announcements.php"><span style="font-size:15px;">📢</span> Announcements</a>
+            </div>
+        </div>
+
+        <div class="nav-dropdown">
+            <button class="nav-dropdown-btn" style="color:#fff;">🎯 Academics <span class="caret">▾</span></button>
+            <div class="nav-dropdown-menu">
+                <a href="mentor_leap_activities.php"><span style="font-size:15px;">🚀</span> Activities</a>
+                <a href="mentor_leap_training.php"><span style="font-size:15px;">🏋️</span> Training Sessions</a>
+                <a href="mentor_leap_tests.php"><span style="font-size:15px;">📝</span> Tests & Drives</a>
+                <a href="mentor_leap_results.php"><span style="font-size:15px;">📊</span> Results</a>
+            </div>
+        </div>
+
+        <a href="mentor_dashboard.php" style="opacity:0.75;font-size:13px;">← Dashboard</a>
+
         <div class="notif-bell-wrap">
             <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
                 🔔$badge
