@@ -124,6 +124,7 @@ if (isset($_POST['save_ca'])) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>SGI – Final CA Marks</title>
     <link rel="stylesheet" href="/css/style.css?v=3">

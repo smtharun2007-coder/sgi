@@ -43,6 +43,11 @@ import androidx.work.WorkManager;
 
 import com.google.firebase.messaging.FirebaseMessaging;
 
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
@@ -219,11 +224,37 @@ public class MainActivity extends AppCompatActivity {
         @JavascriptInterface
         public void saveUserIdentifier(String identifier, String type) {
             if (identifier != null && !identifier.trim().isEmpty()) {
+                final String cleanId = identifier.trim();
+                final String cleanType = (type != null && !type.isEmpty()) ? type : "student";
                 getSharedPreferences("sgi_prefs", MODE_PRIVATE)
                         .edit()
-                        .putString("user_identifier", identifier.trim())
-                        .putString("user_type", (type != null && !type.isEmpty()) ? type : "student")
+                        .putString("user_identifier", cleanId)
+                        .putString("user_type", cleanType)
                         .apply();
+
+                // Direct background register to ensure token is linked to roll/mentor_id immediately
+                if (fcmToken != null && !fcmToken.isEmpty()) {
+                    new Thread(() -> {
+                        try {
+                            URL url = new URL("https://" + APP_HOST + "/api/register_fcm.php");
+                            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                            conn.setRequestMethod("POST");
+                            conn.setDoOutput(true);
+                            conn.setConnectTimeout(6000);
+                            conn.setReadTimeout(6000);
+                            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
+                            conn.setRequestProperty("User-Agent", "SGI-Android-App/1.1");
+                            String postData = "fcm_token=" + URLEncoder.encode(fcmToken, "UTF-8") +
+                                    "&roll=" + URLEncoder.encode(cleanId, "UTF-8") +
+                                    "&type=" + URLEncoder.encode(cleanType, "UTF-8");
+                            try (OutputStream os = conn.getOutputStream()) {
+                                os.write(postData.getBytes(StandardCharsets.UTF_8));
+                            }
+                            conn.getResponseCode();
+                            conn.disconnect();
+                        } catch (Exception ignored) {}
+                    }).start();
+                }
             }
         }
     }
@@ -323,17 +354,19 @@ public class MainActivity extends AppCompatActivity {
         String js = "(function() {" +
                 "  try {" +
                 "    var token = '" + fcmToken + "';" +
+                "    var rollEl = document.querySelector('.profile-roll');" +
+                "    var roll = (rollEl && rollEl.innerText) ? rollEl.innerText.trim() : '';" +
+                "    if (roll && window.Android && window.Android.saveUserIdentifier) {" +
+                "      window.Android.saveUserIdentifier(roll, roll.startsWith('M') ? 'mentor' : 'student');" +
+                "    }" +
                 "    if (token && window.fetch) {" +
+                "      var params = 'fcm_token=' + encodeURIComponent(token);" +
+                "      if (roll) params += '&roll=' + encodeURIComponent(roll) + '&type=' + (roll.startsWith('M') ? 'mentor' : 'student');" +
                 "      fetch('/api/register_fcm.php', {" +
                 "        method: 'POST'," +
                 "        headers: {'Content-Type': 'application/x-www-form-urlencoded'}," +
-                "        body: 'fcm_token=' + encodeURIComponent(token)" +
+                "        body: params" +
                 "      }).catch(function(){});" +
-                "    }" +
-                "    var rollEl = document.querySelector('.profile-roll');" +
-                "    if (rollEl && rollEl.innerText && window.Android && window.Android.saveUserIdentifier) {" +
-                "      var txt = rollEl.innerText.trim();" +
-                "      window.Android.saveUserIdentifier(txt, txt.startsWith('M') ? 'mentor' : 'student');" +
                 "    }" +
                 "  } catch(e) {}" +
                 "})();";

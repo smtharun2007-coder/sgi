@@ -5,6 +5,8 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.media.AudioAttributes;
 import android.media.RingtoneManager;
 import android.net.Uri;
@@ -47,6 +49,7 @@ public class NotificationHelper {
                     .setUsage(AudioAttributes.USAGE_NOTIFICATION)
                     .build();
             channel.setSound(defaultSoundUri, audioAttributes);
+            channel.setLockscreenVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
             notificationManager.createNotificationChannel(channel);
         }
@@ -65,17 +68,28 @@ public class NotificationHelper {
         int requestCode = (int) (System.currentTimeMillis() % 100000);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode, intent, flags);
 
+        Bitmap largeLogo = null;
+        try {
+            largeLogo = BitmapFactory.decodeResource(context.getResources(), R.drawable.app_icon);
+        } catch (Exception ignored) {}
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.mipmap.sgi_icon)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
                 .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setSound(defaultSoundUri)
                 .setVibrate(new long[]{0, 350, 150, 350})
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
+
+        if (largeLogo != null) {
+            builder.setLargeIcon(largeLogo);
+        }
 
         int notificationId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
         notificationManager.notify(notificationId, builder.build());

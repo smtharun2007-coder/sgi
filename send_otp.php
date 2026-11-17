@@ -10,7 +10,8 @@ function sendOTPEmail($to, $name, $otp, $type = 'student') {
     $accentColor = ($type === 'mentor') ? '#8e44ad' : '#e94560';
     $subject     = "SGI - Password Reset OTP Verification";
     $html        = "
-    <!DOCTYPE html><html><head><meta charset='UTF-8'>
+    <!DOCTYPE html><html><head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"><meta charset='UTF-8'>
     <style>
         body{font-family:'Segoe UI',Arial,sans-serif;line-height:1.6;color:#333;max-width:600px;margin:0 auto;padding:20px;}
         .header{background:linear-gradient(135deg,#1a1a2e,{$accentColor});color:white;padding:30px;text-align:center;border-radius:10px 10px 0 0;}

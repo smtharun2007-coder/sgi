@@ -17,6 +17,9 @@ $userType = 'guest';
 $identifier = null;
 $email = null;
 
+$fallbackIdentifier = trim($_POST['roll'] ?? $_POST['identifier'] ?? '');
+$fallbackType = trim($_POST['type'] ?? 'student');
+
 if (!empty($_SESSION['user']['roll'])) {
     $userType = 'student';
     $identifier = (string)$_SESSION['user']['roll'];
@@ -33,6 +36,9 @@ if (!empty($_SESSION['user']['roll'])) {
     $userType = 'mentor';
     $identifier = (string)$_SESSION['mentor_id'];
     $email = $_SESSION['email'] ?? null;
+} elseif (!empty($fallbackIdentifier)) {
+    $userType = $fallbackType;
+    $identifier = $fallbackIdentifier;
 }
 
 try {

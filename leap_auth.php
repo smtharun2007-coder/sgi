@@ -35,7 +35,8 @@ function requireMentorLeap() {
         header('Location: mentor_login.php');
         exit;
     }
-    if (isset($_SESSION['last_mentor_activity']) && (time() - $_SESSION['last_mentor_activity'] > 1800)) {
+    $isMobileApp = (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'SGI-Android-App') !== false);
+    if (!$isMobileApp && isset($_SESSION['last_mentor_activity']) && (time() - $_SESSION['last_mentor_activity'] > 1800)) {
         unset($_SESSION['mentor']);
         header('Location: mentor_login.php?timeout=1');
         exit;
@@ -112,6 +113,8 @@ function sanitizeLeapNotifLink($raw) {
 
 // Render student LEAP navbar (call after $u and $unreadCount are set)
 function leapStudentNav($u, $unreadCount, $active = '') {
+    require_once __DIR__ . '/nav_helper.php';
+    $styles = renderNavMobileStyles();
     $current = basename($active ?: $_SERVER['PHP_SELF']);
     $badge = $unreadCount > 0 ? "<span class=\"notif-badge\">$unreadCount</span>" : '';
 
@@ -124,16 +127,34 @@ function leapStudentNav($u, $unreadCount, $active = '') {
     $profileStyle = $isProfile ? 'color:#fff;font-weight:700;border-bottom:2px solid #f5a623;padding-bottom:2px;' : '';
 
     echo <<<HTML
+$styles
 <nav class="navbar" style="background:linear-gradient(135deg,#1a1a2e,#f5a623);">
     <a href="leap.php" class="nav-brand" style="color:#fff;">
         <img src="/LEAP.png" alt="LEAP" class="nav-logo" style="width:32px;height:32px;object-fit:contain;border-radius:6px;">
         <span style="color:#f5a623;font-weight:800;">LEAP</span><span style="font-size:12px;opacity:0.7;margin-left:4px;">The Placement Series</span>
     </a>
-    <div class="nav-links">
+
+    <!-- Mobile Top Actions (Only shown <= 768px) -->
+    <div class="nav-mobile-actions">
+        <div class="notif-bell-wrap">
+            <button class="notif-bell-btn" onclick="toggleNotif(event)" id="bellBtnMobile">
+                🔔$badge
+            </button>
+            <div class="notif-dropdown" id="notifDropMobile">
+                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
+                <div class="notif-list-scroll" id="notifListMobile"><div class="notif-empty">Loading&hellip;</div></div>
+            </div>
+        </div>
+        <button class="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="nav-links" id="sgiNavLinks">
         <a href="leap.php" style="$homeStyle">🏠 Home</a>
 
         <div class="nav-dropdown">
-            <button class="nav-dropdown-btn" style="color:#fff;">📚 Learning <span class="caret">▾</span></button>
+            <button type="button" class="nav-dropdown-btn" style="color:#fff;" onclick="toggleMobileDropdown(this)">📚 Learning <span class="caret">▾</span></button>
             <div class="nav-dropdown-menu">
                 <a href="leap_announcements.php" class="{$isLearning}"><span style="font-size:15px;">📢</span> Announcements</a>
                 <a href="leap_activities.php"><span style="font-size:15px;">🎯</span> Activities</a>
@@ -142,7 +163,7 @@ function leapStudentNav($u, $unreadCount, $active = '') {
         </div>
 
         <div class="nav-dropdown">
-            <button class="nav-dropdown-btn" style="color:#fff;">📊 Performance <span class="caret">▾</span></button>
+            <button type="button" class="nav-dropdown-btn" style="color:#fff;" onclick="toggleMobileDropdown(this)">📊 Performance <span class="caret">▾</span></button>
             <div class="nav-dropdown-menu">
                 <a href="leap_tests.php"><span style="font-size:15px;">📝</span> Tests & Mock Drives</a>
                 <a href="leap_progress.php"><span style="font-size:15px;">📈</span> My Progress</a>
@@ -153,8 +174,8 @@ function leapStudentNav($u, $unreadCount, $active = '') {
         <a href="leap_profile_edit.php" style="$profileStyle">💻 Profile</a>
         <a href="dashboard.php" style="opacity:0.75;font-size:13px;">← SGI</a>
 
-        <div class="notif-bell-wrap">
-            <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
+        <div class="notif-bell-wrap nav-desktop-bell">
+            <button class="notif-bell-btn" onclick="toggleNotif(event)" id="bellBtn">
                 🔔$badge
             </button>
             <div class="notif-dropdown" id="notifDrop">
@@ -171,6 +192,8 @@ HTML;
 // Render mentor LEAP navbar
 function leapMentorNav($m, $unreadCount) {
     global $leap_applications;
+    require_once __DIR__ . '/nav_helper.php';
+    $styles = renderNavMobileStyles();
     $current = basename($_SERVER['PHP_SELF']);
     $pendingAppCount = $leap_applications->countDocuments(['mentor_id' => $m['mentor_id'], 'status' => 'PENDING']);
     $appBadge = ($pendingAppCount > 0)
@@ -185,17 +208,35 @@ function leapMentorNav($m, $unreadCount) {
     $badge = $unreadCount > 0 ? "<span class=\"notif-badge\">$unreadCount</span>" : '';
 
     echo <<<HTML
+$styles
 <nav class="navbar" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);">
     <a href="mentor_leap_dashboard.php" class="nav-brand" style="color:#fff;">
         <img src="/LEAP.png" alt="LEAP" class="nav-logo" style="width:32px;height:32px;object-fit:contain;border-radius:6px;">
         <span style="color:#f5a623;font-weight:800;">LEAP</span><span style="font-size:12px;opacity:0.7;margin-left:4px;">Mentor Portal</span>
     </a>
-    <div class="nav-links">
+
+    <!-- Mobile Top Actions (Only shown <= 768px) -->
+    <div class="nav-mobile-actions">
+        <div class="notif-bell-wrap">
+            <button class="notif-bell-btn" onclick="toggleNotif(event)" id="bellBtnMobile">
+                🔔$badge
+            </button>
+            <div class="notif-dropdown" id="notifDropMobile">
+                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
+                <div class="notif-list-scroll" id="notifListMobile"><div class="notif-empty">Loading&hellip;</div></div>
+            </div>
+        </div>
+        <button class="nav-hamburger" onclick="toggleMobileMenu()" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+    </div>
+
+    <div class="nav-links" id="sgiNavLinks">
         <a href="mentor_leap_dashboard.php" style="$dashStyle">🏠 Dashboard</a>
         <a href="mentor_leap_applications.php" style="$appStyle">📋 Applications$appBadge</a>
 
         <div class="nav-dropdown">
-            <button class="nav-dropdown-btn" style="color:#fff;">👥 Management <span class="caret">▾</span></button>
+            <button type="button" class="nav-dropdown-btn" style="color:#fff;" onclick="toggleMobileDropdown(this)">👥 Management <span class="caret">▾</span></button>
             <div class="nav-dropdown-menu">
                 <a href="mentor_leap_pacc.php"><span style="font-size:15px;">👥</span> PACC Members</a>
                 <a href="mentor_leap_attendance.php"><span style="font-size:15px;">📅</span> Attendance</a>
@@ -204,7 +245,7 @@ function leapMentorNav($m, $unreadCount) {
         </div>
 
         <div class="nav-dropdown">
-            <button class="nav-dropdown-btn" style="color:#fff;">🎯 Academics <span class="caret">▾</span></button>
+            <button type="button" class="nav-dropdown-btn" style="color:#fff;" onclick="toggleMobileDropdown(this)">🎯 Academics <span class="caret">▾</span></button>
             <div class="nav-dropdown-menu">
                 <a href="mentor_leap_activities.php"><span style="font-size:15px;">🚀</span> Activities</a>
                 <a href="mentor_leap_training.php"><span style="font-size:15px;">🏋️</span> Training Sessions</a>
@@ -215,8 +256,8 @@ function leapMentorNav($m, $unreadCount) {
 
         <a href="mentor_dashboard.php" style="opacity:0.75;font-size:13px;">← Dashboard</a>
 
-        <div class="notif-bell-wrap">
-            <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
+        <div class="notif-bell-wrap nav-desktop-bell">
+            <button class="notif-bell-btn" onclick="toggleNotif(event)" id="bellBtn">
                 🔔$badge
             </button>
             <div class="notif-dropdown" id="notifDrop">

@@ -87,6 +87,7 @@ $unreadCount = $notifications->countDocuments(['mentor_id' => $m['mentor_id'], '
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta charset="UTF-8">
     <title>LEAP – Results (Mentor)</title>
     <link rel="stylesheet" href="/css/style.css?v=3">

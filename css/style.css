@@ -1351,20 +1351,62 @@ textarea:focus { border-color: #e94560; }
     background: rgba(245, 166, 35, 0.12);
 }
 
+/* Comprehensive Mobile Responsiveness Overhaul */
+html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+.table-responsive, .cat-table-wrap {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
 @media (max-width: 768px) {
-    .navbar {
-        padding: 10px 14px;
-        flex-wrap: wrap;
+    .container {
+        padding: 0 14px !important;
+        margin: 16px auto !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
-    .nav-links {
-        gap: 6px;
+
+    .profile-card {
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+        padding: 20px 16px !important;
     }
-    .nav-dropdown-btn {
-        font-size: 12px;
-        padding: 5px 8px;
+
+    .profile-photo {
+        order: -1;
+        margin-bottom: 16px;
     }
-    .nav-links a {
-        font-size: 12px;
-        margin-left: 0;
+
+    .profile-photo img {
+        width: 160px !important;
+        height: 200px !important;
+    }
+
+    .profile-info h2 {
+        font-size: 26px !important;
+        word-break: break-word;
+    }
+
+    .profile-roll {
+        font-size: 20px !important;
+    }
+
+    .sem-cards {
+        gap: 16px !important;
+    }
+
+    .sem-card {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .form-box {
+        padding: 24px 16px !important;
     }
 }
