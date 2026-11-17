@@ -41,26 +41,27 @@ jobs:
         working-directory: android
         run: |
           ./gradlew assembleDebug --stacktrace --no-daemon
-          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/SGI-v1.0.apk
+          cp app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/debug/SGI-v1.1.apk
 
       - name: Upload APK to Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: SGI-Mobile-App-APK
-          path: android/app/build/outputs/apk/debug/SGI-v1.0.apk
+          path: android/app/build/outputs/apk/debug/SGI-v1.1.apk
           if-no-files-found: error
 
       - name: Create GitHub Release with APK
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0-app
-          name: "SGI Mobile App v1.0"
+          tag_name: v1.1-app
+          name: "SGI Mobile App v1.1 (Push Notifications)"
           body: |
-            ### 📱 SGI & LEAP Mobile App for Android
+            ### 📱 SGI & LEAP Mobile App v1.1 with System Push Notifications
             - **Live Server:** https://tgsgi.onrender.com/
-            - Download `SGI-v1.0.apk` and install on any Android phone.
-            - Enable "Install from unknown sources" in Android settings first.
-          files: android/app/build/outputs/apk/debug/SGI-v1.0.apk
+            - **System Notifications:** Full Android system tray & heads-up notifications (like WhatsApp).
+            - **Firebase Cloud Messaging:** Connected to Firebase project `tgsgi-2f41f`.
+            - Download `SGI-v1.1.apk` and install on any Android phone.
+          files: android/app/build/outputs/apk/debug/SGI-v1.1.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

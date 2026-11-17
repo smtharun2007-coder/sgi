@@ -1,16 +1,20 @@
 package com.sgi.app;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.webkit.CookieManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -25,15 +29,28 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import androidx.activity.OnBackPressedCallback;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import androidx.work.Constraints;
+import androidx.work.ExistingPeriodicWorkPolicy;
+import androidx.work.NetworkType;
+import androidx.work.PeriodicWorkRequest;
+import androidx.work.WorkManager;
+
+import com.google.firebase.messaging.FirebaseMessaging;
+
+import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity {
 
     public static final String APP_URL = "https://tgsgi.onrender.com/index.php";
     public static final String APP_HOST = "tgsgi.onrender.com";
     private static final int FILE_CHOOSER_RESULT_CODE = 1001;
+    private static final int NOTIFICATION_PERMISSION_CODE = 1002;
 
     private WebView webView;
     private SwipeRefreshLayout swipeRefresh;
@@ -42,6 +59,7 @@ public class MainActivity extends AppCompatActivity {
     private Button btnRetry;
 
     private ValueCallback<Uri[]> fileUploadCallback;
+    private String fcmToken = "";
 
     @SuppressLint("SetJavaScriptEnabled")
     @Override
@@ -68,11 +86,88 @@ public class MainActivity extends AppCompatActivity {
             webView.reload();
         });
 
+        // Request Notification permission for Android 13+ (Tiramisu)
+        requestNotificationPermission();
+
+        // Initialize Firebase Cloud Messaging Token
+        initFcm();
+
+        // Schedule periodic background check
+        scheduleBackgroundNotificationWorker();
+
         if (savedInstanceState != null) {
             webView.restoreState(savedInstanceState);
         } else {
-            webView.loadUrl(APP_URL);
+            handleIntent(getIntent());
         }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleIntent(intent);
+    }
+
+    private void handleIntent(Intent intent) {
+        if (intent != null && intent.hasExtra("target_url")) {
+            String url = intent.getStringExtra("target_url");
+            if (url != null && !url.trim().isEmpty()) {
+                if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                    url = "https://" + APP_HOST + (url.startsWith("/") ? "" : "/") + url;
+                }
+                webView.loadUrl(url);
+                return;
+            }
+        }
+        webView.loadUrl(APP_URL);
+    }
+
+    private void requestNotificationPermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(
+                        this,
+                        new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                        NOTIFICATION_PERMISSION_CODE
+                );
+            }
+        }
+    }
+
+    private void initFcm() {
+        SharedPreferences prefs = getSharedPreferences("sgi_prefs", MODE_PRIVATE);
+        fcmToken = prefs.getString("fcm_token", "");
+
+        try {
+            FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+                if (task.isSuccessful() && task.getResult() != null) {
+                    fcmToken = task.getResult();
+                    prefs.edit().putString("fcm_token", fcmToken).apply();
+                    registerFcmWithCurrentSession();
+                }
+            });
+        } catch (Exception ignored) {}
+    }
+
+    private void scheduleBackgroundNotificationWorker() {
+        try {
+            Constraints constraints = new Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build();
+
+            PeriodicWorkRequest syncRequest = new PeriodicWorkRequest.Builder(
+                    NotificationSyncWorker.class,
+                    15, TimeUnit.MINUTES
+            ).setConstraints(constraints).build();
+
+            WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+                    "SgiNotificationSync",
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    syncRequest
+            );
+        } catch (Exception ignored) {}
     }
 
     private void setupCookies() {
@@ -104,7 +199,22 @@ public class MainActivity extends AppCompatActivity {
 
         // Custom User-Agent to let PHP know it's the SGI Android App
         String defaultUa = settings.getUserAgentString();
-        settings.setUserAgentString(defaultUa + " SGI-Android-App/1.0");
+        settings.setUserAgentString(defaultUa + " SGI-Android-App/1.1");
+
+        // JS Bridge for Web -> Android interaction
+        webView.addJavascriptInterface(new WebAppInterface(), "Android");
+    }
+
+    public class WebAppInterface {
+        @JavascriptInterface
+        public String getFcmToken() {
+            return fcmToken;
+        }
+
+        @JavascriptInterface
+        public void showSystemNotification(String title, String body, String url) {
+            NotificationHelper.showNotification(MainActivity.this, title, body, url);
+        }
     }
 
     private void setupWebViewClients() {
@@ -129,7 +239,7 @@ public class MainActivity extends AppCompatActivity {
                     return false;
                 }
 
-                // External links (LeetCode, HackerRank, etc.) open in external browser
+                // External links open in external browser
                 try {
                     startActivity(new Intent(Intent.ACTION_VIEW, uri));
                 } catch (Exception ignored) {
@@ -144,6 +254,9 @@ public class MainActivity extends AppCompatActivity {
                 swipeRefresh.setRefreshing(false);
                 progressBar.setVisibility(View.GONE);
                 CookieManager.getInstance().flush();
+
+                // Automatically register FCM token with the logged-in session
+                registerFcmWithCurrentSession();
             }
 
             @Override
@@ -168,7 +281,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
 
-            // File Chooser for uploads (Photos, Documents, Marksheets)
             @Override
             public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
                 if (fileUploadCallback != null) {
@@ -187,6 +299,24 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private void registerFcmWithCurrentSession() {
+        if (fcmToken == null || fcmToken.length() < 10) return;
+        // Inject JS to notify backend
+        String js = "(function() {" +
+                "  try {" +
+                "    var token = '" + fcmToken + "';" +
+                "    if (token && window.fetch) {" +
+                "      fetch('/api/register_fcm.php', {" +
+                "        method: 'POST'," +
+                "        headers: {'Content-Type': 'application/x-www-form-urlencoded'}," +
+                "        body: 'fcm_token=' + encodeURIComponent(token)" +
+                "      }).catch(function(){});" +
+                "    }" +
+                "  } catch(e) {}" +
+                "})();";
+        webView.evaluateJavascript(js, null);
     }
 
     private void setupSwipeRefresh() {
@@ -211,7 +341,6 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(this, "Downloading " + filename + "...", Toast.LENGTH_SHORT).show();
                 }
             } catch (Exception e) {
-                // Fallback to external browser
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                 startActivity(intent);
             }
@@ -256,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
         super.onSaveInstanceState(outState);
         webView.saveState(outState);
     }

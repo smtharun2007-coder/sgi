@@ -47,27 +47,41 @@ function requireMentorLeap() {
 // Send a notification to a student (by roll)
 function leapNotifyStudent($roll, $message, $link = '') {
     global $notifications;
+    $cleanLink = sanitizeLeapNotifLink($link);
     $notifications->insertOne([
         'roll'       => $roll,
         'message'    => $message,
-        'link'       => sanitizeLeapNotifLink($link),
+        'link'       => $cleanLink,
         'type'       => 'leap',
         'read'       => false,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
     ]);
+
+    // Dispatch FCM push notification
+    if (file_exists(__DIR__ . '/fcm_helper.php')) {
+        require_once __DIR__ . '/fcm_helper.php';
+        sendFcmNotificationToUser($roll, 'SGI LEAP Update', $message, $cleanLink);
+    }
 }
 
 // Send a notification to a mentor (by mentor_id)
 function leapNotifyMentor($mentor_id, $message, $link = '') {
     global $notifications;
+    $cleanLink = sanitizeLeapNotifLink($link);
     $notifications->insertOne([
         'mentor_id'  => $mentor_id,
         'message'    => $message,
-        'link'       => sanitizeLeapNotifLink($link),
+        'link'       => $cleanLink,
         'type'       => 'leap',
         'read'       => false,
         'created_at' => new MongoDB\BSON\UTCDateTime(),
     ]);
+
+    // Dispatch FCM push notification
+    if (file_exists(__DIR__ . '/fcm_helper.php')) {
+        require_once __DIR__ . '/fcm_helper.php';
+        sendFcmNotificationToUser($mentor_id, 'SGI Mentor Alert', $message, $cleanLink);
+    }
 }
 
 // Allow-list for LEAP notification links (same-app relative .php only).

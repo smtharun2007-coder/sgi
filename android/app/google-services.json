@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "846232436014",
+    "project_id": "tgsgi-2f41f",
+    "storage_bucket": "tgsgi-2f41f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:846232436014:android:7b7b63735b6bb4e970cebf",
+        "android_client_info": {
+          "package_name": "com.sgi.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCVqjOhMq7EKb8_Yw1acgoYh2MflssQtu4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
