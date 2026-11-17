@@ -66,7 +66,7 @@ public class NotificationHelper {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, requestCode, intent, flags);
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.app_icon)
+                .setSmallIcon(R.mipmap.sgi_icon)
                 .setContentTitle(title)
                 .setContentText(body)
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(body))
