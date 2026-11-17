@@ -5,3 +5,5 @@ composer.phar
 .env
 phpinfo_test.php
 vendor/
+
+firebase_service_account.json
