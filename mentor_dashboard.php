@@ -81,45 +81,10 @@ $studentList   = iterator_to_array($studentCursor);
     </style>
 </head>
 <body>
-<nav class="navbar" style="background:linear-gradient(135deg,#1a1a2e,#8e44ad);">
-    <a href="mentor_dashboard.php" class="nav-brand">
-        <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI <span style="font-size:13px;opacity:0.7;font-weight:400;">Mentor</span>
-    </a>
-    <div class="nav-links">
-        <a href="mentor_dashboard.php">🏠 Home</a>
-        <a href="mentor_approvals.php">✅ Approvals</a>
-        <a href="mentor_leap_dashboard.php" style="color:#f5a623;font-weight:700;"><img src="/LEAP.png" alt="LEAP" style="width:16px;height:16px;object-fit:contain;border-radius:3px;vertical-align:middle;margin-right:4px;">LEAP</a>
-
-        <div class="nav-dropdown">
-            <button class="nav-dropdown-btn">📅 Portal <span class="caret">▾</span></button>
-            <div class="nav-dropdown-menu">
-                <a href="mentor_calendar.php"><span>📅</span> Academic Calendar</a>
-                <a href="mentor_announcements.php"><span>📢</span> Announcements</a>
-                <a href="mentor_timetable.php"><span>🕒</span> Timetable</a>
-            </div>
-        </div>
-
-        <div class="nav-dropdown">
-            <button class="nav-dropdown-btn">ℹ️ Account <span class="caret">▾</span></button>
-            <div class="nav-dropdown-menu">
-                <a href="mentor_update_profile.php"><span>👤</span> Profile</a>
-                <a href="mentor_about.php"><span>📖</span> About SGI</a>
-                <a href="mentor_contact.php"><span>✉️</span> Contact</a>
-            </div>
-        </div>
-
-        <div class="notif-bell-wrap">
-            <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
-                🔔<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
-            </button>
-            <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
-                <div class="notif-list-scroll" id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
-            </div>
-        </div>
-        <a href="mentor_logout.php" class="btn-logout">Logout</a>
-    </div>
-</nav>
+<?php
+require_once __DIR__ . '/nav_helper.php';
+echo renderMentorNavbar('mentor_dashboard.php', $unreadCount);
+?>
 
 <div class="container">
 

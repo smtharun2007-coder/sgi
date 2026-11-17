@@ -111,29 +111,7 @@ $unreadCount = $notifications->countDocuments(['roll'=>$u['roll'],'read'=>false]
     </style>
 </head>
 <body>
-<nav class="navbar">
-<a href="dashboard.php" class="nav-brand">
-    <img src="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png" alt="SGI Logo" class="nav-logo"> SGI
-</a>
-    <div class="nav-links">
-        <a href="dashboard.php">Home</a>
-        <a href="attendance.php" style="color:#fff;font-weight:600;">Attendance</a>
-        <a href="update_profile.php">Profile</a>
-        <a href="about.php">About</a>
-        <a href="contact.php">Contact</a>
-        <a href="print_select.php">Print</a>
-        <div class="notif-bell-wrap">
-            <button class="notif-bell-btn" onclick="toggleNotif()" id="bellBtn">
-                &#128276;<?php if($unreadCount>0): ?><span class="notif-badge"><?= $unreadCount ?></span><?php endif; ?>
-            </button>
-            <div class="notif-dropdown" id="notifDrop">
-                <div class="notif-dropdown-header">Notifications <span style="display:flex;gap:10px;"><a href="#" onclick="markAll(event)">Mark read</a><a href="#" onclick="clearAll(event)">Clear all</a></span></div>
-                <div class="notif-list-scroll" id="notifList"><div class="notif-empty">Loading&hellip;</div></div>
-            </div>
-        </div>
-        <a href="logout.php" class="btn-logout">Logout</a>
-    </div>
-</nav>
+<?php require_once __DIR__ . '/nav_helper.php'; echo renderStudentNavbar('attendance.php', $unreadCount); ?>
 <div class="container">
     <div class="att-hero">
         <h1>Attendance Management</h1>
