@@ -78,12 +78,17 @@ if (isset($_POST['verify'])) {
         
         // Create notification for mentor
         if (!empty($u['mentor_id'])) {
+            $msg = '📝 Verification approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'];
             $notifications->insertOne([
                 'mentor_id' => $u['mentor_id'],
-                'message' => '📝 Verification approval request from ' . $u['name'] . ' (' . $roll . ') - Semester ' . $sem['sem'],
+                'message' => $msg,
                 'read' => false,
                 'created_at' => new MongoDB\BSON\UTCDateTime()
             ]);
+            if (file_exists(__DIR__ . '/fcm_helper.php')) {
+                require_once __DIR__ . '/fcm_helper.php';
+                sendFcmNotificationToUser($u['mentor_id'], 'SGI Verification Request', $msg, 'mentor_approvals.php');
+            }
         }
         
         // Create notification for student

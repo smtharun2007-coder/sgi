@@ -20,6 +20,12 @@ function createNotification($db, $notifications, $recipientId, $recipientField, 
         'read' => false,
         'created_at' => new MongoDB\BSON\UTCDateTime()
     ]);
+
+    // Send push notification to user's phone outside the app
+    if (file_exists(__DIR__ . '/fcm_helper.php')) {
+        require_once __DIR__ . '/fcm_helper.php';
+        sendFcmNotificationToUser($recipientId, 'SGI Approval Update', $message, 'dashboard.php');
+    }
 }
 
 // GET - Fetch approvals
