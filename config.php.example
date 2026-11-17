@@ -150,14 +150,22 @@ function uploadToCloudinary($fileTmpPath, $folder = 'sgi', $resourceType = 'imag
     return $result['secure_url'];
 }
 
-// Session timeout — 30 minutes.
-if (isset($_SESSION['user'])) {
-    if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
-        session_destroy();
-        header('Location: index.php?timeout=1');
-        exit;
+// Session timeout — 30 minutes for web browsers, but extended for SGI Mobile App so notifications stay active.
+$isMobileApp = (isset($_SERVER['HTTP_USER_AGENT']) && strpos($_SERVER['HTTP_USER_AGENT'], 'SGI-Android-App') !== false);
+if (!$isMobileApp) {
+    if (isset($_SESSION['user'])) {
+        if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > 1800)) {
+            session_destroy();
+            header('Location: index.php?timeout=1');
+            exit;
+        }
+        $_SESSION['last_activity'] = time();
     }
-    $_SESSION['last_activity'] = time();
+} else {
+    // Keep mobile app session persistent
+    if (isset($_SESSION['user'])) {
+        $_SESSION['last_activity'] = time();
+    }
 }
 
 function imgUrl($path) {

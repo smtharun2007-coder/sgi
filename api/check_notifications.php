@@ -3,6 +3,8 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../config.php';
 
 $fcmToken = trim($_GET['fcm_token'] ?? '');
+$fallbackRoll = trim($_GET['roll'] ?? $_GET['identifier'] ?? '');
+$fallbackType = trim($_GET['type'] ?? 'student');
 $identifier = null;
 $userType = null;
 
@@ -18,6 +20,9 @@ if (!empty($_SESSION['user']['roll'])) {
 } elseif (!empty($_SESSION['mentor_id'])) {
     $identifier = (string)$_SESSION['mentor_id'];
     $userType = 'mentor';
+} elseif (!empty($fallbackRoll)) {
+    $identifier = $fallbackRoll;
+    $userType = $fallbackType;
 } elseif (!empty($fcmToken)) {
     $tokenDoc = $db->fcm_tokens->findOne(['fcm_token' => $fcmToken]);
     if ($tokenDoc && !empty($tokenDoc['identifier'])) {

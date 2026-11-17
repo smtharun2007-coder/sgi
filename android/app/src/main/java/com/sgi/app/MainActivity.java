@@ -215,6 +215,17 @@ public class MainActivity extends AppCompatActivity {
         public void showSystemNotification(String title, String body, String url) {
             NotificationHelper.showNotification(MainActivity.this, title, body, url);
         }
+
+        @JavascriptInterface
+        public void saveUserIdentifier(String identifier, String type) {
+            if (identifier != null && !identifier.trim().isEmpty()) {
+                getSharedPreferences("sgi_prefs", MODE_PRIVATE)
+                        .edit()
+                        .putString("user_identifier", identifier.trim())
+                        .putString("user_type", (type != null && !type.isEmpty()) ? type : "student")
+                        .apply();
+            }
+        }
     }
 
     private void setupWebViewClients() {
@@ -308,7 +319,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void registerFcmWithCurrentSession() {
         if (fcmToken == null || fcmToken.length() < 10) return;
-        // Inject JS to notify backend
+        // Inject JS to notify backend and save user identifier
         String js = "(function() {" +
                 "  try {" +
                 "    var token = '" + fcmToken + "';" +
@@ -318,6 +329,11 @@ public class MainActivity extends AppCompatActivity {
                 "        headers: {'Content-Type': 'application/x-www-form-urlencoded'}," +
                 "        body: 'fcm_token=' + encodeURIComponent(token)" +
                 "      }).catch(function(){});" +
+                "    }" +
+                "    var rollEl = document.querySelector('.profile-roll');" +
+                "    if (rollEl && rollEl.innerText && window.Android && window.Android.saveUserIdentifier) {" +
+                "      var txt = rollEl.innerText.trim();" +
+                "      window.Android.saveUserIdentifier(txt, txt.startsWith('M') ? 'mentor' : 'student');" +
                 "    }" +
                 "  } catch(e) {}" +
                 "})();";

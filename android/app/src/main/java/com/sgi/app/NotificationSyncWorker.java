@@ -31,10 +31,17 @@ public class NotificationSyncWorker extends Worker {
             Context context = getApplicationContext();
             SharedPreferences prefs = context.getSharedPreferences("sgi_prefs", Context.MODE_PRIVATE);
             String fcmToken = prefs.getString("fcm_token", "");
+            String userIdentifier = prefs.getString("user_identifier", "");
+            String userType = prefs.getString("user_type", "student");
 
             String cookies = CookieManager.getInstance().getCookie(MainActivity.APP_URL);
 
-            URL url = new URL("https://" + MainActivity.APP_HOST + "/api/check_notifications.php?fcm_token=" + fcmToken);
+            String queryParams = "fcm_token=" + fcmToken;
+            if (!userIdentifier.isEmpty()) {
+                queryParams += "&roll=" + userIdentifier + "&type=" + userType;
+            }
+
+            URL url = new URL("https://" + MainActivity.APP_HOST + "/api/check_notifications.php?" + queryParams);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setRequestMethod("GET");
             conn.setConnectTimeout(8000);
