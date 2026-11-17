@@ -27,10 +27,10 @@ jobs:
           java-version: '17'
 
       - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android platform and build-tools
         run: |
-          echo "ANDROID_HOME=$ANDROID_SDK_ROOT" >> $GITHUB_ENV
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
           yes | sdkmanager --licenses || true
           sdkmanager "platforms;android-34" "build-tools;34.0.0" "platform-tools"
 
@@ -63,7 +63,7 @@ jobs:
             ### 📱 SGI & LEAP Mobile App for Android
             - **Live Server:** https://tgsgi.onrender.com/
             - Download `SGI-v1.0.apk` and install on any Android phone.
-            - No Play Store needed — enable "Install from unknown sources" in Android settings.
+            - Enable "Install from unknown sources" in Android settings first.
           files: android/app/build/outputs/apk/debug/SGI-v1.0.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
