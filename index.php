@@ -8,6 +8,8 @@ if (isset($_SESSION['mentor'])) { header("Location: mentor_dashboard.php"); exit
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+    <meta name="theme-color" content="#1A1A2E">
+    <link rel="manifest" href="/manifest.json">
     <title>SGI – Welcome</title>
     <link rel="stylesheet" href="/css/style.css?v=3">
     <link rel="icon" type="image/png" href="https://res.cloudinary.com/dsqwvarrs/image/upload/v1781704367/logo1_dorpv5.png">
