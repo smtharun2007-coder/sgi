@@ -46,7 +46,47 @@ $subjects        = $db->subjects;
 $mentors         = $db->mentors;
 $announcements   = $db->announcements;
 $calendar_events = $db->calendar_events;
-$notifications   = $db->notifications;
+
+// SGINotificationCollection ensures that EVERY notification inserted anywhere in the app
+// is also dispatched as an Android system push notification outside the app.
+if (!class_exists('SGINotificationCollection')) {
+    class SGINotificationCollection {
+        private $collection;
+
+        public function __construct($collection) {
+            $this->collection = $collection;
+        }
+
+        public function insertOne($document, array $options = []) {
+            $result = $this->collection->insertOne($document, $options);
+
+            try {
+                $docArray = (array)$document;
+                $recipient = $docArray['roll'] ?? $docArray['student_id'] ?? $docArray['user_id'] ?? $docArray['mentor_id'] ?? null;
+                $message = $docArray['message'] ?? '';
+                $link = $docArray['link'] ?? 'dashboard.php';
+
+                if ($recipient && !empty($message)) {
+                    if (file_exists(__DIR__ . '/fcm_helper.php')) {
+                        require_once __DIR__ . '/fcm_helper.php';
+                        $title = !empty($docArray['mentor_id']) ? 'SGI Mentor Alert' : 'SGI Alert';
+                        sendFcmNotificationToUser($recipient, $title, $message, $link);
+                    }
+                }
+            } catch (\Throwable $e) {
+                error_log("FCM Auto-Dispatch Error: " . $e->getMessage());
+            }
+
+            return $result;
+        }
+
+        public function __call($method, $args) {
+            return call_user_func_array([$this->collection, $method], $args);
+        }
+    }
+}
+
+$notifications   = new SGINotificationCollection($db->notifications);
 $approvals       = $db->approvals;
 
 // LEAP collections

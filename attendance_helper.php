@@ -318,7 +318,8 @@ if (!defined('SGI_ATTENDANCE_HELPER_LOADED')) {
                 $notifMsg = ($sem < 8)
                     ? "🔒 Semester {$sem} Attendance has been closed & finalized. Your active semester is now Semester {$nextSem}."
                     : "🔒 Semester 8 Attendance has been closed & finalized. Graduation attendance records are complete.";
-                $activeDb->notifications->insertOne([
+                global $notifications;
+                $notifications->insertOne([
                     'roll'       => $roll,
                     'message'    => $notifMsg,
                     'type'       => 'attendance',
